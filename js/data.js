@@ -138,6 +138,12 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    const clickedButton = e.submitter?.id; // works in modern browsers
+    if (!clickedButton) {
+      alert("Could not determine which button was clicked.");
+      return;
+    }
+
     const data = collectFormData();
     if (!data) {
       alert("Please fill all the fields.");
@@ -155,9 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    const clickedButton = document.activeElement;
-
-    if (clickedButton.id === "updateBtn") {
+    if (clickedButton === "updateBtn") {
       if (!currentRecordId) {
         alert("No existing record found to update.");
         return;
@@ -172,7 +176,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.error(err);
         alert("Failed to update data.");
       }
-    } else {
+    } else if (clickedButton === "submitBtn") {
       try {
         const newRef = push(ref(db, "registrations"));
         await set(newRef, data);
