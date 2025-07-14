@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>This your Dashboard Page</title>
 <style>
   body {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     height: 100vh;
@@ -16,12 +17,61 @@
   h1 {
     font-weight: bold;
     font-size: 3rem;
+    margin-bottom: 2rem;
+  }
+  #signOutBtn {
+    padding: 10px 20px;
+    font-size: 1rem;
+    cursor: pointer;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 4px;
+  }
+  #signOutBtn:hover {
+    background-color: #0056b3;
   }
 </style>
 </head>
 <body>
   <h1>This is your Dashboard Page</h1>
+  <button id="signOutBtn">Sign Out</button>
 
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
 
+    const firebaseConfig = {
+      apiKey: "AIzaSyAENr32Pk-Sq44tuBPj8c_xXk4qzEa3GJw",
+      authDomain: "login-9338e.firebaseapp.com",
+      projectId: "login-9338e",
+      storageBucket: "login-9338e.firebasestorage.app",
+      messagingSenderId: "649880075591",
+      appId: "1:649880075591:web:a5cd336a03d80e9b656062",
+      measurementId: "G-GT8TRDM62Y"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // Check if user is signed in
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        // No user signed in, redirect to admin login
+        window.location.href = "admin.html";
+      }
+      // else user signed in, do nothing (stay on page)
+    });
+
+    // Sign out functionality
+    document.getElementById('signOutBtn').addEventListener('click', () => {
+      signOut(auth).then(() => {
+        window.location.href = 'admin.html';
+      }).catch((error) => {
+        alert('Error signing out: ' + error.message);
+      });
+    });
+  </script>
 </body>
 </html>
