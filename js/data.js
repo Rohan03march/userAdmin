@@ -8,11 +8,6 @@ import {
   child,
   update
 } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
-import {
-  getAuth,
-  onAuthStateChanged,
-  signOut
-} from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAENr32Pk-Sq44tuBPj8c_xXk4qzEa3GJw",
@@ -27,26 +22,6 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const auth = getAuth(app);
-
-// 🔷 Check if user is signed in
-onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    window.location.href = "admin.html";
-  }
-});
-
-// 🔷 Sign out functionality
-const signOutBtn = document.getElementById("signOutBtn");
-if (signOutBtn) {
-  signOutBtn.addEventListener("click", () => {
-    signOut(auth).then(() => {
-      window.location.href = "admin.html";
-    }).catch((error) => {
-      alert("Error signing out: " + error.message);
-    });
-  });
-}
 
 const labelToKeyMap = {
   "Working Location": "workingLocation",
@@ -235,6 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     data.submittedAt = new Date().toLocaleString();
 
+    // check for existing record on submit
     if (!currentRecordId) {
       const snapshot = await get(child(ref(db), "registrations"));
       if (snapshot.exists()) {
@@ -293,3 +269,23 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+
+//signout
+
+ // Check if user is signed in
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        // No user signed in, redirect to admin login
+        window.location.href = "admin.html";
+      }
+      // else user signed in, do nothing (stay on page)
+    });
+
+    // Sign out functionality
+    document.getElementById('signOutBtn').addEventListener('click', () => {
+      signOut(auth).then(() => {
+        window.location.href = 'admin.html';
+      }).catch((error) => {
+        alert('Error signing out: ' + error.message);
+      });
+    });
