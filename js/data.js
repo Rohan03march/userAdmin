@@ -202,6 +202,21 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    if (!currentRecordId && (!photoInput.files || photoInput.files.length === 0)) {
+      alert("Please upload a photo before submitting.");
+      return;
+    }
+
+    if (currentRecordId) {
+      if (!photoInput.files.length) {
+        const snapshot = await get(ref(db, `registrations/${currentRecordId}`));
+        if (!snapshot.exists() || !snapshot.val().photo) {
+          alert("Please upload a photo before submitting.");
+          return;
+        }
+      }
+    }
+
     const data = collectFormData();
     if (!data) {
       alert("Please fill all the fields.");
@@ -209,27 +224,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     data.submittedAt = new Date().toLocaleString();
-
-    // check for existing record on submit
-    if (!currentRecordId) {
-      const snapshot = await get(child(ref(db), "registrations"));
-      if (snapshot.exists()) {
-        for (const [id, record] of Object.entries(snapshot.val())) {
-          if (
-            record.employeeCode === data.employeeCode ||
-            record.nameAsPerAadhaar === data.nameAsPerAadhaar
-          ) {
-            currentRecordId = id;
-            break;
-          }
-        }
-      }
-    }
-
-    if (!currentRecordId && (!photoInput.files || photoInput.files.length === 0)) {
-      alert("Please upload a photo before submitting.");
-      return;
-    }
 
     if (photoInput.files[0]) {
       try {
@@ -240,12 +234,9 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
     } else if (currentRecordId) {
-      const snap = await get(ref(db, `registrations/${currentRecordId}`));
-      if (snap.exists() && snap.val().photo) {
-        data.photo = snap.val().photo;
-      } else {
-        alert("Please upload a photo before submitting.");
-        return;
+      const snapshot = await get(ref(db, `registrations/${currentRecordId}`));
+      if (snapshot.exists() && snapshot.val().photo) {
+        data.photo = snapshot.val().photo;
       }
     }
 
