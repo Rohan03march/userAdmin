@@ -268,24 +268,3 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-
-
-//signout
-
- // Check if user is signed in
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        // No user signed in, redirect to admin login
-        window.location.href = "admin.html";
-      }
-      // else user signed in, do nothing (stay on page)
-    });
-
-    // Sign out functionality
-    document.getElementById('signOutBtn').addEventListener('click', () => {
-      signOut(auth).then(() => {
-        window.location.href = 'admin.html';
-      }).catch((error) => {
-        alert('Error signing out: ' + error.message);
-      });
-    });
