@@ -24,7 +24,7 @@ const auth = getAuth(app);
 onAuthStateChanged(auth, (user) => {
     if (!user) {
         // Not logged in → redirect to login page
-        window.location.href = "index.html";  // change if your login page is named differently
+        window.location.href = "admin.html";  // change if your login page is named differently
     } else {
         console.log(`User logged in: ${user.email}`);
         document.querySelector('h1').textContent = `Welcome, ${user.email}`;
@@ -34,7 +34,7 @@ onAuthStateChanged(auth, (user) => {
 // Log out
 document.getElementById('logoutBtn').addEventListener('click', () => {
     signOut(auth).then(() => {
-        window.location.href = "index.html";
+        window.location.href = "admin.html";
     }).catch((error) => {
         console.error("Error signing out:", error);
         alert("Failed to log out. Please try again.");
