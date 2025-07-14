@@ -1,0 +1,41 @@
+<h1>This is your Dashboard Page</h1>
+  <button id="signOutBtn">Sign Out</button>
+
+
+  <!--firebase code-->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAENr32Pk-Sq44tuBPj8c_xXk4qzEa3GJw",
+      authDomain: "login-9338e.firebaseapp.com",
+      projectId: "login-9338e",
+      storageBucket: "login-9338e.firebasestorage.app",
+      messagingSenderId: "649880075591",
+      appId: "1:649880075591:web:a5cd336a03d80e9b656062",
+      measurementId: "G-GT8TRDM62Y"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // Check if user is signed in
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        // No user signed in, redirect to admin login
+        window.location.href = "admin.html";
+      }
+      // else user signed in, do nothing (stay on page)
+    });
+
+    // Sign out functionality
+    document.getElementById('signOutBtn').addEventListener('click', () => {
+      signOut(auth).then(() => {
+        window.location.href = 'admin.html';
+      }).catch((error) => {
+        alert('Error signing out: ' + error.message);
+      });
+    });
+  </script>

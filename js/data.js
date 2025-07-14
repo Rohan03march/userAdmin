@@ -8,6 +8,11 @@ import {
   child,
   update
 } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAENr32Pk-Sq44tuBPj8c_xXk4qzEa3GJw",
@@ -22,6 +27,26 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const auth = getAuth(app);
+
+// 🔷 Check if user is signed in
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.href = "admin.html";
+  }
+});
+
+// 🔷 Sign out functionality
+const signOutBtn = document.getElementById("signOutBtn");
+if (signOutBtn) {
+  signOutBtn.addEventListener("click", () => {
+    signOut(auth).then(() => {
+      window.location.href = "admin.html";
+    }).catch((error) => {
+      alert("Error signing out: " + error.message);
+    });
+  });
+}
 
 const labelToKeyMap = {
   "Working Location": "workingLocation",
@@ -48,11 +73,89 @@ const labelToKeyMap = {
 
 let currentRecordId = null;
 
+async function updateUserCount() {
+  try {
+    const snapshot = await get(child(ref(db), "registrations"));
+    let count = 0;
+    if (snapshot.exists()) {
+      count = Object.keys(snapshot.val()).length;
+    }
+    const userCountEl = document.getElementById("userCount");
+    if (userCountEl) userCountEl.textContent = count;
+  } catch (err) {
+    console.error("Error fetching user count:", err);
+  }
+}
+
+async function populateUsersTable() {
+  const tbody = document.querySelector("table tbody");
+  tbody.innerHTML = "";
+  try {
+    const snapshot = await get(child(ref(db), "registrations"));
+    if (snapshot.exists()) {
+      const usersArray = Object.entries(snapshot.val()).map(([id, user]) => ({
+        id,
+        ...user
+      }));
+
+      usersArray.sort((a, b) => {
+        const tA = Date.parse(a.submittedAt) || 0;
+        const tB = Date.parse(b.submittedAt) || 0;
+        return tB - tA;
+      });
+
+      const recentUsers = usersArray.slice(0, 3);
+
+      for (const user of recentUsers) {
+        const tr = document.createElement("tr");
+
+        const tdUser = document.createElement("td");
+        const img = document.createElement("img");
+        img.src = user.photo || "";
+        img.alt = user.nameAsPerAadhaar || "User photo";
+        img.style.cssText = `
+          width: 40px; height: 40px; border-radius: 50%;
+          object-fit: cover; margin-right: 10px; vertical-align: middle;
+        `;
+        const pName = document.createElement("p");
+        pName.style.display = "inline-block";
+        pName.style.verticalAlign = "middle";
+        pName.textContent = user.nameAsPerAadhaar || "Unknown";
+
+        tdUser.appendChild(img);
+        tdUser.appendChild(pName);
+
+        const tdDate = document.createElement("td");
+        tdDate.textContent = user.submittedAt || "N/A";
+
+        tr.appendChild(tdUser);
+        tr.appendChild(tdDate);
+
+        tbody.appendChild(tr);
+      }
+    } else {
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.colSpan = 2;
+      td.style.textAlign = "center";
+      td.textContent = "No registered users found.";
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+    }
+  } catch (err) {
+    console.error("Error fetching users for table:", err);
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  updateUserCount();
+  populateUsersTable();
+
   const form = document.querySelector("form");
   const photoInput = document.getElementById("photo");
 
-  const fillForm = (data) => {
+  const fillForm = (id, data) => {
+    currentRecordId = id;
     const inputBoxes = form.querySelectorAll(".input-box");
     inputBoxes.forEach((box) => {
       const labelEl = box.querySelector(".details");
@@ -60,20 +163,16 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!inputEl || !labelEl) return;
       const label = labelEl.textContent.trim();
       const key = labelToKeyMap[label];
-      if (key && data[key]) {
-        inputEl.value = data[key];
-      }
+      if (key && data[key]) inputEl.value = data[key];
     });
   };
 
   const checkAndFill = async (fieldKey, value) => {
     const snapshot = await get(child(ref(db), "registrations"));
     if (snapshot.exists()) {
-      const registrations = snapshot.val();
-      for (const [id, record] of Object.entries(registrations)) {
+      for (const [id, record] of Object.entries(snapshot.val())) {
         if (record[fieldKey] && record[fieldKey] === value) {
-          fillForm(record);
-          currentRecordId = id;
+          fillForm(id, record);
           return;
         }
       }
@@ -94,9 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const value = inputEl.value.trim();
       if (!value) allFilled = false;
       const key = labelToKeyMap[label];
-      if (key) {
-        data[key] = value;
-      }
+      if (key) data[key] = value;
     });
 
     return allFilled ? data : null;
@@ -108,11 +205,7 @@ document.addEventListener("DOMContentLoaded", () => {
     formData.append("file", file);
     formData.append("upload_preset", "UserImages");
 
-    const res = await fetch(url, {
-      method: "POST",
-      body: formData,
-    });
-
+    const res = await fetch(url, { method: "POST", body: formData });
     if (!res.ok) throw new Error("Failed to upload image");
     const data = await res.json();
     return data.secure_url;
@@ -123,16 +216,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   employeeCodeInput.addEventListener("blur", () => {
     const value = employeeCodeInput.value.trim();
-    if (value) {
-      checkAndFill("employeeCode", value);
-    }
+    if (value) checkAndFill("employeeCode", value);
   });
 
   nameInput.addEventListener("blur", () => {
     const value = nameInput.value.trim();
-    if (value) {
-      checkAndFill("nameAsPerAadhaar", value);
-    }
+    if (value) checkAndFill("nameAsPerAadhaar", value);
   });
 
   form.addEventListener("submit", async (e) => {
@@ -144,63 +233,63 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const clickedButton = document.activeElement;
+    data.submittedAt = new Date().toLocaleString();
 
-    // if updating: keep old photo if no new selected
-    if (currentRecordId) {
-      if (photoInput.files[0]) {
-        try {
-          const photoUrl = await uploadPhotoToCloudinary(photoInput.files[0]);
-          data.photo = photoUrl;
-        } catch (err) {
-          console.error(err);
-          alert("Failed to upload photo.");
-          return;
-        }
-      } else {
-        // fetch existing photo
-        const snapshot = await get(ref(db, `registrations/${currentRecordId}`));
-        if (snapshot.exists()) {
-          const existingData = snapshot.val();
-          if (existingData.photo) {
-            data.photo = existingData.photo;
+    if (!currentRecordId) {
+      const snapshot = await get(child(ref(db), "registrations"));
+      if (snapshot.exists()) {
+        for (const [id, record] of Object.entries(snapshot.val())) {
+          if (
+            record.employeeCode === data.employeeCode ||
+            record.nameAsPerAadhaar === data.nameAsPerAadhaar
+          ) {
+            currentRecordId = id;
+            break;
           }
         }
       }
+    }
 
+    if (!currentRecordId && (!photoInput.files || photoInput.files.length === 0)) {
+      alert("Please upload a photo before submitting.");
+      return;
+    }
+
+    if (photoInput.files[0]) {
       try {
+        const photoUrl = await uploadPhotoToCloudinary(photoInput.files[0]);
+        data.photo = photoUrl;
+      } catch (err) {
+        alert("Image upload failed: " + err.message);
+        return;
+      }
+    } else if (currentRecordId) {
+      const snap = await get(ref(db, `registrations/${currentRecordId}`));
+      if (snap.exists() && snap.val().photo) {
+        data.photo = snap.val().photo;
+      } else {
+        alert("Please upload a photo before submitting.");
+        return;
+      }
+    }
+
+    try {
+      if (currentRecordId) {
         await update(ref(db, `registrations/${currentRecordId}`), data);
         alert("Data updated successfully!");
-        form.reset();
-        currentRecordId = null;
-      } catch (err) {
-        console.error(err);
-        alert("Failed to update data.");
-      }
-
-    } else {
-      // new submission
-      if (photoInput.files[0]) {
-        try {
-          const photoUrl = await uploadPhotoToCloudinary(photoInput.files[0]);
-          data.photo = photoUrl;
-        } catch (err) {
-          console.error(err);
-          alert("Failed to upload photo.");
-          return;
-        }
-      }
-
-      try {
+      } else {
         const newRef = push(ref(db, "registrations"));
         await set(newRef, data);
         alert("Data submitted successfully!");
-        form.reset();
-        currentRecordId = null;
-      } catch (err) {
-        console.error(err);
-        alert("Failed to submit data.");
       }
+
+      form.reset();
+      currentRecordId = null;
+      updateUserCount();
+      populateUsersTable();
+    } catch (err) {
+      alert("Error submitting data: " + err.message);
     }
   });
 });
+

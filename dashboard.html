@@ -1,77 +1,116 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>This your Dashboard Page</title>
-<style>
-  body {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    font-family: Arial, sans-serif;
-  }
-  h1 {
-    font-weight: bold;
-    font-size: 3rem;
-    margin-bottom: 2rem;
-  }
-  #signOutBtn {
-    padding: 10px 20px;
-    font-size: 1rem;
-    cursor: pointer;
-    border: none;
-    background-color: #007bff;
-    color: white;
-    border-radius: 4px;
-  }
-  #signOutBtn:hover {
-    background-color: #0056b3;
-  }
-</style>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Boxicons -->
+	<link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
+	<!-- My CSS -->
+	<link rel="stylesheet" href="styles/dashboardStyle.css">
+
+	<title>Admin Dashboard</title>
 </head>
 <body>
-  <h1>This is your Dashboard Page</h1>
-  <button id="signOutBtn">Sign Out</button>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAENr32Pk-Sq44tuBPj8c_xXk4qzEa3GJw",
-      authDomain: "login-9338e.firebaseapp.com",
-      projectId: "login-9338e",
-      storageBucket: "login-9338e.firebasestorage.app",
-      messagingSenderId: "649880075591",
-      appId: "1:649880075591:web:a5cd336a03d80e9b656062",
-      measurementId: "G-GT8TRDM62Y"
-    };
+	<!-- SIDEBAR -->
+	<section id="sidebar">
+		<a href="#" class="brand">
+			<i class='bx bxs-smile'></i>
+			<span class="text">AdminHub</span>
+		</a>
+		<ul class="side-menu top">
+			<li class="active">
+				<a href="#">
+					<i class='bx bxs-dashboard' ></i>
+					<span class="text">Dashboard</span>
+				</a>
+			</li>
+			<li>
+				<a href="" class="logout">
+					<i class='bx bxs-log-out-circle' ></i>
+					<span class="text" id="signOutBtn">Logout</span> <!--add signout logic-->
+				</a>
+			</li>
+		</ul>
+	</section>
+  
+	<!-- SIDEBAR -->
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+	<!-- CONTENT -->
+	<section id="content">
+		<!-- NAVBAR -->
+		<nav>
+			<i class='bx bx-menu' ></i>
+			<a href="#" class="nav-link">Categories</a>
+			<form action="#">
+				<div class="form-input">
+					<input type="search" id="searchInput" placeholder="Search...">
+					<button type="submit" class="search-btn"><i class='bx bx-search' ></i></button>
+				</div>
+			</form>
+			<input type="checkbox" id="switch-mode" hidden>
+			<label for="switch-mode" class="switch-mode"></label>
+		</nav>
+		<!-- NAVBAR -->
 
-    // Check if user is signed in
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        // No user signed in, redirect to admin login
-        window.location.href = "admin.html";
-      }
-      // else user signed in, do nothing (stay on page)
-    });
+		<!-- MAIN -->
+		<main>
+			<div class="head-title">
+				<div class="left">
+					<h1>Dashboard</h1>
+					<ul class="breadcrumb">
+						<li>
+							<a href="#">Dashboard</a>
+						</li>
+						<li><i class='bx bx-chevron-right' ></i></li>
+						<li>
+							<a class="active" href="#">Home</a>
+						</li>
+					</ul>
+				</div>
+			</div>
 
-    // Sign out functionality
-    document.getElementById('signOutBtn').addEventListener('click', () => {
-      signOut(auth).then(() => {
-        window.location.href = 'admin.html';
-      }).catch((error) => {
-        alert('Error signing out: ' + error.message);
-      });
-    });
-  </script>
+			<ul class="box-info">
+				<li>
+					<i class='bx bxs-calendar-check' ></i>
+					<span class="text">
+  <h3 id="userCount">0</h3>
+  <p>User Login</p>
+</span>
+
+				</li>
+			</ul>
+
+
+			<div class="table-data">
+				<div class="order">
+					<div class="head">
+						<h3>Recent Login</h3>
+						<i class='bx bx-search' ></i>
+						<i class='bx bx-filter' ></i>
+					</div>
+					<table>
+						<thead>
+							<tr>
+								<th>User</th>
+								<th>Date & Time</th>
+							</tr>
+						</thead>
+						<tbody>
+
+            </tbody>
+					</table>
+				</div>
+			</div>
+		</main>
+		<!-- MAIN -->
+	</section>
+	<!-- CONTENT -->
+	
+
+	<script src="js/dashboard.js"></script>
+  <script  type="module" src="js/data.js"></script>
 </body>
 </html>
