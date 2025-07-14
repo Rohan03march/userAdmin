@@ -1,5 +1,10 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
 import {
+  getAuth,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+import {
   getDatabase,
   ref,
   push,
@@ -9,6 +14,7 @@ import {
   update
 } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
 
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyAENr32Pk-Sq44tuBPj8c_xXk4qzEa3GJw",
   authDomain: "login-9338e.firebaseapp.com",
@@ -20,9 +26,27 @@ const firebaseConfig = {
   measurementId: "G-GT8TRDM62Y"
 };
 
+// Init Firebase
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 const db = getDatabase(app);
 
+// 🔐 Auth check
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.href = "admin.html";
+  }
+});
+
+document.getElementById('signOutBtn')?.addEventListener('click', () => {
+  signOut(auth).then(() => {
+    window.location.href = 'admin.html';
+  }).catch((error) => {
+    alert('Error signing out: ' + error.message);
+  });
+});
+
+// 🗝️ Field mapping
 const labelToKeyMap = {
   "Working Location": "workingLocation",
   "Employee Code": "employeeCode",
@@ -51,12 +75,8 @@ let currentRecordId = null;
 async function updateUserCount() {
   try {
     const snapshot = await get(child(ref(db), "registrations"));
-    let count = 0;
-    if (snapshot.exists()) {
-      count = Object.keys(snapshot.val()).length;
-    }
-    const userCountEl = document.getElementById("userCount");
-    if (userCountEl) userCountEl.textContent = count;
+    let count = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
+    document.getElementById("userCount").textContent = count;
   } catch (err) {
     console.error("Error fetching user count:", err);
   }
@@ -67,54 +87,24 @@ async function populateUsersTable() {
   tbody.innerHTML = "";
   try {
     const snapshot = await get(child(ref(db), "registrations"));
-    if (snapshot.exists()) {
-      const usersArray = Object.entries(snapshot.val()).map(([id, user]) => ({
-        id,
-        ...user
-      }));
+    if (!snapshot.exists()) {
+      tbody.innerHTML = `<tr><td colspan="2" style="text-align:center">No registered users found.</td></tr>`;
+      return;
+    }
 
-      usersArray.sort((a, b) => {
-        const tA = Date.parse(a.submittedAt) || 0;
-        const tB = Date.parse(b.submittedAt) || 0;
-        return tB - tA;
-      });
+    const usersArray = Object.entries(snapshot.val()).map(([id, user]) => ({ id, ...user }))
+      .sort((a, b) => (Date.parse(b.submittedAt) || 0) - (Date.parse(a.submittedAt) || 0))
+      .slice(0, 3);
 
-      const recentUsers = usersArray.slice(0, 3);
-
-      for (const user of recentUsers) {
-        const tr = document.createElement("tr");
-
-        const tdUser = document.createElement("td");
-        const img = document.createElement("img");
-        img.src = user.photo || "";
-        img.alt = user.nameAsPerAadhaar || "User photo";
-        img.style.cssText = `
-          width: 40px; height: 40px; border-radius: 50%;
-          object-fit: cover; margin-right: 10px; vertical-align: middle;
-        `;
-        const pName = document.createElement("p");
-        pName.style.display = "inline-block";
-        pName.style.verticalAlign = "middle";
-        pName.textContent = user.nameAsPerAadhaar || "Unknown";
-
-        tdUser.appendChild(img);
-        tdUser.appendChild(pName);
-
-        const tdDate = document.createElement("td");
-        tdDate.textContent = user.submittedAt || "N/A";
-
-        tr.appendChild(tdUser);
-        tr.appendChild(tdDate);
-
-        tbody.appendChild(tr);
-      }
-    } else {
+    for (const user of usersArray) {
       const tr = document.createElement("tr");
-      const td = document.createElement("td");
-      td.colSpan = 2;
-      td.style.textAlign = "center";
-      td.textContent = "No registered users found.";
-      tr.appendChild(td);
+      tr.innerHTML = `
+        <td>
+          <img src="${user.photo || ""}" alt="${user.nameAsPerAadhaar || "User"}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;margin-right:10px;vertical-align:middle;">
+          <p style="display:inline-block;vertical-align:middle;">${user.nameAsPerAadhaar || "Unknown"}</p>
+        </td>
+        <td>${user.submittedAt || "N/A"}</td>
+      `;
       tbody.appendChild(tr);
     }
   } catch (err) {
@@ -128,46 +118,50 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const form = document.querySelector("form");
   const photoInput = document.getElementById("photo");
+  const previewImg = document.getElementById("photoPreview");
 
   const fillForm = (id, data) => {
     currentRecordId = id;
-    const inputBoxes = form.querySelectorAll(".input-box");
-    inputBoxes.forEach((box) => {
+    form.querySelectorAll(".input-box").forEach(box => {
       const labelEl = box.querySelector(".details");
       const inputEl = box.querySelector("input");
       if (!inputEl || !labelEl) return;
-      const label = labelEl.textContent.trim();
-      const key = labelToKeyMap[label];
+      const key = labelToKeyMap[labelEl.textContent.trim()];
       if (key && data[key]) inputEl.value = data[key];
     });
+    if (previewImg && data.photo) {
+      previewImg.src = data.photo;
+      previewImg.style.display = "block";
+    }
   };
 
   const checkAndFill = async (fieldKey, value) => {
     const snapshot = await get(child(ref(db), "registrations"));
-    if (snapshot.exists()) {
-      for (const [id, record] of Object.entries(snapshot.val())) {
-        if (record[fieldKey] && record[fieldKey] === value) {
-          fillForm(id, record);
-          return;
-        }
+    if (!snapshot.exists()) {
+      currentRecordId = null;
+      return;
+    }
+
+    for (const [id, record] of Object.entries(snapshot.val())) {
+      if (record[fieldKey] === value) {
+        fillForm(id, record);
+        return;
       }
     }
     currentRecordId = null;
   };
 
   const collectFormData = () => {
-    const inputBoxes = form.querySelectorAll(".input-box");
     const data = {};
     let allFilled = true;
 
-    inputBoxes.forEach((box) => {
+    form.querySelectorAll(".input-box").forEach(box => {
       const labelEl = box.querySelector(".details");
       const inputEl = box.querySelector("input");
       if (!inputEl || !labelEl) return;
-      const label = labelEl.textContent.trim();
+      const key = labelToKeyMap[labelEl.textContent.trim()];
       const value = inputEl.value.trim();
       if (!value) allFilled = false;
-      const key = labelToKeyMap[label];
       if (key) data[key] = value;
     });
 
@@ -175,12 +169,12 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   async function uploadPhotoToCloudinary(file) {
-    const url = `https://api.cloudinary.com/v1_1/dtwcxssvj/image/upload`;
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", "UserImages");
-
-    const res = await fetch(url, { method: "POST", body: formData });
+    const res = await fetch("https://api.cloudinary.com/v1_1/dtwcxssvj/image/upload", {
+      method: "POST", body: formData
+    });
     if (!res.ok) throw new Error("Failed to upload image");
     const data = await res.json();
     return data.secure_url;
@@ -193,7 +187,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const value = employeeCodeInput.value.trim();
     if (value) checkAndFill("employeeCode", value);
   });
-
   nameInput.addEventListener("blur", () => {
     const value = nameInput.value.trim();
     if (value) checkAndFill("nameAsPerAadhaar", value);
@@ -210,25 +203,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     data.submittedAt = new Date().toLocaleString();
 
-    // check for existing record on submit
+    // double-check record existence
     if (!currentRecordId) {
       const snapshot = await get(child(ref(db), "registrations"));
       if (snapshot.exists()) {
         for (const [id, record] of Object.entries(snapshot.val())) {
-          if (
-            record.employeeCode === data.employeeCode ||
-            record.nameAsPerAadhaar === data.nameAsPerAadhaar
-          ) {
+          if (record.employeeCode === data.employeeCode || record.nameAsPerAadhaar === data.nameAsPerAadhaar) {
             currentRecordId = id;
             break;
           }
         }
       }
-    }
-
-    if (!currentRecordId && (!photoInput.files || photoInput.files.length === 0)) {
-      alert("Please upload a photo before submitting.");
-      return;
     }
 
     if (photoInput.files[0]) {
@@ -247,6 +232,9 @@ document.addEventListener("DOMContentLoaded", () => {
         alert("Please upload a photo before submitting.");
         return;
       }
+    } else {
+      alert("Please upload a photo before submitting.");
+      return;
     }
 
     try {
@@ -261,6 +249,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       form.reset();
       currentRecordId = null;
+      if (previewImg) {
+        previewImg.src = "";
+        previewImg.style.display = "none";
+      }
       updateUserCount();
       populateUsersTable();
     } catch (err) {
@@ -268,3 +260,4 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
