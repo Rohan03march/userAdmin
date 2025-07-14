@@ -146,3 +146,72 @@ button:hover{
     animation:fadeOut 7s forwards;
 
 }
+
+/* Make container responsive */
+@media (max-width: 576px) {
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+
+  .container {
+    margin: 0; /* remove the 50px top margin */
+  }
+}
+
+@media (max-width: 576px) {
+  .container {
+    width: 90%;
+    margin: 20px auto;
+    padding: 1rem;
+  }
+
+  .form-title {
+    font-size: 1.2rem;
+    padding: 1rem;
+  }
+
+  form {
+    margin: 0 1rem;
+  }
+
+  .input-group {
+    padding: 0.5rem 0;
+  }
+
+  input {
+    font-size: 14px;
+  }
+
+  label {
+    font-size: 14px;
+  }
+
+  .recover {
+    font-size: 0.9rem;
+  }
+
+  button {
+    font-size: 1rem;
+    padding: 6px 0;
+  }
+
+  .icons i {
+    font-size: 1.2rem;
+    margin: 0 8px;
+    padding: 0.5rem 1rem;
+  }
+
+  .links {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0;
+    margin-top: 0.5rem;
+  }
+
+  #signUpButton, #signInButton {
+    font-size: 0.9rem;
+  }
+}
