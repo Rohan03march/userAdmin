@@ -103,23 +103,27 @@ recoverLink.addEventListener('click', (event) => {
     const email = prompt("Enter your email to recover your password:");
 
     if (!email) {
-        showMessage("Recovery cancelled or no email entered.", "signInMessage");
+        showMessage("You must enter an email address.", "signInMessage");
         return;
     }
 
     const auth = getAuth();
 
+    // Try to send reset email
     sendPasswordResetEmail(auth, email)
         .then(() => {
-            showMessage("Password reset email sent. Please check your inbox.", "signInMessage");
+            showMessage(
+                "Password reset email sent to your registered email address. Please check your inbox.",
+                "signInMessage"
+            );
         })
         .catch((error) => {
             if (error.code === 'auth/user-not-found') {
-                showMessage("No account found with this email.", "signInMessage");
+                showMessage("No account found with this email. Please check and try again.", "signInMessage");
             } else if (error.code === 'auth/invalid-email') {
-                showMessage("Invalid email address.", "signInMessage");
+                showMessage("Invalid email address format.", "signInMessage");
             } else {
-                showMessage("Failed to send recovery email.", "signInMessage");
+                showMessage("Something went wrong. Please try again later.", "signInMessage");
             }
         });
 });
