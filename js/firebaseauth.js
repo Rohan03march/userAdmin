@@ -24,7 +24,7 @@ const auth = getAuth(app);
 onAuthStateChanged(auth, (user) => {
     if (!user) {
         // Not logged in → redirect to login page
-        window.location.href = "index.html";  // change if your login page is named differently
+        window.location.href = "admin.html";  // change if your login page is named differently
     } else {
         console.log(`User logged in: ${user.email}`);
         document.querySelector('h1').textContent = `Welcome, ${user.email}`;
