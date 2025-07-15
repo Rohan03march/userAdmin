@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Details</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --primary: #0052cc;
+  --light-bg: #f9fafc;
+  --card-bg: #fff;
+  --text-color: #333;
+  --muted: #6b7280;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: var(--light-bg);
+  color: var(--text-color);
+  line-height: 1.5;
+}
+
+h1 {
+  text-align: center;
+  margin: 20px 0;
+  font-size: 28px;
+  color: var(--primary);
+}
+
+.container {
+  max-width: 800px;
+  margin: 20px auto;
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 25px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}
+
+.user-photo {
+  display: block;
+  margin: 0 auto 15px;
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #e5e7eb;
+}
+
+h2 {
+  text-align: center;
+  margin: 5px 0 20px 0;
+  font-size: 22px;
+  color: var(--primary);
+}
+
+.details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.detail-item {
+  flex: 1 1 45%;
+  background: #f3f4f6;
+  border-radius: 6px;
+  padding: 10px 15px;
+}
+
+.detail-item strong {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.detail-item span {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.other-details {
+  margin-top: 30px;
+}
+
+.other-details h3 {
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: var(--primary);
+}
+
+.other-details table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.other-details th,
+.other-details td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.other-details th {
+  background-color: #f3f4f6;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+@media (max-width: 600px) {
+  .details {
+    flex-direction: column;
+  }
+
+  .detail-item {
+    flex: 1 1 100%;
+  }
+}
+</style>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAENr32Pk-Sq44tuBPj8c_xXk4qzEa3GJw",
+  authDomain: "login-9338e.firebaseapp.com",
+  databaseURL: "https://login-9338e-default-rtdb.firebaseio.com",
+  projectId: "login-9338e",
+  storageBucket: "login-9338e.appspot.com",
+  messagingSenderId: "649880075591",
+  appId: "1:649880075591:web:a5cd336a03d80e9b656062",
+  measurementId: "G-GT8TRDM62Y"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const params = new URLSearchParams(window.location.search);
+const userId = params.get("id");
+
+async function loadUser() {
+  const container = document.getElementById("content");
+  if (!userId) {
+    container.innerHTML = `<p>Invalid User ID</p>`;
+    return;
+  }
+
+  const snap = await get(ref(db, `registrations/${userId}`));
+  if (!snap.exists()) {
+    container.innerHTML = `<p>User not found.</p>`;
+    return;
+  }
+
+  const user = snap.val();
+
+  container.innerHTML = `
+    <img src="${user.photo || "https://via.placeholder.com/150"}" alt="User Photo" class="user-photo">
+    <h2>${user.nameAsPerAadhaar || "Unknown"}</h2>
+
+    <div class="details">
+      <div class="detail-item">
+        <strong>Employee Code</strong>
+        <span>${user.employeeCode || "N/A"}</span>
+      </div>
+      <div class="detail-item">
+        <strong>Contact Number</strong>
+        <span>${user.contactNumber || "N/A"}</span>
+      </div>
+      <div class="detail-item">
+        <strong>Designation</strong>
+        <span>${user.designation || "N/A"}</span>
+      </div>
+      <div class="detail-item">
+        <strong>Date Of Joining</strong>
+        <span>${user.dateOfJoining || "N/A"}</span>
+      </div>
+      <div class="detail-item">
+        <strong>Submitted At</strong>
+        <span>${user.submittedAt || "N/A"}</span>
+      </div>
+    </div>
+
+    <div class="other-details">
+      <h3>All Other Details</h3>
+      <table id="otherDetailsTable"></table>
+    </div>
+  `;
+
+  const table = document.getElementById("otherDetailsTable");
+
+  table.innerHTML = `<tr><th>Field</th><th>Value</th></tr>`;
+
+  const excludeKeys = [
+    'photo',
+    'nameAsPerAadhaar',
+    'employeeCode',
+    'contactNumber',
+    'designation',
+    'dateOfJoining',
+    'submittedAt'
+  ];
+
+  Object.keys(user).forEach(key => {
+    if (!excludeKeys.includes(key)) {
+      table.innerHTML += `
+        <tr>
+          <td>${key}</td>
+          <td>${user[key]}</td>
+        </tr>
+      `;
+    }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", loadUser);
+</script>
+
+</head>
+<body>
+<h1>User Details</h1>
+
+<div class="container" id="content">
+  Loading...
+</div>
+
+</body>
+</html>
