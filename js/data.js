@@ -6,7 +6,7 @@ import {
   set,
   get,
   child,
-  update
+  update,
 } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
 
 // Firebase config
@@ -27,7 +27,6 @@ const db = getDatabase(app);
 
 const labelToKeyMap = {
   "Working Location": "workingLocation",
-  "Employee Code": "employeeCode",
   "Designation": "designation",
   "Date Of Joining": "dateOfJoining",
   "Name(As Per Aadhaar)": "nameAsPerAadhaar",
@@ -41,7 +40,6 @@ const labelToKeyMap = {
   "PAN Number": "panNumber",
   "Contact Number": "contactNumber",
   "Alternative Contact Number": "altContactNumber",
-  "ESI Number": "esiNumber",
   "UAN Number": "uanNumber",
   "Bank Name": "bankName",
   "Bank A/C Number": "bankAccountNumber",
@@ -49,7 +47,7 @@ const labelToKeyMap = {
 };
 
 let currentRecordId = null;
-let allUsersArray = []; // ⭐ holds latest 3 users
+let allUsersArray = [];
 
 async function updateUserCount() {
   try {
@@ -81,13 +79,36 @@ async function populateUsersTable() {
   }
 }
 
-// ⭐ helper to render table rows
+// function renderTable(users) {
+//   const tbody = document.querySelector("table tbody");
+//   tbody.innerHTML = "";
+
+//   if (!users.length) {
+//     tbody.innerHTML = `<tr><td colspan="3" style="text-align:center">No matching users found.</td></tr>`;
+//     return;
+//   }
+
+//   for (const user of users) {
+//     const tr = document.createElement("tr");
+//     tr.innerHTML = `
+//       <td>
+//         <img src="${user.photo || ""}" alt="${user.nameAsPerAadhaar || "User"}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;margin-right:10px;vertical-align:middle;">
+//         <p style="display:inline-block;vertical-align:middle;">${user.nameAsPerAadhaar || "Unknown"}</p>
+//       </td>
+//       <td>${user.contactNumber || "Null"}</td>
+//       <td>${user.submittedAt || "N/A"}</td>
+//     `;
+//     tbody.appendChild(tr);
+//   }
+// }
+
+
 function renderTable(users) {
   const tbody = document.querySelector("table tbody");
   tbody.innerHTML = "";
 
   if (!users.length) {
-    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center">No matching users found.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center">No matching users found.</td></tr>`;
     return;
   }
 
@@ -100,12 +121,41 @@ function renderTable(users) {
       </td>
       <td>${user.contactNumber || "Null"}</td>
       <td>${user.submittedAt || "N/A"}</td>
+      <td>
+        <button class="delete-btn" data-id="${user.id}" style="
+          background-color: #e74c3c;
+          color: white;
+          border: none;
+          padding: 5px 10px;
+          border-radius: 4px;
+          cursor: pointer;
+        ">Delete</button>
+      </td>
     `;
     tbody.appendChild(tr);
   }
+
+  // Attach delete handlers
+  tbody.querySelectorAll(".delete-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const id = btn.getAttribute("data-id");
+      if (!id) return;
+      if (!confirm("Are you sure you want to delete this user?")) return;
+
+      try {
+        await set(ref(db, `registrations/${id}`), null); // deletes the record
+        alert("✅ User deleted.");
+        updateUserCount();
+        populateUsersTable();
+      } catch (err) {
+        console.error("Delete error:", err);
+        alert("❌ Failed to delete user: " + err.message);
+      }
+    });
+  });
 }
 
-// 🔷 fill form globally
+
 function fillForm(id, data) {
   currentRecordId = id;
   const form = document.querySelector("form");
@@ -124,7 +174,6 @@ function fillForm(id, data) {
   }
 }
 
-// 🔷 prefill by Firebase ID
 async function prefillById(userId) {
   try {
     const snap = await get(ref(db, `registrations/${userId}`));
@@ -139,11 +188,31 @@ async function prefillById(userId) {
   }
 }
 
+const checkAndFill = async (fieldKey, value) => {
+  const snapshot = await get(child(ref(db), "registrations"));
+  if (!snapshot.exists()) {
+    currentRecordId = null;
+    return;
+  }
+
+  for (const [id, record] of Object.entries(snapshot.val())) {
+    if (record[fieldKey] === value) {
+      fillForm(id, record);
+      return;
+    }
+  }
+  currentRecordId = null;
+};
+
+// ✅ NEW: prefill by name helper
+function prefillByName(name) {
+  checkAndFill("nameAsPerAadhaar", name);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   updateUserCount();
   populateUsersTable();
 
-  // Example: prefill latest user
   get(child(ref(db), "registrations")).then(snapshot => {
     if (!snapshot.exists()) return;
     const latestEntry = Object.entries(snapshot.val()).sort(
@@ -159,21 +228,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const photoInput = document.getElementById("photo");
   const previewImg = document.getElementById("photoPreview");
 
-  const checkAndFill = async (fieldKey, value) => {
-    const snapshot = await get(child(ref(db), "registrations"));
-    if (!snapshot.exists()) {
-      currentRecordId = null;
-      return;
-    }
+  const contactNumberInput = form.querySelector(".input-box:nth-child(14) input");
+  const nameInput = form.querySelector(".input-box:nth-child(5) input");
 
-    for (const [id, record] of Object.entries(snapshot.val())) {
-      if (record[fieldKey] === value) {
-        fillForm(id, record);
-        return;
-      }
-    }
-    currentRecordId = null;
-  };
+  contactNumberInput.addEventListener("blur", () => {
+    const value = contactNumberInput.value.trim();
+    if (value) checkAndFill("contactNumber", value);
+  });
+  nameInput.addEventListener("blur", () => {
+    const value = nameInput.value.trim();
+    if (value) checkAndFill("nameAsPerAadhaar", value);
+  });
 
   const collectFormData = () => {
     const data = {};
@@ -204,18 +269,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return data.secure_url;
   }
 
-  const contactNumberInput = form.querySelector(".input-box:nth-child(14) input");
-  const nameInput = form.querySelector(".input-box:nth-child(5) input");
-
-  contactNumberInput.addEventListener("blur", () => {
-    const value = contactNumberInput.value.trim();
-    if (value) checkAndFill("contactNumber", value);
-  });
-  nameInput.addEventListener("blur", () => {
-    const value = nameInput.value.trim();
-    if (value) checkAndFill("nameAsPerAadhaar", value);
-  });
-
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -225,9 +278,24 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
+    const loadingPopup = document.createElement("div");
+    loadingPopup.style.position = "fixed";
+    loadingPopup.style.top = "0";
+    loadingPopup.style.left = "0";
+    loadingPopup.style.width = "100%";
+    loadingPopup.style.height = "100%";
+    loadingPopup.style.backgroundColor = "rgba(0,0,0,0.5)";
+    loadingPopup.style.color = "#fff";
+    loadingPopup.style.fontSize = "1.5rem";
+    loadingPopup.style.display = "flex";
+    loadingPopup.style.alignItems = "center";
+    loadingPopup.style.justifyContent = "center";
+    loadingPopup.style.zIndex = "9999";
+    loadingPopup.textContent = "Submitting data, please wait...";
+    document.body.appendChild(loadingPopup);
+
     data.submittedAt = new Date().toLocaleString();
 
-    // 🔷 Always re-check for existing user before deciding
     let existingId = null;
 
     try {
@@ -235,7 +303,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (snapshot.exists()) {
             for (const [id, record] of Object.entries(snapshot.val())) {
                 if (
-                    record.employeeCode === data.employeeCode ||
+                    record.contactNumber === data.contactNumber ||
                     record.nameAsPerAadhaar === data.nameAsPerAadhaar
                 ) {
                     existingId = id;
@@ -244,16 +312,17 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
     } catch (err) {
+        loadingPopup.remove();
         alert("Error checking existing records: " + err.message);
         return;
     }
 
-    // 🔷 Handle photo
     if (photoInput.files[0]) {
         try {
             const photoUrl = await uploadPhotoToCloudinary(photoInput.files[0]);
             data.photo = photoUrl;
         } catch (err) {
+            loadingPopup.remove();
             alert("Image upload failed: " + err.message);
             return;
         }
@@ -262,15 +331,16 @@ document.addEventListener("DOMContentLoaded", () => {
         if (snap.exists() && snap.val().photo) {
             data.photo = snap.val().photo;
         } else {
+            loadingPopup.remove();
             alert("Please upload a photo before submitting.");
             return;
         }
     } else {
+        loadingPopup.remove();
         alert("Please upload a photo before submitting.");
         return;
     }
 
-    // 🔷 Submit or update
     try {
         if (existingId) {
             await update(ref(db, `registrations/${existingId}`), data);
@@ -281,7 +351,6 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("✅ Data submitted successfully!");
         }
 
-        // Reset form & UI
         form.reset();
         currentRecordId = null;
         if (previewImg) {
@@ -293,8 +362,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     } catch (err) {
         alert("Error saving data: " + err.message);
+    } finally {
+        loadingPopup.remove();
     }
+  });
 });
 
-});
 

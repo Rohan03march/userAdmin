@@ -81,6 +81,7 @@
               <th>User</th>
               <th>Contact Number</th>
               <th>Login Date & Time</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -91,54 +92,12 @@
   </main>
 </section>
 
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script src="js/dashboard.js"></script>
 <script type="module" src="js/data.js"></script>
 <script type="module" src="js/logout.js"></script>
 <script type="module" src="js/search.js"></script>
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const searchInput = document.getElementById("searchInput");
-
-  searchInput.addEventListener("input", () => {
-    searchUsers(searchInput.value).then(users => {
-      renderTable(users);
-    });
-  });
-
-  // optionally load initial
-  searchUsers("").then(users => {
-    renderTable(users);
-  });
-});
-
-function renderTable(users) {
-  const tbody = document.querySelector("table tbody");
-  tbody.innerHTML = "";
-
-  if (!users.length) {
-    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center">No users found.</td></tr>`;
-    return;
-  }
-
-  users.forEach(user => {
-    const tr = document.createElement("tr");
-    tr.style.cursor = "pointer";
-    tr.addEventListener("click", () => {
-      window.location.href = `user.html?id=${encodeURIComponent(user.id)}`;
-    });
-    tr.innerHTML = `
-      <td>
-        <img src="${user.photo || ""}" alt="${user.nameAsPerAadhaar || "User"}"
-             style="width:40px;height:40px;border-radius:50%;object-fit:cover;margin-right:10px;vertical-align:middle;">
-        <p style="display:inline-block;vertical-align:middle;">${user.nameAsPerAadhaar || "Unknown"}</p>
-      </td>
-      <td>${user.contactNumber || "Null"}</td>
-      <td>${user.submittedAt || "N/A"}</td>
-    `;
-    tbody.appendChild(tr);
-  });
-}
-</script>
 </body>
 </html>
