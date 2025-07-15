@@ -138,6 +138,11 @@ form .button input:hover {
   color: #555;
 }
 
+.required {
+  color: red;
+  font-weight: bold;
+}
+
 
 /* Responsive */
 @media(max-width: 584px) {
