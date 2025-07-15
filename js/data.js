@@ -79,30 +79,6 @@ async function populateUsersTable() {
   }
 }
 
-// function renderTable(users) {
-//   const tbody = document.querySelector("table tbody");
-//   tbody.innerHTML = "";
-
-//   if (!users.length) {
-//     tbody.innerHTML = `<tr><td colspan="3" style="text-align:center">No matching users found.</td></tr>`;
-//     return;
-//   }
-
-//   for (const user of users) {
-//     const tr = document.createElement("tr");
-//     tr.innerHTML = `
-//       <td>
-//         <img src="${user.photo || ""}" alt="${user.nameAsPerAadhaar || "User"}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;margin-right:10px;vertical-align:middle;">
-//         <p style="display:inline-block;vertical-align:middle;">${user.nameAsPerAadhaar || "Unknown"}</p>
-//       </td>
-//       <td>${user.contactNumber || "Null"}</td>
-//       <td>${user.submittedAt || "N/A"}</td>
-//     `;
-//     tbody.appendChild(tr);
-//   }
-// }
-
-
 function renderTable(users) {
   const tbody = document.querySelector("table tbody");
   tbody.innerHTML = "";
@@ -156,6 +132,308 @@ function renderTable(users) {
 }
 
 
+// function fillForm(id, data) {
+//   currentRecordId = id;
+//   const form = document.querySelector("form");
+//   const previewImg = document.getElementById("photoPreview");
+
+//   form.querySelectorAll(".input-box").forEach(box => {
+//     const labelEl = box.querySelector(".details");
+//     const inputEl = box.querySelector("input");
+//     if (!inputEl || !labelEl) return;
+//     const key = labelToKeyMap[labelEl.textContent.trim()];
+//     if (key && data[key]) inputEl.value = data[key];
+//   });
+//   if (previewImg && data.photo) {
+//     previewImg.src = data.photo;
+//     previewImg.style.display = "block";
+//   }
+// }
+
+// const checkAndFill = async (fieldKey, value) => {
+//   const snapshot = await get(child(ref(db), "registrations"));
+//   if (!snapshot.exists()) {
+//     currentRecordId = null;
+//     return;
+//   }
+
+//   for (const [id, record] of Object.entries(snapshot.val())) {
+//     if (record[fieldKey] === value) {
+//       fillForm(id, record);
+//       return;
+//     }
+//   }
+//   currentRecordId = null;
+// };
+
+
+// document.addEventListener("DOMContentLoaded", () => {
+//   updateUserCount();
+//   populateUsersTable();
+
+//   get(child(ref(db), "registrations")).then(snapshot => {
+//     if (!snapshot.exists()) return;
+//     const latestEntry = Object.entries(snapshot.val()).sort(
+//       (a, b) => Date.parse(b[1].submittedAt) - Date.parse(a[1].submittedAt)
+//     )[0];
+//     if (latestEntry) {
+//       const [id, data] = latestEntry;
+//       fillForm(id, data);
+//     }
+//   });
+
+//   const form = document.querySelector("form");
+//   const photoInput = document.getElementById("photo");
+//   const previewImg = document.getElementById("photoPreview");
+
+//   const contactNumberInput = form.querySelector(".input-box:nth-child(14) input");
+//   const nameInput = form.querySelector(".input-box:nth-child(5) input");
+
+//   contactNumberInput.addEventListener("blur", () => {
+//     const value = contactNumberInput.value.trim();
+//     if (value) checkAndFill("contactNumber", value);
+//   });
+//   nameInput.addEventListener("blur", () => {
+//     const value = nameInput.value.trim();
+//     if (value) checkAndFill("nameAsPerAadhaar", value);
+//   });
+
+//   const collectFormData = () => {
+//     const data = {};
+//     let allFilled = true;
+
+//     form.querySelectorAll(".input-box").forEach(box => {
+//       const labelEl = box.querySelector(".details");
+//       const inputEl = box.querySelector("input");
+//       if (!inputEl || !labelEl) return;
+//       const key = labelToKeyMap[labelEl.textContent.trim()];
+//       const value = inputEl.value.trim();
+//       if (!value) allFilled = false;
+//       if (key) data[key] = value;
+//     });
+
+//     return allFilled ? data : null;
+//   };
+
+//   async function uploadPhotoToCloudinary(file) {
+//     const formData = new FormData();
+//     formData.append("file", file);
+//     formData.append("upload_preset", "UserImages");
+//     const res = await fetch("https://api.cloudinary.com/v1_1/dtwcxssvj/image/upload", {
+//       method: "POST", body: formData
+//     });
+//     if (!res.ok) throw new Error("Failed to upload image");
+//     const data = await res.json();
+//     return data.secure_url;
+//   }
+
+//   form.addEventListener("submit", async (e) => {
+//     e.preventDefault();
+
+//     const data = collectFormData();
+//     if (!data) {
+//         alert("Please fill all the fields.");
+//         return;
+//     }
+
+//     const loadingPopup = document.createElement("div");
+//     loadingPopup.style.position = "fixed";
+//     loadingPopup.style.top = "0";
+//     loadingPopup.style.left = "0";
+//     loadingPopup.style.width = "100%";
+//     loadingPopup.style.height = "100%";
+//     loadingPopup.style.backgroundColor = "rgba(0,0,0,0.5)";
+//     loadingPopup.style.color = "#fff";
+//     loadingPopup.style.fontSize = "1.5rem";
+//     loadingPopup.style.display = "flex";
+//     loadingPopup.style.alignItems = "center";
+//     loadingPopup.style.justifyContent = "center";
+//     loadingPopup.style.zIndex = "9999";
+//     loadingPopup.textContent = "Submitting data, please wait...";
+//     document.body.appendChild(loadingPopup);
+
+//     data.submittedAt = new Date().toLocaleString();
+
+//     let existingId = null;
+
+//     try {
+//         const snapshot = await get(child(ref(db), "registrations"));
+//         if (snapshot.exists()) {
+//             for (const [id, record] of Object.entries(snapshot.val())) {
+//                 if (
+//                     record.contactNumber === data.contactNumber ||
+//                     record.nameAsPerAadhaar === data.nameAsPerAadhaar
+//                 ) {
+//                     existingId = id;
+//                     break;
+//                 }
+//             }
+//         }
+//     } catch (err) {
+//         loadingPopup.remove();
+//         alert("Error checking existing records: " + err.message);
+//         return;
+//     }
+
+//     if (photoInput.files[0]) {
+//         try {
+//             const photoUrl = await uploadPhotoToCloudinary(photoInput.files[0]);
+//             data.photo = photoUrl;
+//         } catch (err) {
+//             loadingPopup.remove();
+//             alert("Image upload failed: " + err.message);
+//             return;
+//         }
+//     } else if (existingId) {
+//         const snap = await get(ref(db, `registrations/${existingId}`));
+//         if (snap.exists() && snap.val().photo) {
+//             data.photo = snap.val().photo;
+//         } else {
+//             loadingPopup.remove();
+//             alert("Please upload a photo before submitting.");
+//             return;
+//         }
+//     } else {
+//         loadingPopup.remove();
+//         alert("Please upload a photo before submitting.");
+//         return;
+//     }
+
+//     try {
+//         if (existingId) {
+//             await update(ref(db, `registrations/${existingId}`), data);
+//             alert("✅ Data updated successfully!");
+//         } else {
+//             const newRef = push(ref(db, "registrations"));
+//             await set(newRef, data);
+//             alert("✅ Data submitted successfully!");
+//         }
+
+//         form.reset();
+//         currentRecordId = null;
+//         if (previewImg) {
+//             previewImg.src = "";
+//             previewImg.style.display = "none";
+//         }
+//         updateUserCount();
+//         populateUsersTable();
+
+//     } catch (err) {
+//         alert("Error saving data: " + err.message);
+//     } finally {
+//         loadingPopup.remove();
+//     }
+//   });
+// });
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  updateUserCount();
+  populateUsersTable();
+
+  const form = document.querySelector("form");
+  const photoInput = document.getElementById("photo");
+  const previewImg = document.getElementById("photoPreview");
+
+  const contactNumberInput = form.querySelector("input[name='contactNumber']");
+  const nameInput = form.querySelector("input[name='nameAsPerAadhaar']");
+
+  // 🚫 Do NOT pre-fill latest user on reload
+
+  contactNumberInput.addEventListener("blur", () => {
+    const value = contactNumberInput.value.trim();
+    if (value) checkAndFill("contactNumber", value);
+  });
+
+  nameInput.addEventListener("blur", () => {
+    const value = nameInput.value.trim();
+    if (value) checkAndFill("nameAsPerAadhaar", value);
+  });
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const data = collectFormData();
+    if (!data) {
+      alert("Please fill all the fields.");
+      return;
+    }
+
+    const loadingPopup = showLoadingPopup("Submitting data, please wait...");
+    data.submittedAt = new Date().toLocaleString();
+
+    let existingId = null;
+
+    try {
+      const snapshot = await get(child(ref(db), "registrations"));
+      if (snapshot.exists()) {
+        for (const [id, record] of Object.entries(snapshot.val())) {
+          if (
+            record.contactNumber === data.contactNumber ||
+            record.nameAsPerAadhaar === data.nameAsPerAadhaar
+          ) {
+            existingId = id;
+            break;
+          }
+        }
+      }
+    } catch (err) {
+      loadingPopup.remove();
+      alert("Error checking existing records: " + err.message);
+      return;
+    }
+
+    if (photoInput.files[0]) {
+      try {
+        const photoUrl = await uploadPhotoToCloudinary(photoInput.files[0]);
+        data.photo = photoUrl;
+      } catch (err) {
+        loadingPopup.remove();
+        alert("Image upload failed: " + err.message);
+        return;
+      }
+    } else if (existingId) {
+      const snap = await get(ref(db, `registrations/${existingId}`));
+      if (snap.exists() && snap.val().photo) {
+        data.photo = snap.val().photo;
+      } else {
+        loadingPopup.remove();
+        alert("Please upload a photo before submitting.");
+        return;
+      }
+    } else {
+      loadingPopup.remove();
+      alert("Please upload a photo before submitting.");
+      return;
+    }
+
+    try {
+      if (existingId) {
+        await update(ref(db, `registrations/${existingId}`), data);
+        alert("✅ Data updated successfully!");
+      } else {
+        const newRef = push(ref(db, "registrations"));
+        await set(newRef, data);
+        alert("✅ Data submitted successfully!");
+      }
+
+      form.reset();
+      currentRecordId = null;
+      if (previewImg) {
+        previewImg.src = "";
+        previewImg.style.display = "none";
+      }
+      updateUserCount();
+      populateUsersTable();
+
+    } catch (err) {
+      alert("Error saving data: " + err.message);
+    } finally {
+      loadingPopup.remove();
+    }
+  });
+});
+
 function fillForm(id, data) {
   currentRecordId = id;
   const form = document.querySelector("form");
@@ -171,20 +449,6 @@ function fillForm(id, data) {
   if (previewImg && data.photo) {
     previewImg.src = data.photo;
     previewImg.style.display = "block";
-  }
-}
-
-async function prefillById(userId) {
-  try {
-    const snap = await get(ref(db, `registrations/${userId}`));
-    if (!snap.exists()) {
-      alert("User not found");
-      return;
-    }
-    const data = snap.val();
-    fillForm(userId, data);
-  } catch (err) {
-    console.error("Error fetching user:", err);
   }
 }
 
@@ -204,168 +468,51 @@ const checkAndFill = async (fieldKey, value) => {
   currentRecordId = null;
 };
 
-// ✅ NEW: prefill by name helper
-function prefillByName(name) {
-  checkAndFill("nameAsPerAadhaar", name);
+function showLoadingPopup(message) {
+  const popup = document.createElement("div");
+  popup.style.position = "fixed";
+  popup.style.top = "0";
+  popup.style.left = "0";
+  popup.style.width = "100%";
+  popup.style.height = "100%";
+  popup.style.backgroundColor = "rgba(0,0,0,0.5)";
+  popup.style.color = "#fff";
+  popup.style.fontSize = "1.5rem";
+  popup.style.display = "flex";
+  popup.style.alignItems = "center";
+  popup.style.justifyContent = "center";
+  popup.style.zIndex = "9999";
+  popup.textContent = message;
+  document.body.appendChild(popup);
+  return popup;
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  updateUserCount();
-  populateUsersTable();
-
-  get(child(ref(db), "registrations")).then(snapshot => {
-    if (!snapshot.exists()) return;
-    const latestEntry = Object.entries(snapshot.val()).sort(
-      (a, b) => Date.parse(b[1].submittedAt) - Date.parse(a[1].submittedAt)
-    )[0];
-    if (latestEntry) {
-      const [id, data] = latestEntry;
-      fillForm(id, data);
-    }
+async function uploadPhotoToCloudinary(file) {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", "UserImages");
+  const res = await fetch("https://api.cloudinary.com/v1_1/dtwcxssvj/image/upload", {
+    method: "POST", body: formData
   });
+  if (!res.ok) throw new Error("Failed to upload image");
+  const data = await res.json();
+  return data.secure_url;
+}
 
+function collectFormData() {
   const form = document.querySelector("form");
-  const photoInput = document.getElementById("photo");
-  const previewImg = document.getElementById("photoPreview");
+  const data = {};
+  let allFilled = true;
 
-  const contactNumberInput = form.querySelector(".input-box:nth-child(14) input");
-  const nameInput = form.querySelector(".input-box:nth-child(5) input");
-
-  contactNumberInput.addEventListener("blur", () => {
-    const value = contactNumberInput.value.trim();
-    if (value) checkAndFill("contactNumber", value);
-  });
-  nameInput.addEventListener("blur", () => {
-    const value = nameInput.value.trim();
-    if (value) checkAndFill("nameAsPerAadhaar", value);
+  form.querySelectorAll(".input-box").forEach(box => {
+    const labelEl = box.querySelector(".details");
+    const inputEl = box.querySelector("input");
+    if (!inputEl || !labelEl) return;
+    const key = labelToKeyMap[labelEl.textContent.trim()];
+    const value = inputEl.value.trim();
+    if (!value) allFilled = false;
+    if (key) data[key] = value;
   });
 
-  const collectFormData = () => {
-    const data = {};
-    let allFilled = true;
-
-    form.querySelectorAll(".input-box").forEach(box => {
-      const labelEl = box.querySelector(".details");
-      const inputEl = box.querySelector("input");
-      if (!inputEl || !labelEl) return;
-      const key = labelToKeyMap[labelEl.textContent.trim()];
-      const value = inputEl.value.trim();
-      if (!value) allFilled = false;
-      if (key) data[key] = value;
-    });
-
-    return allFilled ? data : null;
-  };
-
-  async function uploadPhotoToCloudinary(file) {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", "UserImages");
-    const res = await fetch("https://api.cloudinary.com/v1_1/dtwcxssvj/image/upload", {
-      method: "POST", body: formData
-    });
-    if (!res.ok) throw new Error("Failed to upload image");
-    const data = await res.json();
-    return data.secure_url;
-  }
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const data = collectFormData();
-    if (!data) {
-        alert("Please fill all the fields.");
-        return;
-    }
-
-    const loadingPopup = document.createElement("div");
-    loadingPopup.style.position = "fixed";
-    loadingPopup.style.top = "0";
-    loadingPopup.style.left = "0";
-    loadingPopup.style.width = "100%";
-    loadingPopup.style.height = "100%";
-    loadingPopup.style.backgroundColor = "rgba(0,0,0,0.5)";
-    loadingPopup.style.color = "#fff";
-    loadingPopup.style.fontSize = "1.5rem";
-    loadingPopup.style.display = "flex";
-    loadingPopup.style.alignItems = "center";
-    loadingPopup.style.justifyContent = "center";
-    loadingPopup.style.zIndex = "9999";
-    loadingPopup.textContent = "Submitting data, please wait...";
-    document.body.appendChild(loadingPopup);
-
-    data.submittedAt = new Date().toLocaleString();
-
-    let existingId = null;
-
-    try {
-        const snapshot = await get(child(ref(db), "registrations"));
-        if (snapshot.exists()) {
-            for (const [id, record] of Object.entries(snapshot.val())) {
-                if (
-                    record.contactNumber === data.contactNumber ||
-                    record.nameAsPerAadhaar === data.nameAsPerAadhaar
-                ) {
-                    existingId = id;
-                    break;
-                }
-            }
-        }
-    } catch (err) {
-        loadingPopup.remove();
-        alert("Error checking existing records: " + err.message);
-        return;
-    }
-
-    if (photoInput.files[0]) {
-        try {
-            const photoUrl = await uploadPhotoToCloudinary(photoInput.files[0]);
-            data.photo = photoUrl;
-        } catch (err) {
-            loadingPopup.remove();
-            alert("Image upload failed: " + err.message);
-            return;
-        }
-    } else if (existingId) {
-        const snap = await get(ref(db, `registrations/${existingId}`));
-        if (snap.exists() && snap.val().photo) {
-            data.photo = snap.val().photo;
-        } else {
-            loadingPopup.remove();
-            alert("Please upload a photo before submitting.");
-            return;
-        }
-    } else {
-        loadingPopup.remove();
-        alert("Please upload a photo before submitting.");
-        return;
-    }
-
-    try {
-        if (existingId) {
-            await update(ref(db, `registrations/${existingId}`), data);
-            alert("✅ Data updated successfully!");
-        } else {
-            const newRef = push(ref(db, "registrations"));
-            await set(newRef, data);
-            alert("✅ Data submitted successfully!");
-        }
-
-        form.reset();
-        currentRecordId = null;
-        if (previewImg) {
-            previewImg.src = "";
-            previewImg.style.display = "none";
-        }
-        updateUserCount();
-        populateUsersTable();
-
-    } catch (err) {
-        alert("Error saving data: " + err.message);
-    } finally {
-        loadingPopup.remove();
-    }
-  });
-});
-
-
+  return allFilled ? data : null;
+}
