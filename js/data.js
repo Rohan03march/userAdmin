@@ -1,4 +1,3 @@
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
 import {
   getDatabase,
@@ -106,28 +105,59 @@ function renderTable(users) {
   }
 }
 
+// 🔷 fill form globally
+function fillForm(id, data) {
+  currentRecordId = id;
+  const form = document.querySelector("form");
+  const previewImg = document.getElementById("photoPreview");
+
+  form.querySelectorAll(".input-box").forEach(box => {
+    const labelEl = box.querySelector(".details");
+    const inputEl = box.querySelector("input");
+    if (!inputEl || !labelEl) return;
+    const key = labelToKeyMap[labelEl.textContent.trim()];
+    if (key && data[key]) inputEl.value = data[key];
+  });
+  if (previewImg && data.photo) {
+    previewImg.src = data.photo;
+    previewImg.style.display = "block";
+  }
+}
+
+// 🔷 prefill by Firebase ID
+async function prefillById(userId) {
+  try {
+    const snap = await get(ref(db, `registrations/${userId}`));
+    if (!snap.exists()) {
+      alert("User not found");
+      return;
+    }
+    const data = snap.val();
+    fillForm(userId, data);
+  } catch (err) {
+    console.error("Error fetching user:", err);
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   updateUserCount();
   populateUsersTable();
 
+  // Example: prefill latest user
+  get(child(ref(db), "registrations")).then(snapshot => {
+    if (!snapshot.exists()) return;
+    const latestEntry = Object.entries(snapshot.val()).sort(
+      (a, b) => Date.parse(b[1].submittedAt) - Date.parse(a[1].submittedAt)
+    )[0];
+    if (latestEntry) {
+      const [id, data] = latestEntry;
+      fillForm(id, data);
+    }
+  });
+
   const form = document.querySelector("form");
   const photoInput = document.getElementById("photo");
   const previewImg = document.getElementById("photoPreview");
-
-  const fillForm = (id, data) => {
-    currentRecordId = id;
-    form.querySelectorAll(".input-box").forEach(box => {
-      const labelEl = box.querySelector(".details");
-      const inputEl = box.querySelector("input");
-      if (!inputEl || !labelEl) return;
-      const key = labelToKeyMap[labelEl.textContent.trim()];
-      if (key && data[key]) inputEl.value = data[key];
-    });
-    if (previewImg && data.photo) {
-      previewImg.src = data.photo;
-      previewImg.style.display = "block";
-    }
-  };
 
   const checkAndFill = async (fieldKey, value) => {
     const snapshot = await get(child(ref(db), "registrations"));
@@ -191,65 +221,80 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const data = collectFormData();
     if (!data) {
-      alert("Please fill all the fields.");
-      return;
+        alert("Please fill all the fields.");
+        return;
     }
 
     data.submittedAt = new Date().toLocaleString();
 
-    if (!currentRecordId) {
-      const snapshot = await get(child(ref(db), "registrations"));
-      if (snapshot.exists()) {
-        for (const [id, record] of Object.entries(snapshot.val())) {
-          if (record.employeeCode === data.employeeCode || record.nameAsPerAadhaar === data.nameAsPerAadhaar) {
-            currentRecordId = id;
-            break;
-          }
-        }
-      }
-    }
-
-    if (photoInput.files[0]) {
-      try {
-        const photoUrl = await uploadPhotoToCloudinary(photoInput.files[0]);
-        data.photo = photoUrl;
-      } catch (err) {
-        alert("Image upload failed: " + err.message);
-        return;
-      }
-    } else if (currentRecordId) {
-      const snap = await get(ref(db, `registrations/${currentRecordId}`));
-      if (snap.exists() && snap.val().photo) {
-        data.photo = snap.val().photo;
-      } else {
-        alert("Please upload a photo before submitting.");
-        return;
-      }
-    } else {
-      alert("Please upload a photo before submitting.");
-      return;
-    }
+    // 🔷 Always re-check for existing user before deciding
+    let existingId = null;
 
     try {
-      if (currentRecordId) {
-        await update(ref(db, `registrations/${currentRecordId}`), data);
-        alert("Data updated successfully!");
-      } else {
-        const newRef = push(ref(db, "registrations"));
-        await set(newRef, data);
-        alert("Data submitted successfully!");
-      }
-
-      form.reset();
-      currentRecordId = null;
-      if (previewImg) {
-        previewImg.src = "";
-        previewImg.style.display = "none";
-      }
-      updateUserCount();
-      populateUsersTable();
+        const snapshot = await get(child(ref(db), "registrations"));
+        if (snapshot.exists()) {
+            for (const [id, record] of Object.entries(snapshot.val())) {
+                if (
+                    record.employeeCode === data.employeeCode ||
+                    record.nameAsPerAadhaar === data.nameAsPerAadhaar
+                ) {
+                    existingId = id;
+                    break;
+                }
+            }
+        }
     } catch (err) {
-      alert("Error submitting data: " + err.message);
+        alert("Error checking existing records: " + err.message);
+        return;
     }
-  });
+
+    // 🔷 Handle photo
+    if (photoInput.files[0]) {
+        try {
+            const photoUrl = await uploadPhotoToCloudinary(photoInput.files[0]);
+            data.photo = photoUrl;
+        } catch (err) {
+            alert("Image upload failed: " + err.message);
+            return;
+        }
+    } else if (existingId) {
+        const snap = await get(ref(db, `registrations/${existingId}`));
+        if (snap.exists() && snap.val().photo) {
+            data.photo = snap.val().photo;
+        } else {
+            alert("Please upload a photo before submitting.");
+            return;
+        }
+    } else {
+        alert("Please upload a photo before submitting.");
+        return;
+    }
+
+    // 🔷 Submit or update
+    try {
+        if (existingId) {
+            await update(ref(db, `registrations/${existingId}`), data);
+            alert("✅ Data updated successfully!");
+        } else {
+            const newRef = push(ref(db, "registrations"));
+            await set(newRef, data);
+            alert("✅ Data submitted successfully!");
+        }
+
+        // Reset form & UI
+        form.reset();
+        currentRecordId = null;
+        if (previewImg) {
+            previewImg.src = "";
+            previewImg.style.display = "none";
+        }
+        updateUserCount();
+        populateUsersTable();
+
+    } catch (err) {
+        alert("Error saving data: " + err.message);
+    }
 });
+
+});
+
