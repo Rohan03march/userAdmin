@@ -1,9 +1,5 @@
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-import {
-  getAuth,
-  onAuthStateChanged,
-  signOut
-} from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
 import {
   getDatabase,
   ref,
@@ -28,25 +24,8 @@ const firebaseConfig = {
 
 // Init Firebase
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getDatabase(app);
 
-// 🔐 Auth check
-onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    window.location.href = "admin.html";
-  }
-});
-
-document.getElementById('signOutBtn')?.addEventListener('click', () => {
-  signOut(auth).then(() => {
-    window.location.href = 'admin.html';
-  }).catch((error) => {
-    alert('Error signing out: ' + error.message);
-  });
-});
-
-// 🗝️ Field mapping
 const labelToKeyMap = {
   "Working Location": "workingLocation",
   "Employee Code": "employeeCode",
@@ -71,6 +50,7 @@ const labelToKeyMap = {
 };
 
 let currentRecordId = null;
+let allUsersArray = []; // ⭐ holds latest 3 users
 
 async function updateUserCount() {
   try {
@@ -88,27 +68,41 @@ async function populateUsersTable() {
   try {
     const snapshot = await get(child(ref(db), "registrations"));
     if (!snapshot.exists()) {
-      tbody.innerHTML = `<tr><td colspan="2" style="text-align:center">No registered users found.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="3" style="text-align:center">No registered users found.</td></tr>`;
       return;
     }
 
-    const usersArray = Object.entries(snapshot.val()).map(([id, user]) => ({ id, ...user }))
+    allUsersArray = Object.entries(snapshot.val()).map(([id, user]) => ({ id, ...user }))
       .sort((a, b) => (Date.parse(b.submittedAt) || 0) - (Date.parse(a.submittedAt) || 0))
       .slice(0, 3);
 
-    for (const user of usersArray) {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>
-          <img src="${user.photo || ""}" alt="${user.nameAsPerAadhaar || "User"}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;margin-right:10px;vertical-align:middle;">
-          <p style="display:inline-block;vertical-align:middle;">${user.nameAsPerAadhaar || "Unknown"}</p>
-        </td>
-        <td>${user.submittedAt || "N/A"}</td>
-      `;
-      tbody.appendChild(tr);
-    }
+    renderTable(allUsersArray);
   } catch (err) {
     console.error("Error fetching users for table:", err);
+  }
+}
+
+// ⭐ helper to render table rows
+function renderTable(users) {
+  const tbody = document.querySelector("table tbody");
+  tbody.innerHTML = "";
+
+  if (!users.length) {
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center">No matching users found.</td></tr>`;
+    return;
+  }
+
+  for (const user of users) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>
+        <img src="${user.photo || ""}" alt="${user.nameAsPerAadhaar || "User"}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;margin-right:10px;vertical-align:middle;">
+        <p style="display:inline-block;vertical-align:middle;">${user.nameAsPerAadhaar || "Unknown"}</p>
+      </td>
+      <td>${user.contactNumber || "Null"}</td>
+      <td>${user.submittedAt || "N/A"}</td>
+    `;
+    tbody.appendChild(tr);
   }
 }
 
@@ -180,12 +174,12 @@ document.addEventListener("DOMContentLoaded", () => {
     return data.secure_url;
   }
 
-  const employeeCodeInput = form.querySelector(".input-box:nth-child(2) input");
+  const contactNumberInput = form.querySelector(".input-box:nth-child(14) input");
   const nameInput = form.querySelector(".input-box:nth-child(5) input");
 
-  employeeCodeInput.addEventListener("blur", () => {
-    const value = employeeCodeInput.value.trim();
-    if (value) checkAndFill("employeeCode", value);
+  contactNumberInput.addEventListener("blur", () => {
+    const value = contactNumberInput.value.trim();
+    if (value) checkAndFill("contactNumber", value);
   });
   nameInput.addEventListener("blur", () => {
     const value = nameInput.value.trim();
@@ -203,7 +197,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     data.submittedAt = new Date().toLocaleString();
 
-    // double-check record existence
     if (!currentRecordId) {
       const snapshot = await get(child(ref(db), "registrations"));
       if (snapshot.exists()) {
@@ -260,4 +253,3 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-
