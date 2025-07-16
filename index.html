@@ -50,9 +50,14 @@
             <input type="text" placeholder="Enter your Mother's Name" required>
           </div>
           <div class="input-box">
-            <span class="details">Marital Status</span>
-            <input type="text" placeholder="Marital Status" required>
-          </div>
+  <span class="details">Marital Status</span>
+  <input type="text" placeholder="Marital Status" list="marital-status-options" required>
+  <datalist id="marital-status-options">
+    <option value="Single">
+    <option value="Married">
+  </datalist>
+</div>
+
           <div class="input-box">
             <span class="details">DOB(As Per Aadhaar)</span>
             <input type="date" placeholder="Date Of Birth" required>
@@ -61,10 +66,21 @@
             <span class="details">Nominee Name</span>
             <input type="text" placeholder="Enter Nominee Name" required>
           </div>
-          <div class="input-box">
-            <span class="details">Nominee Relationship</span>
-            <input type="text" placeholder="Enter Nominee Relationship" required>
-          </div>
+         <div class="input-box">
+  <span class="details">Nominee Relationship</span>
+  <input type="text" placeholder="Enter Nominee Relationship" list="nominee-relationship-options" required>
+  <datalist id="nominee-relationship-options">
+    <option value="Father">
+    <option value="Mother">
+    <option value="Spouse">
+    <option value="Son">
+    <option value="Daughter">
+    <option value="Brother">
+    <option value="Sister">
+    <option value="Other">
+  </datalist>
+</div>
+
           <div class="input-box">
             <span class="details">Aadhaar Number</span>
             <input type="text" placeholder="Enter Aadhaar Number" required>
@@ -82,9 +98,24 @@
             <input type="text" placeholder="Enter Alternative Contact Number" required>
           </div>
           <div class="input-box">
-            <span class="details">Bank Name</span>
-            <input type="text" placeholder="Enter Bank Name" required>
-          </div>
+  <span class="details">Bank Name</span>
+  <input type="text" placeholder="Enter Bank Name" list="bank-name-options" required>
+  <datalist id="bank-name-options">
+    <option value="State Bank of India">
+    <option value="Punjab National Bank">
+    <option value="HDFC Bank">
+    <option value="ICICI Bank">
+    <option value="Axis Bank">
+    <option value="Bank of Baroda">
+    <option value="Canara Bank">
+    <option value="Union Bank of India">
+    <option value="Kotak Mahindra Bank">
+    <option value="Yes Bank">
+    <option value="IDFC First Bank">
+    <option value="IndusInd Bank">
+  </datalist>
+</div>
+
           <div class="input-box">
             <span class="details">Bank A/C Number</span>
             <input type="text" placeholder="Enter A/C Number" required>
