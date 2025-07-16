@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>User Details</title>
 <link rel="icon" type="image/png" href="SourceOnebg.png">
-
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
@@ -124,6 +123,22 @@ h2 {
     flex: 1 1 100%;
   }
 }
+
+#imageModal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.8);
+  z-index: 1000;
+}
+
+#imageModal img {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 8px;
+}
 </style>
 
 <script type="module">
@@ -165,6 +180,26 @@ async function loadUser() {
   container.innerHTML = `
     <img src="${user.photo || "https://via.placeholder.com/150"}" alt="User Photo" class="user-photo">
     <h2>${user.nameAsPerAadhaar || "Unknown"}</h2>
+
+    <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 20px;">
+      ${user.aadhaarImage ? `
+        <div style="flex: ${user.bankImage ? '0 1 250px' : '0 1 500px'}; text-align: center;">
+          <h3 style="margin-bottom: 10px;">Aadhaar Card Image</h3>
+          <img src="${user.aadhaarImage}" alt="Aadhaar Image"
+               class="zoomable"
+               style="width: 100%; max-width: ${user.bankImage ? '250px' : '500px'}; height: auto; border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+      ` : ""}
+
+      ${user.bankImage ? `
+        <div style="flex: 0 1 250px; text-align: center;">
+          <h3 style="margin-bottom: 10px;">Bank Pass Book Image</h3>
+          <img src="${user.bankImage}" alt="Bank Image"
+               class="zoomable"
+               style="width: 100%; max-width: 250px; height: auto; border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+      ` : ""}
+    </div>
 
     <div class="details" id="mainDetails"></div>
 
@@ -221,7 +256,7 @@ async function loadUser() {
   });
 
   Object.keys(user).forEach(key => {
-    if (!["photo", "employeeCode", ...shownKeys, "nameAsPerAadhaar"].includes(key)) {
+    if (!["photo", "aadhaarImage", "bankImage", "employeeCode", ...shownKeys, "nameAsPerAadhaar"].includes(key)) {
       const label = reverseMap[key] || formatKey(key);
       table.innerHTML += `
         <tr>
@@ -239,15 +274,34 @@ function formatKey(key) {
     .replace(/^./, str => str.toUpperCase());
 }
 
-document.addEventListener("DOMContentLoaded", loadUser);
-</script>
+document.addEventListener("DOMContentLoaded", () => {
+  loadUser();
 
+  document.addEventListener("click", (e) => {
+    const zoomImg = e.target.closest(".zoomable");
+    const modal = document.getElementById("imageModal");
+    const modalImg = modal?.querySelector("img");
+
+    if (zoomImg && modal && modalImg) {
+      modalImg.src = zoomImg.src;
+      modal.style.display = "flex";
+    } else if (e.target === modal) {
+      modal.style.display = "none";
+    }
+  });
+});
+</script>
 </head>
 <body>
 <h1>User Details</h1>
 
 <div class="container" id="content">
   Loading...
+</div>
+
+<!-- Modal -->
+<div id="imageModal">
+  <img src="" alt="Zoomed Image">
 </div>
 
 </body>
