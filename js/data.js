@@ -40,7 +40,6 @@ const labelToKeyMap = {
   "PAN Number": "panNumber",
   "Contact Number": "contactNumber",
   "Alternative Contact Number": "altContactNumber",
-  "UAN Number": "uanNumber",
   "Bank Name": "bankName",
   "Bank A/C Number": "bankAccountNumber",
   "IFSC Code": "ifscCode"
