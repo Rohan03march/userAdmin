@@ -85,6 +85,22 @@
             <span class="details">Aadhaar Number</span>
             <input type="text" placeholder="Enter Aadhaar Number" required>
           </div>
+
+          <!--Aadhaar card image...-->
+       <div class="input-box">
+  <span class="details">Aadhaar Image</span>
+  <input type="text" id="aadhaarText" readonly placeholder="Choose Aadhaar image">
+  <input type="file" id="aadhaarFile" style="display:none">
+  <img id="aadhaarPreview" style="display:none; margin-top:10px; max-width:200px; border:1px solid #ccc; border-radius:4px;">
+</div>
+
+  <div class="input-box">
+  <span class="details">Bank Pass Book Image(Optional)</span>
+  <input type="text" id="BankText" readonly placeholder="Choose Bank PassBook image">
+  <input type="file" id="BankFile" style="display:none">
+  <img id="bankPreview" style="display:none; margin-top:10px; max-width:200px; border:1px solid #ccc; border-radius:4px;">
+</div>
+
           <div class="input-box">
             <span class="details">PAN Number</span>
             <input type="text" placeholder="Enter PAN Number" required>
@@ -125,6 +141,8 @@
             <input type="text" placeholder="Enter IFSC Code" required>
           </div>
         </div>
+  
+        
 
         <div class="button">
           <input type="submit" id="submitBtn" value="Submit">

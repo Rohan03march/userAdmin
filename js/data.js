@@ -47,6 +47,8 @@ const labelToKeyMap = {
 
 let currentRecordId = null;
 let allUsersArray = [];
+let aadhaarFile = null;
+let bankFile = null;
 
 async function updateUserCount() {
   try {
@@ -68,15 +70,16 @@ async function populateUsersTable() {
       return;
     }
 
-    allUsersArray = Object.entries(snapshot.val()).map(([id, user]) => ({ id, ...user }))
-      .sort((a, b) => (Date.parse(b.submittedAt) || 0) - (Date.parse(a.submittedAt) || 0))
-      .slice(0, 3);
+    allUsersArray = Object.entries(snapshot.val())
+      .map(([id, user]) => ({ id, ...user }))
+      .sort((a, b) => (Date.parse(b.submittedAt) || 0) - (Date.parse(a.submittedAt) || 0));
 
     renderTable(allUsersArray);
   } catch (err) {
     console.error("Error fetching users for table:", err);
   }
 }
+
 
 function renderTable(users) {
   const tbody = document.querySelector("table tbody");
@@ -110,7 +113,6 @@ function renderTable(users) {
     tbody.appendChild(tr);
   }
 
-  // Attach delete handlers
   tbody.querySelectorAll(".delete-btn").forEach(btn => {
     btn.addEventListener("click", async () => {
       const id = btn.getAttribute("data-id");
@@ -118,7 +120,7 @@ function renderTable(users) {
       if (!confirm("Are you sure you want to delete this user?")) return;
 
       try {
-        await set(ref(db, `registrations/${id}`), null); // deletes the record
+        await set(ref(db, `registrations/${id}`), null);
         alert("✅ User deleted.");
         updateUserCount();
         populateUsersTable();
@@ -138,17 +140,22 @@ document.addEventListener("DOMContentLoaded", () => {
   const photoInput = document.getElementById("photo");
   const previewImg = document.getElementById("photoPreview");
 
-  const contactNumberInput = form.querySelector("input[name='contactNumber']");
-  const nameInput = form.querySelector("input[name='nameAsPerAadhaar']");
-
-  contactNumberInput.addEventListener("blur", () => {
-    const value = contactNumberInput.value.trim();
-    if (value) checkAndFill("contactNumber", value);
+  // Aadhaar file handlers
+  document.getElementById("aadhaarText").addEventListener("click", () => {
+    document.getElementById("aadhaarFile").click();
+  });
+  document.getElementById("aadhaarFile").addEventListener("change", (e) => {
+    aadhaarFile = e.target.files[0] || null;
+    document.getElementById("aadhaarText").value = aadhaarFile ? aadhaarFile.name : "";
   });
 
-  nameInput.addEventListener("blur", () => {
-    const value = nameInput.value.trim();
-    if (value) checkAndFill("nameAsPerAadhaar", value);
+  // Bank file handlers
+  document.getElementById("BankText").addEventListener("click", () => {
+    document.getElementById("BankFile").click();
+  });
+  document.getElementById("BankFile").addEventListener("change", (e) => {
+    bankFile = e.target.files[0] || null;
+    document.getElementById("BankText").value = bankFile ? bankFile.name : "";
   });
 
   form.addEventListener("submit", async (e) => {
@@ -156,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const data = collectFormData();
     if (!data) {
-      alert("Please fill all the fields.");
+      alert("Please fill all the required fields.");
       return;
     }
 
@@ -168,15 +175,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const loadingPopup = showLoadingPopup("Submitting data, please wait...");
     data.submittedAt = new Date().toLocaleString('en-GB', {
-  hour12: false,
-  year: 'numeric',
-  month: '2-digit',
-  day: '2-digit',
-  hour: '2-digit',
-  minute: '2-digit',
-  second: '2-digit'
-});
-
+      hour12: false,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
 
     try {
       if (photoFile) {
@@ -186,6 +192,36 @@ document.addEventListener("DOMContentLoaded", () => {
         const snapshot = await get(child(ref(db), `registrations/${currentRecordId}`));
         if (snapshot.exists() && snapshot.val().photo) {
           data.photo = snapshot.val().photo;
+        }
+      }
+      
+      if (aadhaarFile) {
+  // New file uploaded, upload to Cloudinary
+  const aadhaarUrl = await uploadPhotoToCloudinary(aadhaarFile);
+  data.aadhaarImage = aadhaarUrl;
+} else if (currentRecordId) {
+  // Check if an existing Aadhaar image is already saved
+  const snapshot = await get(child(ref(db), `registrations/${currentRecordId}`));
+  if (snapshot.exists() && snapshot.val().aadhaarImage) {
+    data.aadhaarImage = snapshot.val().aadhaarImage;
+  }
+}
+
+// Now validate Aadhaar before submitting
+if (!data.aadhaarImage) {
+  alert("❌ Please upload Aadhaar image before submitting.");
+  loadingPopup.remove();
+  return;
+}
+
+
+      if (bankFile) {
+        const bankUrl = await uploadPhotoToCloudinary(bankFile);
+        data.bankImage = bankUrl;
+      } else if (currentRecordId) {
+        const snapshot = await get(child(ref(db), `registrations/${currentRecordId}`));
+        if (snapshot.exists() && snapshot.val().bankImage) {
+          data.bankImage = snapshot.val().bankImage;
         }
       }
 
@@ -217,6 +253,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       form.reset();
       currentRecordId = null;
+      aadhaarFile = null;
+      bankFile = null;
+      document.getElementById("aadhaarText").value = "";
+      document.getElementById("BankText").value = "";
       if (previewImg) {
         previewImg.src = "";
         previewImg.style.display = "none";
@@ -232,11 +272,73 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-function fillForm(id, data) {
-  currentRecordId = id;
-  const form = document.querySelector("form");
-  const previewImg = document.getElementById("photoPreview");
 
+
+//Auto Fill 
+
+const nameInput = document.querySelector("input[name='nameAsPerAadhaar']");
+const contactInput = document.querySelector("input[name='contactNumber']");
+
+[nameInput, contactInput].forEach(input => {
+  input.addEventListener("blur", async () => {
+    const value = input.value.trim();
+    if (!value) return;
+
+    try {
+      const snapshot = await get(child(ref(db), "registrations"));
+      if (!snapshot.exists()) return;
+
+      const records = snapshot.val();
+      let match = null;
+
+      for (const [id, record] of Object.entries(records)) {
+        if (
+          record.nameAsPerAadhaar === nameInput.value.trim() ||
+          record.contactNumber === contactInput.value.trim()
+        ) {
+          match = { id, ...record };
+          break;
+        }
+      }
+
+      if (match) {
+        currentRecordId = match.id;
+        autofillForm(match);
+      }
+
+    } catch (err) {
+      console.error("Autofill error:", err);
+    }
+  });
+});
+
+function autofillForm(data) {
+  const form = document.querySelector("form");
+
+  Object.entries(labelToKeyMap).forEach(([label, key]) => {
+    const box = [...form.querySelectorAll(".input-box")]
+      .find(box => box.querySelector(".details")?.textContent.trim() === label);
+
+    if (box) {
+      const input = box.querySelector("input");
+      if (input && data[key] !== undefined) {
+        input.value = data[key];
+      }
+    }
+  });
+
+  // Show photo preview if exists
+  if (data.photo) {
+    const previewImg = document.getElementById("photoPreview");
+    previewImg.src = data.photo;
+    previewImg.style.display = "block";
+  }
+
+  function fillForm(id, data) {
+  currentRecordId = id;
+
+  // fill basic fields
+  const form = document.querySelector("form");
   form.querySelectorAll(".input-box").forEach(box => {
     const labelEl = box.querySelector(".details");
     const inputEl = box.querySelector("input");
@@ -244,27 +346,102 @@ function fillForm(id, data) {
     const key = labelToKeyMap[labelEl.textContent.trim()];
     if (key && data[key]) inputEl.value = data[key];
   });
+
+  // profile photo
+  const previewImg = document.getElementById("photoPreview");
   if (previewImg && data.photo) {
     previewImg.src = data.photo;
     previewImg.style.display = "block";
   }
-}
 
-const checkAndFill = async (fieldKey, value) => {
-  const snapshot = await get(child(ref(db), "registrations"));
-  if (!snapshot.exists()) {
-    currentRecordId = null;
-    return;
-  }
-
-  for (const [id, record] of Object.entries(snapshot.val())) {
-    if (record[fieldKey] === value) {
-      fillForm(id, record);
-      return;
+  // Aadhaar image
+  const aadhaarText = document.getElementById("aadhaarText");
+  const aadhaarPreview = document.getElementById("aadhaarPreview");
+  if (data.aadhaarImage) {
+    aadhaarText.value = "Already Uploaded";
+    if (aadhaarPreview) {
+      aadhaarPreview.src = data.aadhaarImage;
+      aadhaarPreview.style.display = "block";
+    }
+  } else {
+    aadhaarText.value = "";
+    if (aadhaarPreview) {
+      aadhaarPreview.src = "";
+      aadhaarPreview.style.display = "none";
     }
   }
-  currentRecordId = null;
-};
+
+  // Bank image
+  const bankText = document.getElementById("BankText");
+  const bankPreview = document.getElementById("bankPreview");
+  if (data.bankImage) {
+    bankText.value = "Already Uploaded";
+    if (bankPreview) {
+      bankPreview.src = data.bankImage;
+      bankPreview.style.display = "block";
+    }
+  } else {
+    bankText.value = "";
+    if (bankPreview) {
+      bankPreview.src = "";
+      bankPreview.style.display = "none";
+    }
+  }
+}
+
+}
+
+
+function collectFormData() {
+  const form = document.querySelector("form");
+  const data = {};
+  let allFilled = true;
+
+  const requiredKeys = [
+    "workingLocation",
+    "designation",
+    "dateOfJoining",
+    "nameAsPerAadhaar",
+    "fatherOrHusbandName",
+    "motherName",
+    "maritalStatus",
+    "dobAsPerAadhaar",
+    "nomineeName",
+    "nomineeRelationship",
+    "aadhaarNumber",
+    "panNumber",
+    "contactNumber",
+    "altContactNumber",
+    "bankName",
+    "bankAccountNumber",
+    "ifscCode"
+  ];
+
+  form.querySelectorAll(".input-box").forEach(box => {
+    const labelEl = box.querySelector(".details");
+    const inputEl = box.querySelector("input");
+    if (!inputEl || !labelEl) return;
+    const key = labelToKeyMap[labelEl.textContent.trim()];
+    const value = inputEl.value.trim();
+    if (key) data[key] = value;
+
+    if (requiredKeys.includes(key) && !value) allFilled = false;
+  });
+
+  return allFilled ? data : null;
+}
+
+async function uploadPhotoToCloudinary(file) {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", "UserImages");
+  const res = await fetch("https://api.cloudinary.com/v1_1/dtwcxssvj/image/upload", {
+    method: "POST", body: formData
+  });
+  if (!res.ok) throw new Error("Failed to upload image");
+  const data = await res.json();
+  return data.secure_url;
+}
 
 function showLoadingPopup(message) {
   const popup = document.createElement("div");
@@ -283,34 +460,4 @@ function showLoadingPopup(message) {
   popup.textContent = message;
   document.body.appendChild(popup);
   return popup;
-}
-
-async function uploadPhotoToCloudinary(file) {
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("upload_preset", "UserImages");
-  const res = await fetch("https://api.cloudinary.com/v1_1/dtwcxssvj/image/upload", {
-    method: "POST", body: formData
-  });
-  if (!res.ok) throw new Error("Failed to upload image");
-  const data = await res.json();
-  return data.secure_url;
-}
-
-function collectFormData() {
-  const form = document.querySelector("form");
-  const data = {};
-  let allFilled = true;
-
-  form.querySelectorAll(".input-box").forEach(box => {
-    const labelEl = box.querySelector(".details");
-    const inputEl = box.querySelector("input");
-    if (!inputEl || !labelEl) return;
-    const key = labelToKeyMap[labelEl.textContent.trim()];
-    const value = inputEl.value.trim();
-    if (!value) allFilled = false;
-    if (key) data[key] = value;
-  });
-
-  return allFilled ? data : null;
 }
