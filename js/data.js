@@ -80,60 +80,6 @@ async function populateUsersTable() {
   }
 }
 
-
-// function renderTable(users) {
-//   const tbody = document.querySelector("table tbody");
-//   tbody.innerHTML = "";
-
-//   if (!users.length) {
-//     tbody.innerHTML = `<tr><td colspan="4" style="text-align:center">No matching users found.</td></tr>`;
-//     return;
-//   }
-
-//   for (const user of users) {
-//     const tr = document.createElement("tr");
-//     tr.innerHTML = `
-//       <td>
-//         <img src="${user.photo || ""}" alt="${user.nameAsPerAadhaar || "User"}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;margin-right:10px;vertical-align:middle;">
-//         <p style="display:inline-block;vertical-align:middle;">${user.nameAsPerAadhaar || "Unknown"}</p>
-//       </td>
-//       <td>${user.contactNumber || "Null"}</td>
-//       <td>${user.workingLocation || "Null"}</td>
-//       <td>${user.submittedAt || "N/A"}</td>
-//       <td>
-//         <button class="delete-btn" data-id="${user.id}" style="
-//           background-color: #e74c3c;
-//           color: white;
-//           border: none;
-//           padding: 5px 10px;
-//           border-radius: 4px;
-//           cursor: pointer;
-//         ">Delete</button>
-//       </td>
-//     `;
-//     tbody.appendChild(tr);
-//   }
-
-//   tbody.querySelectorAll(".delete-btn").forEach(btn => {
-//     btn.addEventListener("click", async () => {
-//       const id = btn.getAttribute("data-id");
-//       if (!id) return;
-//       if (!confirm("Are you sure you want to delete this user?")) return;
-
-//       try {
-//         await set(ref(db, `registrations/${id}`), null);
-//         alert("✅ User deleted.");
-//         updateUserCount();
-//         populateUsersTable();
-//       } catch (err) {
-//         console.error("Delete error:", err);
-//         alert("❌ Failed to delete user: " + err.message);
-//       }
-//     });
-//   });
-// }
-
-
 function renderTable(users) {
   const tbody = document.querySelector("table tbody");
   tbody.innerHTML = "";
