@@ -98,6 +98,7 @@ function renderTable(users) {
         <p style="display:inline-block;vertical-align:middle;">${user.nameAsPerAadhaar || "Unknown"}</p>
       </td>
       <td>${user.contactNumber || "Null"}</td>
+      <td>${user.workingLocation || "Null"}</td>
       <td>${user.submittedAt || "N/A"}</td>
       <td>
         <button class="delete-btn" data-id="${user.id}" style="
