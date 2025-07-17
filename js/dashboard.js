@@ -60,10 +60,7 @@ switchMode.addEventListener('change', function () {
 })
 
 
-
-
-
-// 🌟 Firebase config (replace with your own project’s values!)
+// 🌟 Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyAENr32Pk-Sq44tuBPj8c_xXk4qzEa3GJw",
   authDomain: "login-9338e.firebaseapp.com",
@@ -111,7 +108,8 @@ async function searchUsers(query) {
   return allUsers.filter(user => {
     const name = (user.nameAsPerAadhaar || "").toLowerCase();
     const contact = (user.contactNumber || "").toLowerCase();
-    return name.includes(query) || contact.includes(query);
+    const location = (user.workingLocation || "").toLowerCase();
+    return name.includes(query) || contact.includes(query) || location.includes(query);
   });
 }
 
@@ -120,7 +118,7 @@ function renderTable(users) {
   tbody.innerHTML = "";
 
   if (!users.length) {
-    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center">No users found.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center">No users found.</td></tr>`;
     return;
   }
 
@@ -136,6 +134,7 @@ function renderTable(users) {
         </a>
       </td>
       <td>${user.contactNumber || "Null"}</td>
+      <td>${user.workingLocation || "Null"}</td>
       <td>${user.submittedAt || "N/A"}</td>
       <td>
         <button class="delete-btn" data-id="${user.id}" style="
