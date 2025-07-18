@@ -27,7 +27,7 @@ const db = getDatabase(app);
 
 const labelToKeyMap = {
   "Working Location": "workingLocation",
-  Designation: "designation",
+  "Designation": "designation",
   "Date Of Joining": "dateOfJoining",
   "Name(As Per Aadhaar)": "nameAsPerAadhaar",
   "Father's/Husband Name(As Per Aadhaar)": "fatherOrHusbandName",

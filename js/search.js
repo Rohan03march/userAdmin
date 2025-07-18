@@ -49,7 +49,8 @@ window.searchUsers = async function (query) {
   const filtered = allUsersArray.filter(
     (user) =>
       (user.nameAsPerAadhaar || "").toLowerCase().includes(query) ||
-      (user.contactNumber || "").toLowerCase().includes(query)
+      (user.contactNumber || "").toLowerCase().includes(query) ||
+      (user.workingLocation || "").toLowerCase().includes(query)
   );
 
   return filtered;
