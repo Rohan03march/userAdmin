@@ -1,5 +1,9 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+import {
+  getAuth,
+  signOut,
+  onAuthStateChanged,
+} from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
 
 // Firebase config
 const firebaseConfig = {
@@ -10,7 +14,7 @@ const firebaseConfig = {
   storageBucket: "login-9338e.appspot.com",
   messagingSenderId: "649880075591",
   appId: "1:649880075591:web:a5cd336a03d80e9b656062",
-  measurementId: "G-GT8TRDM62Y"
+  measurementId: "G-GT8TRDM62Y",
 };
 
 // Initialize Firebase
@@ -30,17 +34,17 @@ function logout() {
   signOut(auth)
     .then(() => {
       // Successfully signed out
-      window.location.href = 'admin.html';
+      window.location.href = "admin.html";
     })
     .catch((error) => {
-      alert('Error signing out: ' + error.message);
+      alert("Error signing out: " + error.message);
     });
 }
 
 // 🔗 Attach logout to button
 document.addEventListener("DOMContentLoaded", () => {
-  const btn = document.getElementById('signOutBtn');
+  const btn = document.getElementById("signOutBtn");
   if (btn) {
-    btn.addEventListener('click', logout);
+    btn.addEventListener("click", logout);
   }
 });

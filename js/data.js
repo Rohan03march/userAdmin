@@ -18,7 +18,7 @@ const firebaseConfig = {
   storageBucket: "login-9338e.appspot.com",
   messagingSenderId: "649880075591",
   appId: "1:649880075591:web:a5cd336a03d80e9b656062",
-  measurementId: "G-GT8TRDM62Y"
+  measurementId: "G-GT8TRDM62Y",
 };
 
 // Init Firebase
@@ -27,7 +27,7 @@ const db = getDatabase(app);
 
 const labelToKeyMap = {
   "Working Location": "workingLocation",
-  "Designation": "designation",
+  Designation: "designation",
   "Date Of Joining": "dateOfJoining",
   "Name(As Per Aadhaar)": "nameAsPerAadhaar",
   "Father's/Husband Name(Aadhaar)": "fatherOrHusbandName",
@@ -42,7 +42,7 @@ const labelToKeyMap = {
   "Alternative Contact Number": "altContactNumber",
   "Bank Name": "bankName",
   "Bank A/C Number": "bankAccountNumber",
-  "IFSC Code": "ifscCode"
+  "IFSC Code": "ifscCode",
 };
 
 let currentRecordId = null;
@@ -72,7 +72,10 @@ async function populateUsersTable() {
 
     allUsersArray = Object.entries(snapshot.val())
       .map(([id, user]) => ({ id, ...user }))
-      .sort((a, b) => (Date.parse(b.submittedAt) || 0) - (Date.parse(a.submittedAt) || 0));
+      .sort(
+        (a, b) =>
+          (Date.parse(b.submittedAt) || 0) - (Date.parse(a.submittedAt) || 0)
+      );
 
     renderTable(allUsersArray);
   } catch (err) {
@@ -93,8 +96,12 @@ function renderTable(users) {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>
-        <img src="${user.photo || ""}" alt="${user.nameAsPerAadhaar || "User"}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;margin-right:10px;vertical-align:middle;">
-        <p style="display:inline-block;vertical-align:middle;">${user.nameAsPerAadhaar || "Unknown"}</p>
+        <img src="${user.photo || ""}" alt="${
+      user.nameAsPerAadhaar || "User"
+    }" style="width:40px;height:40px;border-radius:50%;object-fit:cover;margin-right:10px;vertical-align:middle;">
+        <p style="display:inline-block;vertical-align:middle;">${
+          user.nameAsPerAadhaar || "Unknown"
+        }</p>
       </td>
       <td>${user.contactNumber || "Null"}</td>
       <td>${user.workingLocation || "Null"}</td>
@@ -113,7 +120,7 @@ function renderTable(users) {
     tbody.appendChild(tr);
   }
 
-  tbody.querySelectorAll(".delete-btn").forEach(btn => {
+  tbody.querySelectorAll(".delete-btn").forEach((btn) => {
     btn.addEventListener("click", async () => {
       const id = btn.getAttribute("data-id");
       if (!id) return;
@@ -132,7 +139,6 @@ function renderTable(users) {
   });
 }
 
-
 document.addEventListener("DOMContentLoaded", () => {
   updateUserCount();
   populateUsersTable();
@@ -147,7 +153,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   document.getElementById("aadhaarFile").addEventListener("change", (e) => {
     aadhaarFile = e.target.files[0] || null;
-    document.getElementById("aadhaarText").value = aadhaarFile ? aadhaarFile.name : "";
+    document.getElementById("aadhaarText").value = aadhaarFile
+      ? aadhaarFile.name
+      : "";
   });
 
   // Bank file handlers
@@ -175,14 +183,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const loadingPopup = showLoadingPopup("Submitting data, please wait...");
-    data.submittedAt = new Date().toLocaleString('en-GB', {
+    data.submittedAt = new Date().toLocaleString("en-GB", {
       hour12: false,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
     });
 
     try {
@@ -190,37 +198,42 @@ document.addEventListener("DOMContentLoaded", () => {
         const uploadedUrl = await uploadPhotoToCloudinary(photoFile);
         data.photo = uploadedUrl;
       } else if (currentRecordId) {
-        const snapshot = await get(child(ref(db), `registrations/${currentRecordId}`));
+        const snapshot = await get(
+          child(ref(db), `registrations/${currentRecordId}`)
+        );
         if (snapshot.exists() && snapshot.val().photo) {
           data.photo = snapshot.val().photo;
         }
       }
-      
+
       if (aadhaarFile) {
-  // New file uploaded, upload to Cloudinary
-  const aadhaarUrl = await uploadPhotoToCloudinary(aadhaarFile);
-  data.aadhaarImage = aadhaarUrl;
-} else if (currentRecordId) {
-  // Check if an existing Aadhaar image is already saved
-  const snapshot = await get(child(ref(db), `registrations/${currentRecordId}`));
-  if (snapshot.exists() && snapshot.val().aadhaarImage) {
-    data.aadhaarImage = snapshot.val().aadhaarImage;
-  }
-}
+        // New file uploaded, upload to Cloudinary
+        const aadhaarUrl = await uploadPhotoToCloudinary(aadhaarFile);
+        data.aadhaarImage = aadhaarUrl;
+      } else if (currentRecordId) {
+        // Check if an existing Aadhaar image is already saved
+        const snapshot = await get(
+          child(ref(db), `registrations/${currentRecordId}`)
+        );
+        if (snapshot.exists() && snapshot.val().aadhaarImage) {
+          data.aadhaarImage = snapshot.val().aadhaarImage;
+        }
+      }
 
-// Now validate Aadhaar before submitting
-if (!data.aadhaarImage) {
-  alert("❌ Please upload Aadhaar image before submitting.");
-  loadingPopup.remove();
-  return;
-}
-
+      // Now validate Aadhaar before submitting
+      if (!data.aadhaarImage) {
+        alert("❌ Please upload Aadhaar image before submitting.");
+        loadingPopup.remove();
+        return;
+      }
 
       if (bankFile) {
         const bankUrl = await uploadPhotoToCloudinary(bankFile);
         data.bankImage = bankUrl;
       } else if (currentRecordId) {
-        const snapshot = await get(child(ref(db), `registrations/${currentRecordId}`));
+        const snapshot = await get(
+          child(ref(db), `registrations/${currentRecordId}`)
+        );
         if (snapshot.exists() && snapshot.val().bankImage) {
           data.bankImage = snapshot.val().bankImage;
         }
@@ -264,7 +277,6 @@ if (!data.aadhaarImage) {
       }
       updateUserCount();
       populateUsersTable();
-
     } catch (err) {
       alert("Error saving data: " + err.message);
     } finally {
@@ -273,14 +285,12 @@ if (!data.aadhaarImage) {
   });
 });
 
-
-
-//Auto Fill 
+//Auto Fill
 
 const nameInput = document.querySelector("input[name='nameAsPerAadhaar']");
 const contactInput = document.querySelector("input[name='contactNumber']");
 
-[nameInput, contactInput].forEach(input => {
+[nameInput, contactInput].forEach((input) => {
   input.addEventListener("blur", async () => {
     const value = input.value.trim();
     if (!value) return;
@@ -306,7 +316,6 @@ const contactInput = document.querySelector("input[name='contactNumber']");
         currentRecordId = match.id;
         autofillForm(match);
       }
-
     } catch (err) {
       console.error("Autofill error:", err);
     }
@@ -317,8 +326,9 @@ function autofillForm(data) {
   const form = document.querySelector("form");
 
   Object.entries(labelToKeyMap).forEach(([label, key]) => {
-    const box = [...form.querySelectorAll(".input-box")]
-      .find(box => box.querySelector(".details")?.textContent.trim() === label);
+    const box = [...form.querySelectorAll(".input-box")].find(
+      (box) => box.querySelector(".details")?.textContent.trim() === label
+    );
 
     if (box) {
       const input = box.querySelector("input");
@@ -336,62 +346,60 @@ function autofillForm(data) {
   }
 
   function fillForm(id, data) {
-  currentRecordId = id;
+    currentRecordId = id;
 
-  // fill basic fields
-  const form = document.querySelector("form");
-  form.querySelectorAll(".input-box").forEach(box => {
-    const labelEl = box.querySelector(".details");
-    const inputEl = box.querySelector("input");
-    if (!inputEl || !labelEl) return;
-    const key = labelToKeyMap[labelEl.textContent.trim()];
-    if (key && data[key]) inputEl.value = data[key];
-  });
+    // fill basic fields
+    const form = document.querySelector("form");
+    form.querySelectorAll(".input-box").forEach((box) => {
+      const labelEl = box.querySelector(".details");
+      const inputEl = box.querySelector("input");
+      if (!inputEl || !labelEl) return;
+      const key = labelToKeyMap[labelEl.textContent.trim()];
+      if (key && data[key]) inputEl.value = data[key];
+    });
 
-  // profile photo
-  const previewImg = document.getElementById("photoPreview");
-  if (previewImg && data.photo) {
-    previewImg.src = data.photo;
-    previewImg.style.display = "block";
-  }
-
-  // Aadhaar image
-  const aadhaarText = document.getElementById("aadhaarText");
-  const aadhaarPreview = document.getElementById("aadhaarPreview");
-  if (data.aadhaarImage) {
-    aadhaarText.value = "Already Uploaded";
-    if (aadhaarPreview) {
-      aadhaarPreview.src = data.aadhaarImage;
-      aadhaarPreview.style.display = "block";
+    // profile photo
+    const previewImg = document.getElementById("photoPreview");
+    if (previewImg && data.photo) {
+      previewImg.src = data.photo;
+      previewImg.style.display = "block";
     }
-  } else {
-    aadhaarText.value = "";
-    if (aadhaarPreview) {
-      aadhaarPreview.src = "";
-      aadhaarPreview.style.display = "none";
-    }
-  }
 
-  // Bank image
-  const bankText = document.getElementById("BankText");
-  const bankPreview = document.getElementById("bankPreview");
-  if (data.bankImage) {
-    bankText.value = "Already Uploaded";
-    if (bankPreview) {
-      bankPreview.src = data.bankImage;
-      bankPreview.style.display = "block";
+    // Aadhaar image
+    const aadhaarText = document.getElementById("aadhaarText");
+    const aadhaarPreview = document.getElementById("aadhaarPreview");
+    if (data.aadhaarImage) {
+      aadhaarText.value = "Already Uploaded";
+      if (aadhaarPreview) {
+        aadhaarPreview.src = data.aadhaarImage;
+        aadhaarPreview.style.display = "block";
+      }
+    } else {
+      aadhaarText.value = "";
+      if (aadhaarPreview) {
+        aadhaarPreview.src = "";
+        aadhaarPreview.style.display = "none";
+      }
     }
-  } else {
-    bankText.value = "";
-    if (bankPreview) {
-      bankPreview.src = "";
-      bankPreview.style.display = "none";
+
+    // Bank image
+    const bankText = document.getElementById("BankText");
+    const bankPreview = document.getElementById("bankPreview");
+    if (data.bankImage) {
+      bankText.value = "Already Uploaded";
+      if (bankPreview) {
+        bankPreview.src = data.bankImage;
+        bankPreview.style.display = "block";
+      }
+    } else {
+      bankText.value = "";
+      if (bankPreview) {
+        bankPreview.src = "";
+        bankPreview.style.display = "none";
+      }
     }
   }
 }
-
-}
-
 
 function collectFormData() {
   const form = document.querySelector("form");
@@ -415,10 +423,10 @@ function collectFormData() {
     "altContactNumber",
     "bankName",
     "bankAccountNumber",
-    "ifscCode"
+    "ifscCode",
   ];
 
-  form.querySelectorAll(".input-box").forEach(box => {
+  form.querySelectorAll(".input-box").forEach((box) => {
     const labelEl = box.querySelector(".details");
     const inputEl = box.querySelector("input");
     if (!inputEl || !labelEl) return;
@@ -436,9 +444,13 @@ async function uploadPhotoToCloudinary(file) {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("upload_preset", "UserImages");
-  const res = await fetch("https://api.cloudinary.com/v1_1/dtwcxssvj/image/upload", {
-    method: "POST", body: formData
-  });
+  const res = await fetch(
+    "https://api.cloudinary.com/v1_1/dtwcxssvj/image/upload",
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
   if (!res.ok) throw new Error("Failed to upload image");
   const data = await res.json();
   return data.secure_url;

@@ -1,64 +1,67 @@
-const allSideMenu = document.querySelectorAll('#sidebar .side-menu.top li a');
+const allSideMenu = document.querySelectorAll("#sidebar .side-menu.top li a");
 
-allSideMenu.forEach(item=> {
-	const li = item.parentElement;
+allSideMenu.forEach((item) => {
+  const li = item.parentElement;
 
-	item.addEventListener('click', function () {
-		allSideMenu.forEach(i=> {
-			i.parentElement.classList.remove('active');
-		})
-		li.classList.add('active');
-	})
+  item.addEventListener("click", function () {
+    allSideMenu.forEach((i) => {
+      i.parentElement.classList.remove("active");
+    });
+    li.classList.add("active");
+  });
 });
 
 // TOGGLE SIDEBAR
-const menuBar = document.querySelector('#content nav .bx.bx-menu');
-const sidebar = document.getElementById('sidebar');
+const menuBar = document.querySelector("#content nav .bx.bx-menu");
+const sidebar = document.getElementById("sidebar");
 
-menuBar.addEventListener('click', function () {
-	sidebar.classList.toggle('hide');
-})
+menuBar.addEventListener("click", function () {
+  sidebar.classList.toggle("hide");
+});
 
-const searchButton = document.querySelector('#content nav form .form-input button');
-const searchButtonIcon = document.querySelector('#content nav form .form-input button .bx');
-const searchForm = document.querySelector('#content nav form');
+const searchButton = document.querySelector(
+  "#content nav form .form-input button"
+);
+const searchButtonIcon = document.querySelector(
+  "#content nav form .form-input button .bx"
+);
+const searchForm = document.querySelector("#content nav form");
 
-searchButton.addEventListener('click', function (e) {
-	if(window.innerWidth < 576) {
-		e.preventDefault();
-		searchForm.classList.toggle('show');
-		if(searchForm.classList.contains('show')) {
-			searchButtonIcon.classList.replace('bx-search', 'bx-x');
-		} else {
-			searchButtonIcon.classList.replace('bx-x', 'bx-search');
-		}
-	}
-})
+searchButton.addEventListener("click", function (e) {
+  if (window.innerWidth < 576) {
+    e.preventDefault();
+    searchForm.classList.toggle("show");
+    if (searchForm.classList.contains("show")) {
+      searchButtonIcon.classList.replace("bx-search", "bx-x");
+    } else {
+      searchButtonIcon.classList.replace("bx-x", "bx-search");
+    }
+  }
+});
 
-if(window.innerWidth < 768) {
-	sidebar.classList.add('hide');
-} else if(window.innerWidth > 576) {
-	searchButtonIcon.classList.replace('bx-x', 'bx-search');
-	searchForm.classList.remove('show');
+if (window.innerWidth < 768) {
+  sidebar.classList.add("hide");
+} else if (window.innerWidth > 576) {
+  searchButtonIcon.classList.replace("bx-x", "bx-search");
+  searchForm.classList.remove("show");
 }
 
-window.addEventListener('resize', function () {
-	if(this.innerWidth > 576) {
-		searchButtonIcon.classList.replace('bx-x', 'bx-search');
-		searchForm.classList.remove('show');
-	}
-})
+window.addEventListener("resize", function () {
+  if (this.innerWidth > 576) {
+    searchButtonIcon.classList.replace("bx-x", "bx-search");
+    searchForm.classList.remove("show");
+  }
+});
 
-const switchMode = document.getElementById('switch-mode');
+const switchMode = document.getElementById("switch-mode");
 
-switchMode.addEventListener('change', function () {
-	if(this.checked) {
-		document.body.classList.add('dark');
-	} else {
-		document.body.classList.remove('dark');
-	}
-})
-
+switchMode.addEventListener("change", function () {
+  if (this.checked) {
+    document.body.classList.add("dark");
+  } else {
+    document.body.classList.remove("dark");
+  }
+});
 
 // 🌟 Firebase config
 const firebaseConfig = {
@@ -69,7 +72,7 @@ const firebaseConfig = {
   storageBucket: "login-9338e.appspot.com",
   messagingSenderId: "649880075591",
   appId: "1:649880075591:web:a5cd336a03d80e9b656062",
-  measurementId: "G-GT8TRDM62Y"
+  measurementId: "G-GT8TRDM62Y",
 };
 
 // ✅ Initialize Firebase
@@ -81,13 +84,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const searchInput = document.getElementById("searchInput");
 
   searchInput.addEventListener("input", () => {
-    searchUsers(searchInput.value).then(users => {
+    searchUsers(searchInput.value).then((users) => {
       renderTable(users);
     });
   });
 
   // Load initial table
-  searchUsers("").then(users => {
+  searchUsers("").then((users) => {
     renderTable(users);
   });
 });
@@ -100,16 +103,20 @@ async function searchUsers(query) {
 
   const allUsers = Object.entries(snapshot.val()).map(([id, user]) => ({
     id,
-    ...user
+    ...user,
   }));
 
   if (!query) return allUsers;
 
-  return allUsers.filter(user => {
+  return allUsers.filter((user) => {
     const name = (user.nameAsPerAadhaar || "").toLowerCase();
     const contact = (user.contactNumber || "").toLowerCase();
     const location = (user.workingLocation || "").toLowerCase();
-    return name.includes(query) || contact.includes(query) || location.includes(query);
+    return (
+      name.includes(query) ||
+      contact.includes(query) ||
+      location.includes(query)
+    );
   });
 }
 
@@ -122,15 +129,21 @@ function renderTable(users) {
     return;
   }
 
-  users.forEach(user => {
+  users.forEach((user) => {
     const tr = document.createElement("tr");
 
     tr.innerHTML = `
       <td>
-        <a href="user.html?id=${encodeURIComponent(user.id)}" style="text-decoration:none; color:inherit;">
-          <img src="${user.photo || ""}" alt="${user.nameAsPerAadhaar || "User"}"
+        <a href="user.html?id=${encodeURIComponent(
+          user.id
+        )}" style="text-decoration:none; color:inherit;">
+          <img src="${user.photo || ""}" alt="${
+      user.nameAsPerAadhaar || "User"
+    }"
              style="width:40px;height:40px;border-radius:50%;object-fit:cover;margin-right:10px;vertical-align:middle;">
-          <span style="vertical-align:middle;">${user.nameAsPerAadhaar || "Unknown"}</span>
+          <span style="vertical-align:middle;">${
+            user.nameAsPerAadhaar || "Unknown"
+          }</span>
         </a>
       </td>
       <td>${user.contactNumber || "Null"}</td>
@@ -153,7 +166,13 @@ function renderTable(users) {
       e.preventDefault();
       e.stopPropagation();
 
-      if (confirm(`Are you sure you want to delete ${user.nameAsPerAadhaar || "this user"}?`)) {
+      if (
+        confirm(
+          `Are you sure you want to delete ${
+            user.nameAsPerAadhaar || "this user"
+          }?`
+        )
+      ) {
         try {
           await db.ref(`registrations/${user.id}`).remove();
           alert("✅ User deleted successfully");
@@ -162,7 +181,6 @@ function renderTable(users) {
           const query = document.getElementById("searchInput").value.trim();
           const updatedUsers = await searchUsers(query);
           renderTable(updatedUsers);
-
         } catch (err) {
           alert("❌ Error deleting user: " + err.message);
         }
@@ -172,4 +190,3 @@ function renderTable(users) {
     tbody.appendChild(tr);
   });
 }
-

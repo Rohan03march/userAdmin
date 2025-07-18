@@ -1,195 +1,257 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title> User Registration Form </title>
-  <link rel="icon" type="image/png" href="SourceOnebg.png">
-  <link rel="stylesheet" href="styles/indexstyle.css">
-</head>
-<body>
-  <div class="container">
-    <!-- Title and Upload -->
-    <div class="header">
-      <div style="display: flex; align-items: center; gap: 10px;">
-  <img src="SourceOneLogo.png" alt="Logo" style="height: 50px;">
-</div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Registration Form</title>
+    <link rel="icon" type="image/png" href="SourceOnebg.png" />
+    <link rel="stylesheet" href="styles/indexstyle.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Title and Upload -->
+      <div class="header">
+        <div style="display: flex; align-items: center; gap: 10px">
+          <img src="SourceOneLogo.png" alt="Logo" style="height: 50px" />
+        </div>
 
-      <div class="upload">
-        <label for="photo">Upload Photo</label>
-        <input type="file" id="photo" accept="image/*" hidden>
-        <span id="fileName">No file chosen</span>
+        <div class="upload">
+          <label for="photo">Upload Photo</label>
+          <input type="file" id="photo" accept="image/*" hidden />
+          <span id="fileName">No file chosen</span>
+        </div>
+      </div>
+
+      <div class="content">
+        <form action="#">
+          <div class="user-details">
+            <div class="input-box">
+              <span class="details">Working Location</span>
+              <input
+                type="text"
+                placeholder="Enter Working Location"
+                required
+              />
+            </div>
+            <div class="input-box">
+              <span class="details">Designation</span>
+              <input type="text" placeholder="Designation" required />
+            </div>
+            <div class="input-box">
+              <span class="details">Date Of Joining</span>
+              <input type="date" placeholder="Date Of Joining" required />
+            </div>
+            <div class="input-box">
+              <span class="details">Name(As Per Aadhaar)</span>
+              <input
+                type="text"
+                name="nameAsPerAadhaar"
+                placeholder="Enter your name"
+                required
+              />
+            </div>
+            <div class="input-box">
+              <span class="details">Father's/Husband Name(As Per Aadhaar)</span>
+              <input type="text" placeholder="Father's/Husband Name" required />
+            </div>
+            <div class="input-box">
+              <span class="details">Mother's Name</span>
+              <input
+                type="text"
+                placeholder="Enter your Mother's Name"
+                required
+              />
+            </div>
+            <div class="input-box">
+              <span class="details">Marital Status</span>
+              <input
+                type="text"
+                placeholder="Marital Status"
+                list="marital-status-options"
+                required
+              />
+              <datalist id="marital-status-options">
+                <option value="Single"></option>
+                <option value="Married"></option>
+              </datalist>
+            </div>
+
+            <div class="input-box">
+              <span class="details">DOB(As Per Aadhaar)</span>
+              <input type="date" placeholder="Date Of Birth" required />
+            </div>
+            <div class="input-box">
+              <span class="details">Nominee Name</span>
+              <input type="text" placeholder="Enter Nominee Name" required />
+            </div>
+            <div class="input-box">
+              <span class="details">Nominee Relationship</span>
+              <input
+                type="text"
+                placeholder="Enter Nominee Relationship"
+                list="nominee-relationship-options"
+                required
+              />
+              <datalist id="nominee-relationship-options">
+                <option value="Father"></option>
+                <option value="Mother"></option>
+                <option value="Spouse"></option>
+                <option value="Son"></option>
+                <option value="Daughter"></option>
+                <option value="Brother"></option>
+                <option value="Sister"></option>
+                <option value="Other"></option>
+              </datalist>
+            </div>
+
+            <div class="input-box">
+              <span class="details">Aadhaar Number</span>
+              <input type="text" placeholder="Enter Aadhaar Number" required />
+            </div>
+
+            <!--Aadhaar card image...-->
+            <div class="input-box">
+              <span class="details">Aadhaar Image</span>
+              <input
+                type="text"
+                id="aadhaarText"
+                readonly
+                placeholder="Choose Aadhaar image"
+              />
+              <input type="file" id="aadhaarFile" style="display: none" />
+              <img
+                id="aadhaarPreview"
+                style="
+                  display: none;
+                  margin-top: 10px;
+                  max-width: 200px;
+                  border: 1px solid #ccc;
+                  border-radius: 4px;
+                "
+              />
+            </div>
+
+            <div class="input-box">
+              <span class="details">Bank Pass Book Image(Optional)</span>
+              <input
+                type="text"
+                id="BankText"
+                readonly
+                placeholder="Choose Bank PassBook image"
+              />
+              <input type="file" id="BankFile" style="display: none" />
+              <img
+                id="bankPreview"
+                style="
+                  display: none;
+                  margin-top: 10px;
+                  max-width: 200px;
+                  border: 1px solid #ccc;
+                  border-radius: 4px;
+                "
+              />
+            </div>
+
+            <div class="input-box">
+              <span class="details">PAN Number</span>
+              <input type="text" placeholder="Enter PAN Number" required />
+            </div>
+            <div class="input-box">
+              <span class="details">Contact Number</span>
+              <input
+                type="text"
+                name="contactNumber"
+                placeholder="Enter Contact Number"
+                required
+              />
+            </div>
+            <div class="input-box">
+              <span class="details">Alternative Contact Number</span>
+              <input
+                type="text"
+                placeholder="Enter Alternative Contact Number"
+                required
+              />
+            </div>
+            <div class="input-box">
+              <span class="details">Bank Name</span>
+              <input
+                type="text"
+                placeholder="Enter Bank Name"
+                list="bank-name-options"
+                required
+              />
+              <datalist id="bank-name-options">
+                <option value="AU Small Finance Bank"></option>
+                <option value="Axis Bank"></option>
+                <option value="Bank of Baroda"></option>
+                <option value="Bank of India"></option>
+                <option value="Bank of Maharashtra"></option>
+                <option value="Barclays Bank"></option>
+                <option value="Canara Bank"></option>
+                <option value="Central Bank of India"></option>
+                <option value="Citibank"></option>
+                <option value="City Union Bank"></option>
+                <option value="CSB Bank"></option>
+                <option value="DBS Bank India"></option>
+                <option value="DCB Bank"></option>
+                <option value="Deutsche Bank"></option>
+                <option value="Equitas Small Finance Bank"></option>
+                <option value="ESAF Small Finance Bank"></option>
+                <option value="Federal Bank"></option>
+                <option value="Fincare Small Finance Bank"></option>
+                <option value="HDFC Bank"></option>
+                <option value="HSBC"></option>
+                <option value="ICICI Bank"></option>
+                <option value="IDFC First Bank"></option>
+                <option value="Indian Bank"></option>
+                <option value="IndusInd Bank"></option>
+                <option value="Jana Small Finance Bank"></option>
+                <option value="Karur Vysya Bank"></option>
+                <option value="Karnataka Bank"></option>
+                <option value="Kotak Mahindra Bank"></option>
+                <option value="North East Small Finance Bank"></option>
+                <option value="Punjab & Sind Bank"></option>
+                <option value="Punjab National Bank"></option>
+                <option value="RBL Bank"></option>
+                <option value="Shivalik Small Finance Bank"></option>
+                <option value="South Indian Bank"></option>
+                <option value="Standard Chartered Bank"></option>
+                <option value="State Bank of India"></option>
+                <option value="Suryoday Small Finance Bank"></option>
+                <option value="Tamilnad Mercantile Bank"></option>
+                <option value="UCO Bank"></option>
+                <option value="Ujjivan Small Finance Bank"></option>
+                <option value="Union Bank of India"></option>
+                <option value="Utkarsh Small Finance Bank"></option>
+                <option value="Yes Bank"></option>
+              </datalist>
+            </div>
+            <div class="input-box">
+              <span class="details">Bank A/C Number</span>
+              <input type="text" placeholder="Enter A/C Number" required />
+            </div>
+            <div class="input-box">
+              <span class="details">IFSC Code</span>
+              <input type="text" placeholder="Enter IFSC Code" required />
+            </div>
+          </div>
+
+          <div class="button">
+            <input type="submit" id="submitBtn" value="Submit" />
+            <input type="submit" id="updateBtn" value="Update" />
+          </div>
+        </form>
       </div>
     </div>
 
-    <div class="content">
-      <form action="#">
-        <div class="user-details">
-          <div class="input-box">
-            <span class="details">Working Location</span>
-            <input type="text" placeholder="Enter Working Location" required>
-          </div>
-          <div class="input-box">
-            <span class="details">Designation</span>
-            <input type="text" placeholder="Designation" required>
-          </div>
-          <div class="input-box">
-            <span class="details">Date Of Joining</span>
-            <input type="date" placeholder="Date Of Joining" required>
-          </div>
-          <div class="input-box">
-            <span class="details">Name(As Per Aadhaar)</span>
-            <input type="text" name="nameAsPerAadhaar" placeholder="Enter your name" required>
-          </div>
-          <div class="input-box">
-            <span class="details">Father's/Husband Name(As Per Aadhaar)</span>
-            <input type="text" placeholder="Father's/Husband Name" required>
-          </div>
-          <div class="input-box">
-            <span class="details">Mother's Name</span>
-            <input type="text" placeholder="Enter your Mother's Name" required>
-          </div>
-          <div class="input-box">
-  <span class="details">Marital Status</span>
-  <input type="text" placeholder="Marital Status" list="marital-status-options" required>
-  <datalist id="marital-status-options">
-    <option value="Single">
-    <option value="Married">
-  </datalist>
-</div>
+    <script>
+      document.getElementById("photo").addEventListener("change", function () {
+        const fileName = this.files[0] ? this.files[0].name : "No file chosen";
+        document.getElementById("fileName").textContent = fileName;
+      });
+    </script>
 
-          <div class="input-box">
-            <span class="details">DOB(As Per Aadhaar)</span>
-            <input type="date" placeholder="Date Of Birth" required>
-          </div>
-          <div class="input-box">
-            <span class="details">Nominee Name</span>
-            <input type="text" placeholder="Enter Nominee Name" required>
-          </div>
-         <div class="input-box">
-  <span class="details">Nominee Relationship</span>
-  <input type="text" placeholder="Enter Nominee Relationship" list="nominee-relationship-options" required>
-  <datalist id="nominee-relationship-options">
-    <option value="Father">
-    <option value="Mother">
-    <option value="Spouse">
-    <option value="Son">
-    <option value="Daughter">
-    <option value="Brother">
-    <option value="Sister">
-    <option value="Other">
-  </datalist>
-</div>
-
-          <div class="input-box">
-            <span class="details">Aadhaar Number</span>
-            <input type="text" placeholder="Enter Aadhaar Number" required>
-          </div>
-
-          <!--Aadhaar card image...-->
-       <div class="input-box">
-  <span class="details">Aadhaar Image</span>
-  <input type="text" id="aadhaarText" readonly placeholder="Choose Aadhaar image">
-  <input type="file" id="aadhaarFile" style="display:none">
-  <img id="aadhaarPreview" style="display:none; margin-top:10px; max-width:200px; border:1px solid #ccc; border-radius:4px;">
-</div>
-
-  <div class="input-box">
-  <span class="details">Bank Pass Book Image(Optional)</span>
-  <input type="text" id="BankText" readonly placeholder="Choose Bank PassBook image">
-  <input type="file" id="BankFile" style="display:none">
-  <img id="bankPreview" style="display:none; margin-top:10px; max-width:200px; border:1px solid #ccc; border-radius:4px;">
-</div>
-
-          <div class="input-box">
-            <span class="details">PAN Number</span>
-            <input type="text" placeholder="Enter PAN Number" required>
-          </div>
-          <div class="input-box">
-            <span class="details">Contact Number</span>
-            <input type="text" name="contactNumber" placeholder="Enter Contact Number" required>
-          </div>
-          <div class="input-box">
-            <span class="details">Alternative Contact Number</span>
-            <input type="text" placeholder="Enter Alternative Contact Number" required>
-          </div>
-  <div class="input-box">
-  <span class="details">Bank Name</span>
-  <input type="text" placeholder="Enter Bank Name" list="bank-name-options" required>
-  <datalist id="bank-name-options">
-    <option value="AU Small Finance Bank">
-    <option value="Axis Bank">
-    <option value="Bank of Baroda">
-    <option value="Bank of India">
-    <option value="Bank of Maharashtra">
-    <option value="Barclays Bank">
-    <option value="Canara Bank">
-    <option value="Central Bank of India">
-    <option value="Citibank">
-    <option value="City Union Bank">
-    <option value="CSB Bank">
-    <option value="DBS Bank India">
-    <option value="DCB Bank">
-    <option value="Deutsche Bank">
-    <option value="Equitas Small Finance Bank">
-    <option value="ESAF Small Finance Bank">
-    <option value="Federal Bank">
-    <option value="Fincare Small Finance Bank">
-    <option value="HDFC Bank">
-    <option value="HSBC">
-    <option value="ICICI Bank">
-    <option value="IDFC First Bank">
-    <option value="Indian Bank">
-    <option value="IndusInd Bank">
-    <option value="Jana Small Finance Bank">
-    <option value="Karur Vysya Bank">
-    <option value="Karnataka Bank">
-    <option value="Kotak Mahindra Bank">
-    <option value="North East Small Finance Bank">
-    <option value="Punjab & Sind Bank">
-    <option value="Punjab National Bank">
-    <option value="RBL Bank">
-    <option value="Shivalik Small Finance Bank">
-    <option value="South Indian Bank">
-    <option value="Standard Chartered Bank">
-    <option value="State Bank of India">
-    <option value="Suryoday Small Finance Bank">
-    <option value="Tamilnad Mercantile Bank">
-    <option value="UCO Bank">
-    <option value="Ujjivan Small Finance Bank">
-    <option value="Union Bank of India">
-    <option value="Utkarsh Small Finance Bank">
-    <option value="Yes Bank">
-  </datalist>
-</div>
-          <div class="input-box">
-            <span class="details">Bank A/C Number</span>
-            <input type="text" placeholder="Enter A/C Number" required>
-          </div>
-          <div class="input-box">
-            <span class="details">IFSC Code</span>
-            <input type="text" placeholder="Enter IFSC Code" required>
-          </div>
-        </div>
-  
-        
-
-        <div class="button">
-          <input type="submit" id="submitBtn" value="Submit">
-          <input type="submit" id="updateBtn" value="Update">
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <script>
-    document.getElementById("photo").addEventListener("change", function () {
-      const fileName = this.files[0] ? this.files[0].name : "No file chosen";
-      document.getElementById("fileName").textContent = fileName;
-    });
-  </script>
-
-  <script type="module" src="js/data.js"></script>
-</body>
-
+    <script type="module" src="js/data.js"></script>
+  </body>
 </html>
