@@ -30,7 +30,7 @@ const labelToKeyMap = {
   Designation: "designation",
   "Date Of Joining": "dateOfJoining",
   "Name(As Per Aadhaar)": "nameAsPerAadhaar",
-  "Father's/Husband Name(Aadhaar)": "fatherOrHusbandName",
+  "Father's/Husband Name(As Per Aadhaar)": "fatherOrHusbandName",
   "Mother's Name": "motherName",
   "Marital Status": "maritalStatus",
   "DOB(As Per Aadhaar)": "dobAsPerAadhaar",
