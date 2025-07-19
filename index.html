@@ -15,6 +15,7 @@
           <img src="SourceOneLogo.png" alt="Logo" style="height: 50px" />
         </div>
 
+        <!--Upload Image-->
         <div class="upload">
           <label for="photo">Upload Photo</label>
           <input type="file" id="photo" accept="image/*" hidden />
@@ -25,6 +26,7 @@
       <div class="content">
         <form action="#">
           <div class="user-details">
+            <!--Working Location-->
             <div class="input-box">
               <span class="details">Working Location</span>
               <input
@@ -35,28 +37,33 @@
               />
               <datalist id="Working-Location">
                 <option value="Balagere"></option>
-<option value="Begur"></option>
-<option value="Chikathogur"></option>
-<option value="Deepanjali Nagar"></option>
-<option value="Haralur"></option>
-<option value="Hope Farm"></option>
-<option value="Kadugodi"></option>
-<option value="Kanamangala"></option>
-<option value="Kundalahalli"></option>
-<option value="Mysore Road"></option>
-<option value="Shanthiniketan"></option>
-<option value="Wilson Garden"></option>
-
+                <option value="Begur"></option>
+                <option value="Chikathogur"></option>
+                <option value="Deepanjali Nagar"></option>
+                <option value="Haralur"></option>
+                <option value="Hope Farm"></option>
+                <option value="Kadugodi"></option>
+                <option value="Kanamangala"></option>
+                <option value="Kundalahalli"></option>
+                <option value="Mysore Road"></option>
+                <option value="Shanthiniketan"></option>
+                <option value="Wilson Garden"></option>
               </datalist>
             </div>
+
+            <!--Designation-->
             <div class="input-box">
               <span class="details">Designation</span>
               <input type="text" placeholder="Designation" required />
             </div>
+
+            <!--Date of joining-->
             <div class="input-box">
               <span class="details">Date Of Joining</span>
               <input type="date" placeholder="Date Of Joining" required />
             </div>
+
+            <!--Name-->
             <div class="input-box">
               <span class="details">Name(As Per Aadhaar)</span>
               <input
@@ -66,10 +73,14 @@
                 required
               />
             </div>
+
+            <!--Father/Husband Name-->
             <div class="input-box">
               <span class="details">Father's/Husband Name(As Per Aadhaar)</span>
               <input type="text" placeholder="Father's/Husband Name" required />
             </div>
+
+            <!--Mother name-->
             <div class="input-box">
               <span class="details">Mother's Name</span>
               <input
@@ -78,6 +89,8 @@
                 required
               />
             </div>
+
+            <!--Marital Status-->
             <div class="input-box">
               <span class="details">Marital Status</span>
               <input
@@ -92,14 +105,19 @@
               </datalist>
             </div>
 
+            <!--DOB-->
             <div class="input-box">
               <span class="details">DOB(As Per Aadhaar)</span>
               <input type="date" placeholder="Date Of Birth" required />
             </div>
+
+            <!--Nominee Name-->
             <div class="input-box">
               <span class="details">Nominee Name</span>
               <input type="text" placeholder="Enter Nominee Name" required />
             </div>
+
+            <!--Nominee Relationship-->
             <div class="input-box">
               <span class="details">Nominee Relationship</span>
               <input
@@ -120,10 +138,32 @@
               </datalist>
             </div>
 
+            <!--Aadhaar Number-->
             <div class="input-box">
-              <span class="details">Aadhaar Number</span>
-              <input type="text" placeholder="Enter Aadhaar Number" required />
-            </div>
+  <span class="details">Aadhaar Number</span>
+  <input
+    type="text"
+    placeholder="Enter Aadhaar Number"
+    required
+    id="aadhaarNumber"
+    maxlength="14" 
+  />
+</div>
+
+<script>
+  const aadhaarInput = document.getElementById("aadhaarNumber");
+
+  aadhaarInput.addEventListener("input", () => {
+    // Remove all non-digits
+    let value = aadhaarInput.value.replace(/\D/g, "");
+    // Limit to 12 digits
+    value = value.substring(0, 12);
+    // Insert spaces after every 4 digits
+    value = value.replace(/(.{4})/g, "$1 ").trim();
+    aadhaarInput.value = value;
+  });
+</script>
+
 
             <!--Aadhaar card image...-->
             <div class="input-box">
@@ -147,6 +187,7 @@
               />
             </div>
 
+            <!--Bank Image-->
             <div class="input-box">
               <span class="details">Bank Pass Book Image(Optional)</span>
               <input
@@ -168,27 +209,130 @@
               />
             </div>
 
+            <!--PAN Number-->
             <div class="input-box">
               <span class="details">PAN Number</span>
-              <input type="text" placeholder="Enter PAN Number" required />
-            </div>
-            <div class="input-box">
-              <span class="details">Contact Number</span>
               <input
                 type="text"
-                name="contactNumber"
-                placeholder="Enter Contact Number"
+                placeholder="Enter PAN Number"
                 required
+                id="panInput"
+                maxlength="10"
               />
+              <script>
+                const panInput = document.getElementById("panInput");
+
+                panInput.addEventListener("input", () => {
+                  // Convert to uppercase
+                  panInput.value = panInput.value.toUpperCase();
+
+                  // Allow only letters and numbers
+                  panInput.value = panInput.value.replace(/[^A-Z0-9]/g, "");
+                });
+              </script>
             </div>
+
+            <!--Contact Number-->
+            <div class="input-box">
+  <span class="details">Contact Number</span>
+  <input
+    type="text"
+    name="contactNumber"
+    placeholder="Enter Contact Number"
+    required
+    id="contactNumber"
+    maxlength="10"
+  />
+</div>
+
+<script>
+  const contactInput = document.getElementById("contactNumber");
+
+  contactInput.addEventListener("input", () => {
+    // Allow only digits
+    contactInput.value = contactInput.value.replace(/[^0-9]/g, "");
+  });
+</script>
+
+
+            <!--Alternative Contact Number-->
             <div class="input-box">
               <span class="details">Alternative Contact Number</span>
               <input
                 type="text"
                 placeholder="Enter Alternative Contact Number"
+                id="AlcontactNumber"
+                maxlength="10"
+                required
+              />
+              <script>
+  const AlcontactInput = document.getElementById("contactNumber");
+
+  contactInput.addEventListener("input", () => {
+    // Allow only digits
+    contactInput.value = contactInput.value.replace(/[^0-9]/g, "");
+  });
+</script>
+            </div>
+
+            <!--Bank A/C Number-->
+            <div class="input-box">
+              <span class="details">Bank A/C Number</span>
+              <input
+                type="password"
+                id="accountNumber"
+                placeholder="Enter A/C Number"
                 required
               />
             </div>
+
+            <!--Confirm Bank A/C Number-->
+            <div class="input-box">
+              <span class="details">Confirm Bank A/C Number</span>
+              <input
+                type="text"
+                id="confirmAccountNumber"
+                placeholder="Confirm A/C Number"
+                required
+              />
+              <span id="matchStatus" style="margin-left: 8px"></span>
+              <script>
+                const accountInput = document.getElementById("accountNumber");
+                const confirmInput = document.getElementById(
+                  "confirmAccountNumber"
+                );
+                const statusSpan = document.getElementById("matchStatus");
+
+                function checkMatch() {
+                  const acc = accountInput.value.trim();
+                  const conf = confirmInput.value.trim();
+
+                  if (!acc || !conf) {
+                    statusSpan.textContent = "";
+                    return;
+                  }
+
+                  if (acc === conf) {
+                    statusSpan.textContent = "✅ Bank Number Verified";
+                    statusSpan.style.color = "green";
+                  } else {
+                    statusSpan.textContent = "❌ Bank Number Not Verified";
+                    statusSpan.style.color = "red";
+                  }
+                }
+
+                accountInput.addEventListener("input", checkMatch);
+                confirmInput.addEventListener("input", checkMatch);
+              </script>
+              <style>
+                #matchStatus {
+                  font-size: 1.2rem;
+                  vertical-align: middle;
+                }
+              </style>
+            </div>
+
+            <!--Bank Name-->
             <div class="input-box">
               <span class="details">Bank Name</span>
               <input
@@ -243,10 +387,8 @@
                 <option value="Yes Bank"></option>
               </datalist>
             </div>
-            <div class="input-box">
-              <span class="details">Bank A/C Number</span>
-              <input type="text" placeholder="Enter A/C Number" required />
-            </div>
+
+            <!--IFSC Code-->
             <div class="input-box">
               <span class="details">IFSC Code</span>
               <input type="text" placeholder="Enter IFSC Code" required />

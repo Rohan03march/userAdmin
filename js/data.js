@@ -26,6 +26,7 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 const labelToKeyMap = {
+  "Confirm Bank A/C Number":"confirmBankNumber",
   "Working Location": "workingLocation",
   "Designation": "designation",
   "Date Of Joining": "dateOfJoining",
@@ -128,7 +129,7 @@ function renderTable(users) {
 
       try {
         await set(ref(db, `registrations/${id}`), null);
-        alert("✅ User deleted.");
+        alert("✅ User deleted Successfully.");
         updateUserCount();
         populateUsersTable();
       } catch (err) {
@@ -407,6 +408,7 @@ function collectFormData() {
   let allFilled = true;
 
   const requiredKeys = [
+    "confirmBankNumber",
     "workingLocation",
     "designation",
     "dateOfJoining",
