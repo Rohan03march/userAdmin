@@ -238,24 +238,29 @@
         table.innerHTML = `<tr><th>Field</th><th>Value</th></tr>`;
 
         const fieldLabels = {
-          "Working Location": "workingLocation",
-          Designation: "designation",
-          "Date Of Joining": "dateOfJoining",
-          "Name(As Per Aadhaar)": "nameAsPerAadhaar",
-          "Father's/Husband Name(Aadhaar)": "fatherOrHusbandName",
-          "Mother's Name": "motherName",
-          "Marital Status": "maritalStatus",
-          "DOB(As Per Aadhaar)": "dobAsPerAadhaar",
-          "Nominee Name": "nomineeName",
-          "Nominee Relationship": "nomineeRelationship",
-          "Aadhaar Number": "aadhaarNumber",
-          "PAN Number": "panNumber",
-          "Contact Number": "contactNumber",
-          "Alternative Contact Number": "altContactNumber",
-          "UAN Number": "uanNumber",
-          "Bank Name": "bankName",
-          "Bank A/C Number": "bankAccountNumber",
-          "IFSC Code": "ifscCode",
+          "Current Address": "currentAddress",
+  "Pincode(Current Address)": "pincode(Current Address)",
+  "Permanent Address": "permanentAddress",
+  "Pincode(Permanent Address)": "pincode(Permanent Address)",
+  "Email Address":"emailAddress",
+  "Confirm Bank A/C Number":"confirmBankNumber",
+  "Working Location": "workingLocation",
+  "Designation": "designation",
+  "Date Of Joining": "dateOfJoining",
+  "Name(As Per Aadhaar)": "nameAsPerAadhaar",
+  "Father's/Husband Name(As Per Aadhaar)": "fatherOrHusbandName",
+  "Mother's Name": "motherName",
+  "Marital Status": "maritalStatus",
+  "DOB(As Per Aadhaar)": "dobAsPerAadhaar",
+  "Nominee Name": "nomineeName",
+  "Nominee Relationship": "nomineeRelationship",
+  "Aadhaar Number": "aadhaarNumber",
+  "PAN Number": "panNumber",
+  "Contact Number": "contactNumber",
+  "Alternative Contact Number": "altContactNumber",
+  "Bank Name": "bankName",
+  "Bank A/C Number": "bankAccountNumber",
+  "IFSC Code": "ifscCode",
         };
 
         const reverseMap = {};
@@ -264,11 +269,16 @@
         });
 
         const shownKeys = [
-          "contactNumber",
-          "designation",
-          "dateOfJoining",
-          "submittedAt",
-        ];
+  "contactNumber",
+  "designation",
+  "dateOfJoining",
+  "submittedAt",
+  "currentAddress",
+  "pincode(Current Address)",
+  "permanentAddress",
+  "pincode(Permanent Address)",
+];
+
 
         shownKeys.forEach((key) => {
           mainDetails.innerHTML += `
@@ -282,13 +292,13 @@
         Object.keys(user).forEach((key) => {
           if (
             ![
-              "photo",
-              "aadhaarImage",
-              "bankImage",
-              "employeeCode",
-              ...shownKeys,
-              "nameAsPerAadhaar",
-            ].includes(key)
+    "photo",
+    "aadhaarImage",
+    "bankImage",
+    "employeeCode",
+    ...shownKeys,
+    "nameAsPerAadhaar",
+  ].includes(key)
           ) {
             const label = reverseMap[key] || formatKey(key);
             table.innerHTML += `

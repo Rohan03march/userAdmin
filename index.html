@@ -111,6 +111,45 @@
               <input type="date" placeholder="Date Of Birth" required />
             </div>
 
+            <!--Current Address-->
+            <div class="input-box">
+              <span class="details">Current Address</span>
+              <input type="text" placeholder="Enter Your Current Address" required />
+            </div>
+
+            <!--Pin code -->
+            <div class="input-box">
+              <span class="details">Pincode(Current Address)</span>
+              <input type="text" placeholder="Pincode" required />
+            </div>
+
+            <!--Permanent Address-->
+            <div class="input-box">
+              <span class="details">Permanent Address</span>
+              <input type="text" placeholder="Enter Your Permanent Address" required />
+            </div>
+
+            <!--Pin code -->
+            <div class="input-box">
+              <span class="details">Pincode(Permanent Address)</span>
+              <input type="text" placeholder="Pincode" required />
+            </div>
+
+
+            <!-- Email Address -->
+<div class="input-box">
+  <span class="details">Email Address</span>
+  <input
+    type="email"
+    name="email"
+    placeholder="Enter Your Email Address"
+    required
+    pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+    title="Please enter a valid email address"
+  />
+</div>
+
+
             <!--Nominee Name-->
             <div class="input-box">
               <span class="details">Nominee Name</span>
@@ -275,6 +314,61 @@
 </script>
             </div>
 
+            <!--Bank Name-->
+            <div class="input-box">
+              <span class="details">Bank Name</span>
+              <input
+                type="text"
+                placeholder="Enter Bank Name"
+                list="bank-name-options"
+                required
+              />
+              <datalist id="bank-name-options">
+                <option value="AU Small Finance Bank"></option>
+                <option value="Axis Bank"></option>
+                <option value="Bank of Baroda"></option>
+                <option value="Bank of India"></option>
+                <option value="Bank of Maharashtra"></option>
+                <option value="Barclays Bank"></option>
+                <option value="Canara Bank"></option>
+                <option value="Central Bank of India"></option>
+                <option value="Citibank"></option>
+                <option value="City Union Bank"></option>
+                <option value="CSB Bank"></option>
+                <option value="DBS Bank India"></option>
+                <option value="DCB Bank"></option>
+                <option value="Deutsche Bank"></option>
+                <option value="Equitas Small Finance Bank"></option>
+                <option value="ESAF Small Finance Bank"></option>
+                <option value="Federal Bank"></option>
+                <option value="Fincare Small Finance Bank"></option>
+                <option value="HDFC Bank"></option>
+                <option value="HSBC"></option>
+                <option value="ICICI Bank"></option>
+                <option value="IDFC First Bank"></option>
+                <option value="Indian Bank"></option>
+                <option value="IndusInd Bank"></option>
+                <option value="Jana Small Finance Bank"></option>
+                <option value="Karur Vysya Bank"></option>
+                <option value="Karnataka Bank"></option>
+                <option value="Kotak Mahindra Bank"></option>
+                <option value="North East Small Finance Bank"></option>
+                <option value="Punjab & Sind Bank"></option>
+                <option value="Punjab National Bank"></option>
+                <option value="RBL Bank"></option>
+                <option value="Shivalik Small Finance Bank"></option>
+                <option value="South Indian Bank"></option>
+                <option value="Standard Chartered Bank"></option>
+                <option value="State Bank of India"></option>
+                <option value="Suryoday Small Finance Bank"></option>
+                <option value="Tamilnad Mercantile Bank"></option>
+                <option value="UCO Bank"></option>
+                <option value="Ujjivan Small Finance Bank"></option>
+                <option value="Union Bank of India"></option>
+                <option value="Utkarsh Small Finance Bank"></option>
+                <option value="Yes Bank"></option>
+              </datalist>
+            </div>
             <!--Bank A/C Number-->
             <div class="input-box">
               <span class="details">Bank A/C Number</span>
@@ -332,61 +426,7 @@
               </style>
             </div>
 
-            <!--Bank Name-->
-            <div class="input-box">
-              <span class="details">Bank Name</span>
-              <input
-                type="text"
-                placeholder="Enter Bank Name"
-                list="bank-name-options"
-                required
-              />
-              <datalist id="bank-name-options">
-                <option value="AU Small Finance Bank"></option>
-                <option value="Axis Bank"></option>
-                <option value="Bank of Baroda"></option>
-                <option value="Bank of India"></option>
-                <option value="Bank of Maharashtra"></option>
-                <option value="Barclays Bank"></option>
-                <option value="Canara Bank"></option>
-                <option value="Central Bank of India"></option>
-                <option value="Citibank"></option>
-                <option value="City Union Bank"></option>
-                <option value="CSB Bank"></option>
-                <option value="DBS Bank India"></option>
-                <option value="DCB Bank"></option>
-                <option value="Deutsche Bank"></option>
-                <option value="Equitas Small Finance Bank"></option>
-                <option value="ESAF Small Finance Bank"></option>
-                <option value="Federal Bank"></option>
-                <option value="Fincare Small Finance Bank"></option>
-                <option value="HDFC Bank"></option>
-                <option value="HSBC"></option>
-                <option value="ICICI Bank"></option>
-                <option value="IDFC First Bank"></option>
-                <option value="Indian Bank"></option>
-                <option value="IndusInd Bank"></option>
-                <option value="Jana Small Finance Bank"></option>
-                <option value="Karur Vysya Bank"></option>
-                <option value="Karnataka Bank"></option>
-                <option value="Kotak Mahindra Bank"></option>
-                <option value="North East Small Finance Bank"></option>
-                <option value="Punjab & Sind Bank"></option>
-                <option value="Punjab National Bank"></option>
-                <option value="RBL Bank"></option>
-                <option value="Shivalik Small Finance Bank"></option>
-                <option value="South Indian Bank"></option>
-                <option value="Standard Chartered Bank"></option>
-                <option value="State Bank of India"></option>
-                <option value="Suryoday Small Finance Bank"></option>
-                <option value="Tamilnad Mercantile Bank"></option>
-                <option value="UCO Bank"></option>
-                <option value="Ujjivan Small Finance Bank"></option>
-                <option value="Union Bank of India"></option>
-                <option value="Utkarsh Small Finance Bank"></option>
-                <option value="Yes Bank"></option>
-              </datalist>
-            </div>
+            
 
             <!--IFSC Code-->
             <div class="input-box">

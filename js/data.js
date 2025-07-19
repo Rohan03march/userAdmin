@@ -26,6 +26,11 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 const labelToKeyMap = {
+  "Current Address": "currentAddress",
+  "Pincode(Current Address)": "pincode(Current Address)",
+  "Permanent Address": "permanentAddress",
+  "Pincode(Permanent Address)": "pincode(Permanent Address)",
+  "Email Address":"emailAddress",
   "Confirm Bank A/C Number":"confirmBankNumber",
   "Working Location": "workingLocation",
   "Designation": "designation",
@@ -408,6 +413,11 @@ function collectFormData() {
   let allFilled = true;
 
   const requiredKeys = [
+    "currentAddress",
+    "pincode(Current Address)",
+    "permanentAddress",
+    "pincode(Permanent Address)",
+    "emailAddress",
     "confirmBankNumber",
     "workingLocation",
     "designation",
