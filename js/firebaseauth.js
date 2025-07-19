@@ -9,6 +9,7 @@ import {
   getFirestore,
   setDoc,
   doc,
+  getDoc
 } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 import { sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
 
@@ -54,12 +55,18 @@ signUp.addEventListener("click", (event) => {
         firstName: firstName,
         lastName: lastName,
       };
-      showMessage("Account Created Successfully", "signUpMessage");
+      // showMessage("Account Created Successfully", "signUpMessage");
+      // const docRef = doc(db, "users", user.uid);
+      // setDoc(docRef, userData)
+      //   .then(() => {
+      //     window.location.href = "dashboard.html";
+      //   })
       const docRef = doc(db, "users", user.uid);
-      setDoc(docRef, userData)
-        .then(() => {
-          window.location.href = "dashboard.html";
-        })
+setDoc(docRef, { ...userData, permission: false }) // set permission to false by default
+  .then(() => {
+    showMessage("User created. Wait for admin to give login access.", "signUpMessage");
+  })
+
         .catch((error) => {
           console.error("error writing document", error);
         });
@@ -81,21 +88,63 @@ signIn.addEventListener("click", (event) => {
   const password = document.getElementById("password").value;
   const auth = getAuth();
 
+  // signInWithEmailAndPassword(auth, email, password)
+  //   .then((userCredential) => {
+  //     showMessage("login is successful", "signInMessage");
+  //     const user = userCredential.user;
+  //     localStorage.setItem("loggedInUserId", user.uid);
+  //     window.location.href = "dashboard.html";
+  //   })
+  //   .catch((error) => {
+  //     const errorCode = error.code;
+  //     if (errorCode === "auth/invalid-credential") {
+  //       showMessage("Incorrect Email or Password", "signInMessage");
+  //     } else {
+  //       showMessage("Account does not Exist", "signInMessage");
+  //     }
+  //   });
   signInWithEmailAndPassword(auth, email, password)
-    .then((userCredential) => {
-      showMessage("login is successful", "signInMessage");
-      const user = userCredential.user;
-      localStorage.setItem("loggedInUserId", user.uid);
-      window.location.href = "dashboard.html";
-    })
-    .catch((error) => {
-      const errorCode = error.code;
-      if (errorCode === "auth/invalid-credential") {
-        showMessage("Incorrect Email or Password", "signInMessage");
-      } else {
-        showMessage("Account does not Exist", "signInMessage");
-      }
-    });
+  .then(async (userCredential) => {
+    const user = userCredential.user;
+    const db = getFirestore();
+
+    const docRef = doc(db, "users", user.uid);
+    const docSnap = await getDoc(docRef);
+
+    if (!docSnap.exists()) {
+      showMessage("Account data not found. Contact admin.", "signInMessage");
+      return;
+    }
+
+    const userData = docSnap.data();
+    if (!userData.permission) {
+      showMessage("Permission not yet given. Please contact admin.", "signInMessage");
+      return;
+    }
+
+    localStorage.setItem("loggedInUserId", user.uid);
+    window.location.href = "dashboard.html";
+  })
+
+  createUserWithEmailAndPassword(auth, email, password)
+  .then((userCredential) => {
+    const user = userCredential.user;
+    const userData = {
+      email: email,
+      firstName: firstName,
+      lastName: lastName,
+      permission: false, // user cannot login until approved
+    };
+    const docRef = doc(db, "users", user.uid);
+    setDoc(docRef, userData)
+      .then(() => {
+        showMessage("User created. Wait for admin to give login access.", "signUpMessage");
+      })
+      .catch((error) => {
+        console.error("error writing document", error);
+      });
+  })
+
 });
 
 //Password recovery

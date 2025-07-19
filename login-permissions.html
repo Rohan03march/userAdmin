@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin | Pending User Permissions</title>
+<link rel="icon" type="image/png" href="SourceOnebg.png" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    background-color: #f0f2f5;
+    color: #333;
+    padding: 20px;
+  }
+
+  h1 {
+    text-align: center;
+    color: #1e293b;
+    margin-bottom: 30px;
+    font-size: 2rem;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .user-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    padding: 20px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .user-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+  }
+
+  .user-info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .user-name {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 1.1rem;
+  }
+
+  .user-email {
+    color: #6b7280;
+    font-size: 0.95rem;
+  }
+
+  .actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn {
+    padding: 6px 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: background 0.2s ease;
+  }
+
+  .approve {
+    background: #10b981;
+    color: white;
+  }
+
+  .approve:hover {
+    background: #059669;
+  }
+
+  .deny {
+    background: #ef4444;
+    color: white;
+  }
+
+  .deny:hover {
+    background: #dc2626;
+  }
+
+  .empty {
+    text-align: center;
+    color: #9ca3af;
+    font-size: 1rem;
+    margin-top: 40px;
+  }
+
+  @media (max-width: 600px) {
+    .user-card {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .actions {
+      margin-top: 12px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Pending User Permissions</h1>
+
+  <div id="pendingUsersList">
+    <p class="empty">Loading pending users…</p>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+import { getFirestore, collection, query, where, getDocs, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+
+// 🌟 Firebase Config
+const firebaseConfig = {
+  apiKey: "AIzaSyAENr32Pk-Sq44tuBPj8c_xXk4qzEa3GJw",
+  authDomain: "login-9338e.firebaseapp.com",
+  projectId: "login-9338e",
+  storageBucket: "login-9338e.appspot.com",
+  messagingSenderId: "649880075591",
+  appId: "1:649880075591:web:a5cd336a03d80e9b656062"
+};
+
+initializeApp(firebaseConfig);
+const db = getFirestore();
+
+const list = document.getElementById("pendingUsersList");
+
+async function loadPendingUsers() {
+  list.innerHTML = `<p class="empty">Loading pending users…</p>`;
+
+  const q = query(collection(db, "users"), where("permission", "==", false));
+  const snapshot = await getDocs(q);
+
+  list.innerHTML = "";
+
+  if (snapshot.empty) {
+    list.innerHTML = `<p class="empty">✅ No pending users at the moment.</p>`;
+    return;
+  }
+
+  snapshot.forEach((userDoc) => {
+    const user = userDoc.data();
+    const card = document.createElement("div");
+    card.className = "user-card";
+
+    card.innerHTML = `
+      <div class="user-info">
+        <span class="user-name">${user.firstName ?? ''} ${user.lastName ?? ''}</span>
+        <span class="user-email">${user.email ?? ''}</span>
+      </div>
+      <div class="actions">
+        <button data-id="${userDoc.id}" class="btn approve">Approve</button>
+        <button data-id="${userDoc.id}" class="btn deny">Deny</button>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+
+  document.querySelectorAll(".approve").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.id;
+      if (!confirm("✅ Approve this user?")) return;
+      await updateDoc(doc(db, "users", id), { permission: true });
+      alert("User approved.");
+      loadPendingUsers();
+    });
+  });
+
+  document.querySelectorAll(".deny").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.id;
+      if (!confirm("❌ Deny & delete this user?")) return;
+      await deleteDoc(doc(db, "users", id));
+      alert("User denied & deleted.");
+      loadPendingUsers();
+    });
+  });
+}
+
+loadPendingUsers();
+</script>
+
+</body>
+</html>
