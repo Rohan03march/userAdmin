@@ -59,10 +59,3 @@ document.getElementById("myForm").addEventListener("submit", async (e) => {
   }
 });
 
-console.log("Submitting data to Firebase:", {
-  name,
-  location,
-  phoneNumber,
-  gender,
-  position,
-});
