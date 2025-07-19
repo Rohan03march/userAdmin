@@ -16,38 +16,11 @@
         </div>
 
         <!--Upload Image-->
-        <!-- <div class="upload">
-          <label for="photo">Upload Photo</label>
-          <input type="file" id="photo" accept="image/*" hidden />
-          <span id="fileName">No file chosen</span>
-        </div> -->
         <div class="upload">
-  <label for="photo">Upload Photo</label>
-  <input
-    type="file"
-    id="photo"
-    accept="image/*"
-    hidden
-  />
-  <span id="fileName">No file chosen</span>
-</div>
-
-<script>
-  // 📸 Upload Photo
-  document.querySelector("label[for='photo']").addEventListener("click", () => {
-    document.getElementById("photo").click();
-  });
-
-  document.getElementById("photo").addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      document.getElementById("fileName").textContent = file.name;
-    } else {
-      document.getElementById("fileName").textContent = "No file chosen";
-    }
-  });
-</script>
-
+          <label for="photo">Upload Photo</label>
+          <input type="file" id="photo" hidden />
+          <span id="fileName">No file chosen</span>
+        </div>
       </div>
 
       <div class="content">
