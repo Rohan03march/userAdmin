@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apply For Position</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles/form.css">
+<link rel="icon" type="image/png" href="SourceOnebg.png" />
+</head>
+<body>
+
+<div class="card">
+  <h2>Job Application</h2>
+
+  <form id="myForm">
+    <div class="form-group">
+      <label for="name">Full Name</label>
+      <input type="text" name="name" id="name" placeholder="Enter your name" autocomplete="name" required>
+    </div>
+
+    <div class="form-group">
+      <label for="location">Location</label>
+      <input type="text" name="location" id="location" placeholder="City, Country" autocomplete="address-level2" required>
+    </div>
+
+    <div class="form-group">
+      <label for="phoneNumber">Phone Number</label>
+      <input type="text" name="phoneNumber" id="phoneNumber" placeholder="1234567891" autocomplete="tel" required>
+    </div>
+
+    <div class="form-group">
+      <label for="sex">Gender</label>
+      <select name="sex" id="sex" aria-label="Gender" required>
+        <option value="">Select</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="position">Position Applying For</label>
+      <input type="text" name="position" id="position" placeholder="e.g., Picker" required>
+    </div>
+
+    <button type="submit">Send Application</button>
+  </form>
+
+  <p id="successMsg" style="color: green; display: none; margin-top: 10px;">
+    Form applied successfully, they will contact you soon…
+  </p>
+</div>
+
+</body>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="js/formSubmission.js"></script>
+
+</html>

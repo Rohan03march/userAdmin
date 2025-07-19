@@ -120,6 +120,77 @@ async function searchUsers(query) {
   });
 }
 
+// function renderTable(users) {
+//   const tbody = document.querySelector("table tbody");
+//   tbody.innerHTML = "";
+
+//   if (!users.length) {
+//     tbody.innerHTML = `<tr><td colspan="5" style="text-align:center">No users found.</td></tr>`;
+//     return;
+//   }
+
+//   users.forEach((user) => {
+//     const tr = document.createElement("tr");
+
+//     tr.innerHTML = `
+//       <td>
+//         <a href="user.html?id=${encodeURIComponent(
+//           user.id
+//         )}" style="text-decoration:none; color:inherit;">
+//           <img src="${user.photo || ""}" alt="${
+//       user.nameAsPerAadhaar || "User"
+//     }"
+//              style="width:40px;height:40px;border-radius:50%;object-fit:cover;margin-right:10px;vertical-align:middle;">
+//           <span style="vertical-align:middle;">${
+//             user.nameAsPerAadhaar || "Unknown"
+//           }</span>
+//         </a>
+//       </td>
+//       <td>${user.contactNumber || "Null"}</td>
+//       <td>${user.workingLocation || "Null"}</td>
+//       <td>${user.submittedAt || "N/A"}</td>
+//       <td>
+//         <button class="delete-btn" data-id="${user.id}" style="
+//           background-color: #e74c3c;
+//           color: white;
+//           border: none;
+//           padding: 5px 10px;
+//           border-radius: 4px;
+//           cursor: pointer;
+//         ">Delete</button>
+//       </td>
+//     `;
+
+//     const deleteBtn = tr.querySelector(".delete-btn");
+//     deleteBtn.addEventListener("click", async (e) => {
+//       e.preventDefault();
+//       e.stopPropagation();
+
+//       if (
+//         confirm(
+//           `Are you sure you want to delete ${
+//             user.nameAsPerAadhaar || "this user"
+//           }?`
+//         )
+//       ) {
+//         try {
+//           await db.ref(`registrations/${user.id}`).remove();
+//           alert("✅ User deleted successfully");
+
+//           // 🔄 Refresh the list properly
+//           const query = document.getElementById("searchInput").value.trim();
+//           const updatedUsers = await searchUsers(query);
+//           renderTable(updatedUsers);
+//         } catch (err) {
+//           alert("❌ Error deleting user: " + err.message);
+//         }
+//       }
+//     });
+
+//     tbody.appendChild(tr);
+//   });
+// }
+
 function renderTable(users) {
   const tbody = document.querySelector("table tbody");
   tbody.innerHTML = "";
@@ -129,7 +200,10 @@ function renderTable(users) {
     return;
   }
 
-  users.forEach((user) => {
+  // 👇 limit to first 5
+  const limitedUsers = users.slice(0, 5);
+
+  limitedUsers.forEach((user) => {
     const tr = document.createElement("tr");
 
     tr.innerHTML = `
@@ -190,3 +264,32 @@ function renderTable(users) {
     tbody.appendChild(tr);
   });
 }
+
+
+// Render New Applications
+document.addEventListener("DOMContentLoaded", () => {
+  const tbody = document.getElementById("applicationsTableBody");
+
+  db.ref("applications").on("value", (snapshot) => {
+    tbody.innerHTML = "";
+    if (!snapshot.exists()) {
+      tbody.innerHTML =
+        '<tr><td colspan="5" style="text-align:center">No applications yet.</td></tr>';
+      return;
+    }
+
+    const apps = Object.values(snapshot.val());
+    apps.reverse().forEach((app) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${app.name || "N/A"}</td>
+        <td>${app.location || "N/A"}</td>
+        <td>${app.phoneNumber || "N/A"}</td>
+        <td>${app.gender || "N/A"}</td>
+        <td>${app.position || "N/A"}</td>
+        <td>${new Date(app.submittedAt).toLocaleString()}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  });
+});
