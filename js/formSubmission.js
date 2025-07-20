@@ -18,10 +18,11 @@ document.getElementById("myForm").addEventListener("submit", async (e) => {
 
   const nameField = document.getElementById("name");
   const locationField = document.getElementById("location");
-  const jobField = document.getElementById("time")
+  const jobField = document.getElementById("time");
   const phoneField = document.getElementById("phoneNumber");
   const genderField = document.getElementById("sex");
   const positionField = document.getElementById("position");
+  const submitBtn = e.target.querySelector("button[type='submit']");
 
   if (!nameField || !locationField || !jobField || !phoneField || !genderField || !positionField) {
     alert("Form elements not found in the DOM.");
@@ -40,26 +41,32 @@ document.getElementById("myForm").addEventListener("submit", async (e) => {
     return;
   }
 
+  // 🔷 Show loading state
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Submitting...";
+
   try {
     const newAppRef = db.ref("applications").push();
     await newAppRef.set({
-  name,
-  location,
-  job,
-  phoneNumber,
-  gender,
-  position,
-  status: 'yet',  // 👈 default status saved in DB
-});
-
+      name,
+      location,
+      job,
+      phoneNumber,
+      gender,
+      position,
+      status: "yet", // default status
+    });
 
     document.getElementById("myForm").reset();
-    const msg = document.getElementById("successMsg");
-    msg.style.display = "block";
-    setTimeout(() => (msg.style.display = "none"), 5000);
+    alert("Form applied successfully, we will contact you soon…");
   } catch (err) {
     console.error("Error submitting application:", err);
     alert("Something went wrong. Please try again.");
+  } finally {
+    // 🔷 Restore button
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Apply";
   }
 });
+
 
