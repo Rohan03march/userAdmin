@@ -18,22 +18,24 @@ document.getElementById("myForm").addEventListener("submit", async (e) => {
 
   const nameField = document.getElementById("name");
   const locationField = document.getElementById("location");
+  const jobField = document.getElementById("time")
   const phoneField = document.getElementById("phoneNumber");
   const genderField = document.getElementById("sex");
   const positionField = document.getElementById("position");
 
-  if (!nameField || !locationField || !phoneField || !genderField || !positionField) {
+  if (!nameField || !locationField || !jobField || !phoneField || !genderField || !positionField) {
     alert("Form elements not found in the DOM.");
     return;
   }
 
   const name = nameField.value.trim();
   const location = locationField.value.trim();
+  const job = jobField.value;
   const phoneNumber = phoneField.value.trim();
   const gender = genderField.value;
   const position = positionField.value.trim();
 
-  if (!name || !location || !phoneNumber || !gender || !position) {
+  if (!name || !location || !job || !phoneNumber || !gender || !position) {
     alert("Please fill all fields!");
     return;
   }
@@ -41,13 +43,15 @@ document.getElementById("myForm").addEventListener("submit", async (e) => {
   try {
     const newAppRef = db.ref("applications").push();
     await newAppRef.set({
-      name,
-      location,
-      phoneNumber,
-      gender,
-      position,
-      submittedAt: new Date().toISOString(),
-    });
+  name,
+  location,
+  job,
+  phoneNumber,
+  gender,
+  position,
+  status: 'yet',  // 👈 default status saved in DB
+});
+
 
     document.getElementById("myForm").reset();
     const msg = document.getElementById("successMsg");

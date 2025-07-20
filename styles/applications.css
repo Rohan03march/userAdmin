@@ -1,54 +1,93 @@
 body {
   font-family: 'Inter', sans-serif;
   background: linear-gradient(135deg, #fdfbfb, #ebedee);
-  padding: 20px;
   margin: 0;
   color: #222;
+  height: 100vh;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
 }
 
 .container {
-  max-width: 1000px;
-  margin: 0 auto;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  margin: 0;
   background: #fff;
-  border-radius: 12px;
+  border-radius: 0;
   padding: 30px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: none;
   animation: fadeIn 0.6s ease-in-out;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 h2 {
   text-align: center;
-  margin-bottom: 30px;
-  font-size: 32px;
+  margin-bottom: 20px;
+  font-size: 28px;
   color: #1a1a1a;
   font-weight: 600;
   letter-spacing: 0.5px;
 }
 
+/* Applications List Scrollable */
+.applications-wrapper {
+  max-height: 500px;
+  overflow-y: auto; /* allow scroll if needed */
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  background: #fff;
+  position: relative; /* to contain z-index context */
+}
+
+/* Scrollbar */
+.applications-wrapper::-webkit-scrollbar {
+  width: 8px;
+}
+.applications-wrapper::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 4px;
+}
+.applications-wrapper::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+}
+.applications-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Table */
 table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
   background: #fff;
   border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  overflow: visible; /* allow dropdown to show */
 }
 
 th, td {
-  padding: 14px 18px;
+  padding: 12px 16px;
   text-align: left;
-  font-size: 15px;
+  font-size: 14px;
   color: #333;
+  position: relative; /* needed so dropdown is positioned correctly */
+  overflow: visible;
 }
 
 th {
+  position: sticky;
+  top: 0;
   background: #f5f7fa;
   font-weight: 600;
   color: #555;
   border-bottom: 1px solid #e1e5ea;
   text-transform: uppercase;
   letter-spacing: 0.4px;
+  z-index: 1;
 }
 
 tr {
@@ -63,10 +102,80 @@ tr:nth-child(even) {
   background-color: #fafafa;
 }
 
+/* Buttons */
+.status-button {
+  background: #f1f5f9;
+  border: none;
+  padding: 6px 14px;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #1e293b;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 2; /* ensure button is above */
+}
+
+.status-button:hover {
+  background: #e2e8f0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.status-button.yet {
+  background: linear-gradient(to right, #fde68a, #fcd34d);
+  color: #78350f;
+}
+
+.status-button.selected {
+  background: linear-gradient(to right, #34d399, #059669);
+  color: #f0fdf4;
+}
+
+.status-button.rejected {
+  background: linear-gradient(to right, #f87171, #ef4444);
+  color: #fff1f2;
+}
+
+/* Dropdown Menu */
+.status-menu {
+  position: absolute;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  z-index: 100; /* make sure it shows above everything */
+  margin-top: 4px;
+  min-width: 180px;
+  border-radius: 6px;
+  overflow: hidden;
+  animation: fadeIn 0.2s ease-in-out;
+  top: 100%; /* show below button */
+  left: 0;
+}
+
+.status-option {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #334155;
+  transition: background 0.2s, color 0.2s;
+}
+
+.status-option:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
+.hidden {
+  display: none;
+}
+
+/* Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(4px);
   }
   to {
     opacity: 1;

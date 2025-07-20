@@ -18,10 +18,32 @@
       <label for="name">Full Name</label>
       <input type="text" name="name" id="name" placeholder="Enter your name" autocomplete="name" required>
     </div>
-
     <div class="form-group">
-      <label for="location">Location</label>
-      <input type="text" name="location" id="location" placeholder="City, Country" autocomplete="address-level2" required>
+  <label for="location">Location</label>
+  <select name="location" id="location" required>
+    <option value="" disabled selected>Select a location</option>
+    <option value="Balagere">Balagere</option>
+    <option value="Begur">Begur</option>
+    <option value="Chikathogur">Chikathogur</option>
+    <option value="Deepanjali Nagar">Deepanjali Nagar</option>
+    <option value="Haralur">Haralur</option>
+    <option value="Hope Farm">Hope Farm</option>
+    <option value="Kadugodi">Kadugodi</option>
+    <option value="Kanamangala">Kanamangala</option>
+    <option value="Kundalahalli">Kundalahalli</option>
+    <option value="Mysore Road">Mysore Road</option>
+    <option value="Shanthiniketan">Shanthiniketan</option>
+    <option value="Wilson Garden">Wilson Garden</option>
+    <!-- Add more locations as needed -->
+  </select>
+</div>
+ <div class="form-group">
+      <label for="Time">Select Job Type</label>
+      <select name="Time" id="time" aria-label="Job Type" required>
+        <option value="">Select</option>
+        <option value="Full Time">Full Time</option>
+        <option value="Half Time">Half Time</option>
+      </select>
     </div>
 
     <div class="form-group">
@@ -44,7 +66,9 @@
       <input type="text" name="position" id="position" placeholder="e.g., Picker" required>
     </div>
 
-    <button type="submit">Send Application</button>
+    
+
+    <button type="submit">Apply</button>
   </form>
 
   <p id="successMsg" style="color: green; display: none; margin-top: 10px;">
