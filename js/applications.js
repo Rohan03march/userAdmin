@@ -142,6 +142,9 @@ function renderApplications(applications) {
         <div class="status-option" data-status="yet">To Be Interviewed</div>
         <div class="status-option" data-status="selected">Selected</div>
         <div class="status-option" data-status="rejected">Rejected</div>
+        <div class="status-option" data-status="joined">Joined</div>
+        <div class="status-option" data-status="not">Not Responding</div>
+        <div class="status-option" data-status="notI">Not Interested</div>
       </div>
     </div>
   </td>
@@ -178,6 +181,9 @@ function renderApplications(applications) {
 function getStatusLabel(status) {
   if (status === "selected") return "Selected";
   if (status === "rejected") return "Rejected";
+  if (status === "joined") return "Joined";
+  if (status === "not") return "Not Responding";
+  if (status === "notI") return "Not Interested";
   return "To Be Interviewed";
 }
 

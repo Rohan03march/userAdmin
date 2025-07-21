@@ -1,8 +1,8 @@
 body {
-  font-family: 'Inter', sans-serif;
-  background: linear-gradient(135deg, #fdfbfb, #ebedee);
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #f9fafb, #f1f5f9);
   margin: 0;
-  color: #222;
+  color: #1f2937;
   height: 100vh;
   display: flex;
   align-items: stretch;
@@ -11,14 +11,13 @@ body {
 
 .container {
   width: 100%;
-  height: 100%;
   max-width: none;
   margin: 0;
   background: #fff;
   border-radius: 0;
-  padding: 30px;
+  padding: 24px;
   box-shadow: none;
-  animation: fadeIn 0.6s ease-in-out;
+  animation: fadeIn 0.5s ease-in-out;
   overflow: auto;
   display: flex;
   flex-direction: column;
@@ -26,140 +25,160 @@ body {
 
 h2 {
   text-align: center;
-  margin-bottom: 20px;
-  font-size: 28px;
-  color: #1a1a1a;
+  margin-bottom: 16px;
+  font-size: 26px;
   font-weight: 600;
-  letter-spacing: 0.5px;
+  color: #0f172a;
+  letter-spacing: 0.4px;
 }
 
 /* Applications List Scrollable */
 .applications-wrapper {
-  max-height: 500px;
-  overflow-y: auto; /* allow scroll if needed */
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  max-height: 540px;
+  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
   background: #fff;
-  position: relative; /* to contain z-index context */
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 /* Scrollbar */
 .applications-wrapper::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 .applications-wrapper::-webkit-scrollbar-thumb {
   background-color: #cbd5e1;
-  border-radius: 4px;
+  border-radius: 3px;
 }
 .applications-wrapper::-webkit-scrollbar-thumb:hover {
   background-color: #94a3b8;
-}
-.applications-wrapper::-webkit-scrollbar-track {
-  background: transparent;
 }
 
 /* Table */
 table {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
+  border-collapse: collapse;
   background: #fff;
   border-radius: 8px;
-  overflow: visible; /* allow dropdown to show */
+  overflow: visible;
 }
 
 th, td {
-  padding: 12px 16px;
+  padding: 12px 14px;
   text-align: left;
   font-size: 14px;
-  color: #333;
-  position: relative; /* needed so dropdown is positioned correctly */
+  color: #374151;
+  position: relative;
   overflow: visible;
+  vertical-align: middle;
 }
 
 th {
   position: sticky;
   top: 0;
-  background: #f5f7fa;
+  background: #f8fafc;
   font-weight: 600;
-  color: #555;
-  border-bottom: 1px solid #e1e5ea;
+  color: #475569;
+  border-bottom: 1px solid #e2e8f0;
   text-transform: uppercase;
-  letter-spacing: 0.4px;
+  font-size: 12px;
+  letter-spacing: 0.3px;
   z-index: 1;
 }
 
 tr {
-  transition: background-color 0.3s ease;
+  transition: background-color 0.25s ease;
 }
 
 tr:hover {
-  background-color: #f0f4f8;
+  background-color: #f9fafb;
 }
 
 tr:nth-child(even) {
-  background-color: #fafafa;
+  background-color: #fcfcfc;
 }
 
-/* Buttons */
+/* Base Button */
 .status-button {
-  background: #f1f5f9;
-  border: none;
-  padding: 6px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 5px 12px;
   cursor: pointer;
   border-radius: 6px;
-  font-size: 0.85rem;
+  font-size: 13px;
   font-weight: 500;
-  color: #1e293b;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  color: #334155;
   transition: all 0.2s ease;
-  position: relative;
-  z-index: 2; /* ensure button is above */
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .status-button:hover {
-  background: #e2e8f0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  background: #f1f5f9;
+  border-color: #cbd5e1;
 }
 
+/* Status Colors */
 .status-button.yet {
-  background: linear-gradient(to right, #fde68a, #fcd34d);
-  color: #78350f;
+  background: #fefce8;
+  color: #854d0e;
+  border-color: #fde68a;
 }
 
 .status-button.selected {
-  background: linear-gradient(to right, #34d399, #059669);
-  color: #f0fdf4;
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #6ee7b7;
 }
 
 .status-button.rejected {
-  background: linear-gradient(to right, #f87171, #ef4444);
-  color: #fff1f2;
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.status-button.joined {
+  background: #f0fdf4;
+  color: #15803d;
+  border-color: #bbf7d0;
+}
+
+.status-button.not {
+  background: #f1f5f9;
+  color: #475569;
+  border-color: #e2e8f0;
+}
+
+.status-button.notI {
+  background: #fff7ed;
+  color: #c2410c;
+  border-color: #fdba74;
 }
 
 /* Dropdown Menu */
 .status-menu {
   position: absolute;
   background: #fff;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-  z-index: 100; /* make sure it shows above everything */
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  z-index: 100;
   margin-top: 4px;
-  min-width: 180px;
-  border-radius: 6px;
+  min-width: 160px;
+  border-radius: 8px;
   overflow: hidden;
-  animation: fadeIn 0.2s ease-in-out;
-  top: 100%; /* show below button */
+  animation: fadeIn 0.15s ease-in-out;
+  top: 100%;
   left: 0;
 }
 
 .status-option {
-  padding: 10px 14px;
+  padding: 10px 12px;
   cursor: pointer;
-  font-size: 0.9rem;
-  color: #334155;
-  transition: background 0.2s, color 0.2s;
+  font-size: 13px;
+  color: #374151;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 .status-option:hover {
