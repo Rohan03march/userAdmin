@@ -50,7 +50,8 @@ window.searchUsers = async function (query) {
     (user) =>
       (user.nameAsPerAadhaar || "").toLowerCase().includes(query) ||
       (user.contactNumber || "").toLowerCase().includes(query) ||
-      (user.workingLocation || "").toLowerCase().includes(query)
+      (user.workingLocation || "").toLowerCase().includes(query) ||
+      (user.designation || "").toLowerCase().includes(query)
   );
 
   return filtered;

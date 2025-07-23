@@ -112,10 +112,12 @@ async function searchUsers(query) {
     const name = (user.nameAsPerAadhaar || "").toLowerCase();
     const contact = (user.contactNumber || "").toLowerCase();
     const location = (user.workingLocation || "").toLowerCase();
+    const des = (user.designation || "").toLowerCase();
     return (
       name.includes(query) ||
       contact.includes(query) ||
-      location.includes(query)
+      location.includes(query) || 
+      des.includes(query)
     );
   });
 }
@@ -148,6 +150,7 @@ function renderTable(users) {
       </td>
       <td>${user.contactNumber || "Null"}</td>
       <td>${user.workingLocation || "Null"}</td>
+      <td>${user.designation || "Null"}</td>
       <td>${user.submittedAt || "N/A"}</td>
       <td>
         <button class="delete-btn" data-id="${user.id}" style="
