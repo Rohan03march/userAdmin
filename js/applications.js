@@ -177,7 +177,12 @@ searchInput.addEventListener("input", () => {
     );
   });
 
-  renderApplications(filteredApps);
+  if (filteredApps.length > 0) {
+    renderApplications(filteredApps);
+  } else {
+    listContainer.innerHTML = `<p style="text-align:center; color:#888; font-style:italic;">No applications found.</p>`;
+  }
 });
+
 
 
