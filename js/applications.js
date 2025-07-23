@@ -64,20 +64,13 @@ function renderApplications(applications) {
         </div>
       </td>
       <td>
-  <button class="delete-button" style="
-    background-color: #e63946;
-    color: #fff;
-    border: none;
-    padding: 6px 12px;
-    font-size: 14px;
-    border-radius: 4px;
-    cursor: pointer;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-    transition: background-color 0.3s ease;">🗑 Delete</button>
+  <button class="delete-button">
+🗑 Delete
+</button>
+
 </td>
 
     `;
-
     tbody.appendChild(tr);
 
     // ✅ Get elements after appending to DOM
@@ -183,6 +176,3 @@ searchInput.addEventListener("input", () => {
     listContainer.innerHTML = `<p style="text-align:center; color:#888; font-style:italic;">No applications found.</p>`;
   }
 });
-
-
-

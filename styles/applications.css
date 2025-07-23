@@ -201,3 +201,35 @@ tr:nth-child(even) {
     transform: translateY(0);
   }
 }
+
+
+.delete-button {
+  background-color: #e53935;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    transform 0.1s ease,
+    box-shadow 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.delete-button:hover {
+  background-color: #d32f2f;
+}
+
+.delete-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.3);
+}
+
+.delete-button:active {
+  background-color: #c62828;
+  transform: scale(0.98);
+}
+
