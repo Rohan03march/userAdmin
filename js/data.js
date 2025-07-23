@@ -112,7 +112,6 @@ function renderTable(users) {
       <td>${user.contactNumber || "Null"}</td>
       <td>${user.workingLocation || "Null"}</td>
       <td>${user.designation || "Null"}</td>
-      <td>${user.submittedAt || "N/A"}</td>
       <td>
         <button class="delete-btn" data-id="${user.id}" style="
           background-color: #e74c3c;
