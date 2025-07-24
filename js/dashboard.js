@@ -79,6 +79,9 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
+
+
+
 // Searching and Deleting
 document.addEventListener("DOMContentLoaded", () => {
   const searchInput = document.getElementById("searchInput");
