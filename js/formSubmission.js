@@ -13,18 +13,62 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-document.getElementById("myForm").addEventListener("submit", async (e) => {
+// ✅ Get form elements
+const form = document.getElementById("myForm");
+const phoneInput = document.getElementById("phoneNumber");
+const submitBtn = form.querySelector("button[type='submit']");
+
+// IDs of fields to disable if phone already exists
+const formFieldIds = ["name", "location", "time", "sex", "position"];
+
+// 🔍 Check for duplicate phone number when user finishes typing
+phoneInput.addEventListener("blur", async () => {
+  const phoneNumber = phoneInput.value.trim();
+  const phoneKey = phoneNumber.replace(/\D/g, '');
+
+  if (!phoneKey) return;
+
+  try {
+    const userRef = db.ref("applications/" + phoneKey);
+    const snapshot = await userRef.once("value");
+
+    if (snapshot.exists()) {
+      alert("This phone number already exists in our system. Please wait for a call.");
+
+      // Disable all form fields
+      formFieldIds.forEach(id => {
+        const field = document.getElementById(id);
+        if (field) field.disabled = true;
+      });
+
+      phoneInput.disabled = true; // Optional: prevent editing again
+      submitBtn.disabled = true;
+    } else {
+      // Re-enable all fields in case they were previously disabled
+      formFieldIds.forEach(id => {
+        const field = document.getElementById(id);
+        if (field) field.disabled = false;
+      });
+
+      phoneInput.disabled = false;
+      submitBtn.disabled = false;
+    }
+  } catch (err) {
+    console.error("Error checking phone number:", err);
+  }
+});
+
+// ✅ Submit Handler
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const nameField = document.getElementById("name");
   const locationField = document.getElementById("location");
   const jobField = document.getElementById("time");
-  const phoneField = document.getElementById("phoneNumber");
   const genderField = document.getElementById("sex");
   const positionField = document.getElementById("position");
-  const submitBtn = e.target.querySelector("button[type='submit']");
 
-  if (!nameField || !locationField || !jobField || !phoneField || !genderField || !positionField) {
+  if (!nameField || !locationField || !jobField || !phoneInput || !genderField || !positionField) {
     alert("Form elements not found in the DOM.");
     return;
   }
@@ -32,7 +76,7 @@ document.getElementById("myForm").addEventListener("submit", async (e) => {
   const name = nameField.value.trim();
   const location = locationField.value.trim();
   const job = jobField.value;
-  const phoneNumber = phoneField.value.trim();
+  const phoneNumber = phoneInput.value.trim();
   const gender = genderField.value;
   const position = positionField.value.trim();
 
@@ -41,32 +85,37 @@ document.getElementById("myForm").addEventListener("submit", async (e) => {
     return;
   }
 
+  const phoneKey = phoneNumber.replace(/\D/g, '');
+
   // 🔷 Show loading state
   submitBtn.disabled = true;
   submitBtn.textContent = "Submitting...";
 
   try {
-    const newAppRef = db.ref("applications").push();
-    await newAppRef.set({
-      name,
-      location,
-      job,
-      phoneNumber,
-      gender,
-      position,
-      status: "yet", // default status
-    });
+    const userRef = db.ref("applications/" + phoneKey);
+    const snapshot = await userRef.once("value");
 
-    document.getElementById("myForm").reset();
-    alert("Form applied successfully, we will contact you soon…");
+    if (snapshot.exists()) {
+      alert("You already submitted your application, please wait for the call...");
+    } else {
+      await userRef.set({
+        name,
+        location,
+        job,
+        phoneNumber,
+        gender,
+        position,
+        status: "yet" // default status
+      });
+
+      form.reset();
+      alert("Form applied successfully, we will contact you soon…");
+    }
   } catch (err) {
     console.error("Error submitting application:", err);
     alert("Something went wrong. Please try again.");
   } finally {
-    // 🔷 Restore button
     submitBtn.disabled = false;
     submitBtn.textContent = "Apply";
   }
 });
-
-

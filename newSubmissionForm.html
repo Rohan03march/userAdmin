@@ -15,9 +15,15 @@
 
   <form id="myForm">
     <div class="form-group">
-      <label for="name">Full Name</label>
+      <label for="name">Full Name (As Per Aadhaar)</label>
       <input type="text" name="name" id="name" placeholder="Enter your name" autocomplete="name" required>
     </div>
+
+    <div class="form-group">
+      <label for="phoneNumber">Phone Number</label>
+      <input type="text" name="phoneNumber" id="phoneNumber" placeholder="1234567891" autocomplete="tel" required>
+    </div>
+    
     <div class="form-group">
   <label for="location">Location</label>
   <input list="locationOptions" name="location" id="location" placeholder="Select or type a location" required>
@@ -56,10 +62,7 @@
       </select>
     </div>
 
-    <div class="form-group">
-      <label for="phoneNumber">Phone Number</label>
-      <input type="text" name="phoneNumber" id="phoneNumber" placeholder="1234567891" autocomplete="tel" required>
-    </div>
+    
 
     <div class="form-group">
       <label for="sex">Gender</label>
