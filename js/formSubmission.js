@@ -18,39 +18,45 @@ const form = document.getElementById("myForm");
 const phoneInput = document.getElementById("phoneNumber");
 const submitBtn = form.querySelector("button[type='submit']");
 
-// IDs of fields to disable if phone already exists
+// Field IDs to disable on phone match
 const formFieldIds = ["name", "location", "time", "sex", "position"];
+let phoneExists = false; // internal flag to track match
 
-// 🔍 Check for duplicate phone number when user finishes typing
+// ✅ Normalize phone number to last 10 digits
+const normalizePhone = (rawPhone) => {
+  return rawPhone.replace(/\D/g, '').slice(-10);
+};
+
+// 🔍 Check for existing phone number (on blur)
 phoneInput.addEventListener("blur", async () => {
-  const phoneNumber = phoneInput.value.trim();
-  const phoneKey = phoneNumber.replace(/\D/g, '');
+  const rawPhone = phoneInput.value.trim();
+  const phoneKey = normalizePhone(rawPhone);
 
-  if (!phoneKey) return;
+  if (!phoneKey || phoneKey.length !== 10) return;
 
   try {
     const userRef = db.ref("applications/" + phoneKey);
     const snapshot = await userRef.once("value");
 
     if (snapshot.exists()) {
-      alert("This phone number already exists in our system. Please wait for a call.");
+      phoneExists = true;
 
-      // Disable all form fields
+      // Disable all fields (except phone)
       formFieldIds.forEach(id => {
         const field = document.getElementById(id);
         if (field) field.disabled = true;
       });
 
-      phoneInput.disabled = true; // Optional: prevent editing again
-      submitBtn.disabled = true;
+      submitBtn.disabled = false;
     } else {
-      // Re-enable all fields in case they were previously disabled
+      phoneExists = false;
+
+      // Re-enable fields
       formFieldIds.forEach(id => {
         const field = document.getElementById(id);
         if (field) field.disabled = false;
       });
 
-      phoneInput.disabled = false;
       submitBtn.disabled = false;
     }
   } catch (err) {
@@ -58,34 +64,32 @@ phoneInput.addEventListener("blur", async () => {
   }
 });
 
-// ✅ Submit Handler
+// ✅ Form submission
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const nameField = document.getElementById("name");
-  const locationField = document.getElementById("location");
-  const jobField = document.getElementById("time");
-  const genderField = document.getElementById("sex");
-  const positionField = document.getElementById("position");
-
-  if (!nameField || !locationField || !jobField || !phoneInput || !genderField || !positionField) {
-    alert("Form elements not found in the DOM.");
+  if (phoneExists) {
+    alert("You already submitted your application, please wait for the call...");
     return;
   }
 
-  const name = nameField.value.trim();
-  const location = locationField.value.trim();
-  const job = jobField.value;
-  const phoneNumber = phoneInput.value.trim();
-  const gender = genderField.value;
-  const position = positionField.value.trim();
+  const name = document.getElementById("name").value.trim();
+  const location = document.getElementById("location").value.trim();
+  const job = document.getElementById("time").value;
+  const rawPhone = phoneInput.value.trim();
+  const gender = document.getElementById("sex").value;
+  const position = document.getElementById("position").value.trim();
 
-  if (!name || !location || !job || !phoneNumber || !gender || !position) {
+  if (!name || !location || !job || !rawPhone || !gender || !position) {
     alert("Please fill all fields!");
     return;
   }
 
-  const phoneKey = phoneNumber.replace(/\D/g, '');
+  const phoneKey = normalizePhone(rawPhone);
+  if (phoneKey.length !== 10) {
+    alert("Invalid phone number.");
+    return;
+  }
 
   // 🔷 Show loading state
   submitBtn.disabled = true;
@@ -102,14 +106,21 @@ form.addEventListener("submit", async (e) => {
         name,
         location,
         job,
-        phoneNumber,
+        phoneNumber: phoneKey, // store normalized version
         gender,
         position,
-        status: "yet" // default status
+        status: "yet"
       });
 
       form.reset();
       alert("Form applied successfully, we will contact you soon…");
+
+      // Reset state
+      phoneExists = false;
+      formFieldIds.forEach(id => {
+        const field = document.getElementById(id);
+        if (field) field.disabled = false;
+      });
     }
   } catch (err) {
     console.error("Error submitting application:", err);
