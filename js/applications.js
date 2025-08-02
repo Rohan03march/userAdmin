@@ -65,7 +65,7 @@ function renderApplications(applications) {
       </td>
       <td>
   <button class="delete-button">
-🗑 Delete
+Delete
 </button>
 
 </td>
