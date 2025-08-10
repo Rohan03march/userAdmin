@@ -109,7 +109,8 @@ form.addEventListener("submit", async (e) => {
         phoneNumber: phoneKey, // store normalized version
         gender,
         position,
-        status: "yet"
+        status: "yet",
+        timestamp: firebase.database.ServerValue.TIMESTAMP
       });
 
       form.reset();

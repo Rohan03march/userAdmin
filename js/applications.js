@@ -29,6 +29,7 @@ function renderApplications(applications) {
         <th>Location</th>
         <th>Gender</th>
         <th>Position</th>
+        <th>Time</th>
         <th>Status</th>
         <th>Action</th>
       </tr>
@@ -39,10 +40,15 @@ function renderApplications(applications) {
   const tbody = table.querySelector("tbody");
 
   applications.forEach(app => {
-    // ✅ Create row
     const tr = document.createElement("tr");
 
-    // ✅ Populate cells
+    // Format timestamp if exists
+    let dateTime = "";
+    if (app.timestamp) {
+      const dateObj = new Date(app.timestamp);
+      dateTime = dateObj.toLocaleDateString() + " " + dateObj.toLocaleTimeString();
+    }
+
     tr.innerHTML = `
       <td>${app.name || ""}</td>
       <td>${app.phoneNumber || ""}</td>
@@ -50,6 +56,7 @@ function renderApplications(applications) {
       <td>${app.location || ""}</td>
       <td>${app.gender || ""}</td>
       <td>${app.position || ""}</td>
+      <td>${dateTime}</td> <!-- Added -->
       <td>
         <div style="position:relative; display:inline-block;">
           <button class="status-button ${app.status}">${getStatusLabel(app.status)}</button>
@@ -64,23 +71,18 @@ function renderApplications(applications) {
         </div>
       </td>
       <td>
-  <button class="delete-button">
-Delete
-</button>
-
-</td>
-
+        <button class="delete-button">Delete</button>
+      </td>
     `;
     tbody.appendChild(tr);
 
-    // ✅ Get elements after appending to DOM
+    // ✅ Status button logic remains the same...
     const statusButton = tr.querySelector(".status-button");
     const menu = tr.querySelector(".status-menu");
     const deleteButton = tr.querySelector(".delete-button");
 
-    // ✅ Status button logic
     statusButton.addEventListener("click", (e) => {
-      e.stopPropagation(); // prevent document click from hiding it immediately
+      e.stopPropagation();
       document.querySelectorAll(".status-menu").forEach(m => m.classList.add("hidden"));
       menu.classList.toggle("hidden");
     });
@@ -88,7 +90,6 @@ Delete
     menu.querySelectorAll(".status-option").forEach(option => {
       option.addEventListener("click", () => {
         const newStatus = option.dataset.status;
-
         db.ref(`applications/${app.key}`).update({ status: newStatus })
           .then(() => {
             statusButton.textContent = getStatusLabel(newStatus);
@@ -101,7 +102,6 @@ Delete
       });
     });
 
-    // ✅ Delete button logic
     deleteButton.addEventListener("click", () => {
       if (confirm(`Are you sure you want to delete application of ${app.name}?`)) {
         db.ref(`applications/${app.key}`).remove()
