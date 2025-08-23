@@ -93,25 +93,36 @@ function renderApplications(applications) {
     });
 
     menu.querySelectorAll(".status-option").forEach(option => {
-      option.addEventListener("click", () => {
-        const newStatus = option.dataset.status;
-        db.ref(`applications/${app.key}`).update({ status: newStatus })
-          .then(() => {
-            statusButton.textContent = getStatusLabel(newStatus);
-            statusButton.className = `status-button ${newStatus}`;
-            menu.classList.add("hidden");
-          })
-          .catch(err => {
-            alert("Error updating status: " + err.message);
-          });
+  option.addEventListener("click", () => {
+    const newStatus = option.dataset.status;
+
+    // ✅ Update Firebase
+    db.ref(`applications/${app.key}`).update({ status: newStatus })
+      .then(() => {
+        // ✅ Update local array so filters don't reset
+        const idx = allApplications.findIndex(a => a.key === app.key);
+        if (idx !== -1) {
+          allApplications[idx].status = newStatus;
+        }
+        applyFilters(); 
+
+        // ✅ Auto-close the dropdown
+        menu.classList.add("hidden");
+      })
+      .catch(err => {
+        alert("Error updating status: " + err.message);
       });
-    });
+  });
+});
+
 
     deleteButton.addEventListener("click", () => {
       if (confirm(`Are you sure you want to delete application of ${app.name}?`)) {
         db.ref(`applications/${app.key}`).remove()
           .then(() => {
-            tr.remove();
+            // ✅ Remove locally
+            allApplications = allApplications.filter(a => a.key !== app.key);
+            applyFilters(); // re-render with filters intact
           })
           .catch(err => {
             alert("Error deleting application: " + err.message);
@@ -136,6 +147,11 @@ function getStatusLabel(status) {
 
 // 🟢 Populate dropdowns dynamically
 function populateFilterOptions(applications) {
+  // ✅ Save current filter values before resetting
+  const currentGender = genderFilter.value;
+  const currentPosition = positionFilter.value;
+  const currentLocation = locationFilter.value;
+
   const positions = [...new Set(applications.map(app => app.position).filter(Boolean))];
   const locations = [...new Set(applications.map(app => app.location).filter(Boolean))];
 
@@ -144,7 +160,13 @@ function populateFilterOptions(applications) {
 
   locationFilter.innerHTML = `<option value="">All Locations</option>` +
     locations.map(loc => `<option value="${loc.toLowerCase()}">${loc}</option>`).join("");
+
+  // ✅ Restore previously selected filters
+  genderFilter.value = currentGender;
+  positionFilter.value = currentPosition;
+  locationFilter.value = currentLocation;
 }
+
 
 // 🟢 Apply search + filters
 function applyFilters() {
