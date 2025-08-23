@@ -15,9 +15,14 @@ const db = firebase.database();
 
 const listContainer = document.getElementById("applicationsList");
 const searchInput = document.getElementById("searchInput");
+const genderFilter = document.getElementById("genderFilter");
+const positionFilter = document.getElementById("positionFilter");
+const locationFilter = document.getElementById("locationFilter");
+const clearFilters = document.getElementById("clearFilters");
 
 let allApplications = []; // Store all apps here for filtering
 
+// 🟢 Render Applications
 function renderApplications(applications) {
   const table = document.createElement("table");
   table.innerHTML = `
@@ -56,7 +61,7 @@ function renderApplications(applications) {
       <td>${app.location || ""}</td>
       <td>${app.gender || ""}</td>
       <td>${app.position || ""}</td>
-      <td>${dateTime}</td> <!-- Added -->
+      <td>${dateTime}</td>
       <td>
         <div style="position:relative; display:inline-block;">
           <button class="status-button ${app.status}">${getStatusLabel(app.status)}</button>
@@ -76,7 +81,7 @@ function renderApplications(applications) {
     `;
     tbody.appendChild(tr);
 
-    // ✅ Status button logic remains the same...
+    // ✅ Status button logic
     const statusButton = tr.querySelector(".status-button");
     const menu = tr.querySelector(".status-menu");
     const deleteButton = tr.querySelector(".delete-button");
@@ -119,6 +124,7 @@ function renderApplications(applications) {
   listContainer.appendChild(table);
 }
 
+// 🟢 Status label
 function getStatusLabel(status) {
   if (status === "selected") return "Selected";
   if (status === "rejected") return "Rejected";
@@ -128,6 +134,71 @@ function getStatusLabel(status) {
   return "To Be Interviewed";
 }
 
+// 🟢 Populate dropdowns dynamically
+function populateFilterOptions(applications) {
+  const positions = [...new Set(applications.map(app => app.position).filter(Boolean))];
+  const locations = [...new Set(applications.map(app => app.location).filter(Boolean))];
+
+  positionFilter.innerHTML = `<option value="">All Positions</option>` +
+    positions.map(pos => `<option value="${pos.toLowerCase()}">${pos}</option>`).join("");
+
+  locationFilter.innerHTML = `<option value="">All Locations</option>` +
+    locations.map(loc => `<option value="${loc.toLowerCase()}">${loc}</option>`).join("");
+}
+
+// 🟢 Apply search + filters
+function applyFilters() {
+  const query = searchInput.value.trim().toLowerCase();
+  const gender = genderFilter.value;
+  const pos = positionFilter.value;
+  const loc = locationFilter.value;
+
+  const filteredApps = allApplications.filter(app => {
+    const name = (app.name || "").toLowerCase();
+    const phone = (app.phoneNumber || "").toLowerCase();
+    const jobs = (app.job || "").toLowerCase();
+    const location = (app.location || "").toLowerCase();
+    const position = (app.position || "").toLowerCase();
+    const genderVal = (app.gender || "").toLowerCase();
+    const status = getStatusLabel(app.status || "yet").toLowerCase();
+
+    const matchesSearch =
+      !query ||
+      name.includes(query) ||
+      phone.includes(query) ||
+      jobs.includes(query) ||
+      location.includes(query) ||
+      position.includes(query) ||
+      status.includes(query);
+
+    const matchesGender = !gender || genderVal === gender;
+    const matchesPos = !pos || position === pos;
+    const matchesLoc = !loc || location === loc;
+
+    return matchesSearch && matchesGender && matchesPos && matchesLoc;
+  });
+
+  if (filteredApps.length > 0) {
+    renderApplications(filteredApps);
+  } else {
+    listContainer.innerHTML = `<p style="text-align:center; color:#888; font-style:italic;">No applications found.</p>`;
+  }
+}
+
+// ✅ Event listeners
+searchInput.addEventListener("input", applyFilters);
+genderFilter.addEventListener("change", applyFilters);
+positionFilter.addEventListener("change", applyFilters);
+locationFilter.addEventListener("change", applyFilters);
+
+clearFilters.addEventListener("click", () => {
+  searchInput.value = "";
+  genderFilter.value = "";
+  positionFilter.value = "";
+  locationFilter.value = "";
+  applyFilters();
+});
+
 // ✅ Load Applications from Firebase
 db.ref("applications").on("value", snapshot => {
   allApplications = [];
@@ -135,44 +206,16 @@ db.ref("applications").on("value", snapshot => {
     snapshot.forEach(child => {
       allApplications.push({ key: child.key, ...child.val() });
     });
-    renderApplications(allApplications);
+    populateFilterOptions(allApplications);
+    applyFilters();
   } else {
     listContainer.innerHTML = "<p>No applications yet.</p>";
   }
 });
 
-// ✅ Close menu when clicking outside
+// ✅ Close status menu when clicking outside
 document.addEventListener("click", e => {
   if (!e.target.classList.contains("status-button")) {
     document.querySelectorAll(".status-menu").forEach(menu => menu.classList.add("hidden"));
-  }
-});
-
-// ✅ Search functionality
-searchInput.addEventListener("input", () => {
-  const query = searchInput.value.trim().toLowerCase();
-
-  const filteredApps = allApplications.filter(app => {
-    const name = (app.name || "").toLowerCase();
-    const phone = (app.phoneNumber || "").toLowerCase(); 
-    const jobs = (app.job || "").toLowerCase();
-    const location = (app.location || "").toLowerCase();
-    const pos = (app.position || "").toLowerCase();
-    const status = getStatusLabel(app.status || "yet").toLowerCase();
-
-    return (
-      name.includes(query) ||
-      location.includes(query) ||
-      phone.includes(query) ||
-      pos.includes(query) ||
-      jobs.includes(query) ||
-      status.includes(query)
-    );
-  });
-
-  if (filteredApps.length > 0) {
-    renderApplications(filteredApps);
-  } else {
-    listContainer.innerHTML = `<p style="text-align:center; color:#888; font-style:italic;">No applications found.</p>`;
   }
 });
