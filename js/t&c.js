@@ -189,17 +189,23 @@ document.addEventListener('DOMContentLoaded', function() {
     overlay.style.display='none';
     alert('Uploaded successfully!');
 
+    element.style.display = 'block';
+
     // ---------- Download local PDF ----------
-    html2pdf()
-      .set({
-        margin: 10,
-        filename: `${empName}_Engagement.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      })
-      .from(element)
-      .save();
+    setTimeout(() => {
+    //     html2pdf()
+    //   .set({
+    //     margin: 10,
+    //     filename: `${empName}_Engagement.pdf`,
+    //     image: { type: 'jpeg', quality: 0.98 },
+    //     html2canvas: { scale: 2, useCORS: true },
+    //     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    //   })
+    //   .from(element)
+    //   .save();
+
+    window.print();
+    }, 300)
 
   }catch(err){
     overlay.style.display='none';
