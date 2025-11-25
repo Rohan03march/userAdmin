@@ -37,7 +37,20 @@ document.addEventListener('DOMContentLoaded', function() {
     ctx.clearRect(0,0,canvas.width,canvas.height);
     signatureDrawn = false;
   }
-  window.addEventListener('resize', resizeCanvas);
+  function resizeCanvas(){
+  const ratio = window.devicePixelRatio || 1;
+  const oldImage = ctx.getImageData(0, 0, canvas.width, canvas.height); // 🔥 save previous drawing
+
+  canvas.width = canvas.offsetWidth * ratio;
+  canvas.height = canvas.offsetHeight * ratio;
+  ctx.scale(ratio, ratio);
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = '#000';
+
+  ctx.putImageData(oldImage, 0, 0); // 🔥 restore drawing
+}
+
   resizeCanvas();
 
   function getPos(e){
