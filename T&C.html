@@ -3,169 +3,45 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
- <link rel="icon" type="image/png" href="SourceOnebg.png" sizes="32x32">
-<title>Terms and Conditions — SOURCE ONE</title>
+<link rel="icon" type="image/png" href="SourceOnebg.png" sizes="32x32">
+<title>Engagement Letter — SOURCE ONE</title>
+
+<!-- html2canvas -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <!-- html2pdf -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+
 <style>
-  :root{
-    --brand:#de3f6a;
-    --text:#222;
-  }
-  html,body{height:100%; margin:0; font-family: "Roboto", sans-serif; background:#f2f4f8; color:var(--text);}
-  .container{max-width:1100px;margin:20px auto;padding:20px;}
-  button {
-  cursor: pointer;
-  border: none;
-  padding: 12px 20px;      /* increased padding for bigger button */
-  border-radius: 8px;
-  background: var(--brand);
-  color: #fff;
-  font-weight: 600;
-  margin-right: 8px;
-  min-width: 150px;        /* ensures button has a bigger width */
-  text-align: center;      /* center the text */
-  font-size: 14px;
-  transition: background 0.3s;
-}
+:root { --brand:#de3f6a; --text:#222; }
+html,body{margin:0;padding:0;font-family:Roboto,sans-serif;background:#f2f4f8;color:var(--text);}
+.container{max-width:1100px;margin:20px auto;padding:20px;}
+button{cursor:pointer;border:none;padding:12px 20px;border-radius:8px;background:var(--brand);color:#fff;font-weight:600;margin-right:8px;min-width:150px;text-align:center;font-size:14px;transition:0.3s;}
+button.alt{background:#666}
+.page-input{background:#fff;padding:20px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.06);margin-bottom:20px}
+label{display:block;font-weight:600;margin-top:10px}
+input[type="text"],input[type="date"],input[type="file"]{width:100%;padding:10px;border-radius:6px;border:1px solid #ddd;margin-top:6px}
 
-  button.alt{background:#666}
-
-  /* form */
-  .page-input{background:#fff;padding:20px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.06);margin-bottom:20px}
-  label{display:block;font-weight:600;margin-top:10px}
-  input[type="text"],input[type="date"]{width:100%;padding:10px;border-radius:6px;border:1px solid #ddd;margin-top:6px}
-
-  /* preview wrap (A4 width) */
-  .preview-wrap{width:21cm;margin:0 auto}
-  .a4{width:25cm;min-height:29.7cm;background:#fff;padding:18mm;box-sizing:border-box;margin-bottom:18px;position:relative; overflow: hidden;}
-  .header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid #eee;padding-bottom:6px;margin-bottom:8px}
-  .header img{height:46px}
-  .contact{font-size:12px;text-align:right;line-height:1.1}
-  .body{font-size:13.5px;line-height:1.54;color:#222}
-  .body p{
-    margin: 0 0 12px 0;
-    text-align: justify;
-    font-size: 14px;      /* Paragraph text size */
-}
-
-.body ol{
-    margin: 8px 0 12px 20px;
-    font-size: 14px;      /* List text size */
-}
-
-.body li{
-    margin-bottom: 8px;
-    font-size: 14px;      /* Ensures bullet text matches */
-}
-
-  .footer{position:absolute;bottom:14mm;left:18mm;right:18mm;text-align:center;font-size:12px}
-  .sign-row{display:flex;justify-content:space-between;margin-top:18px}
-  .sign-box{width:48%}
-  .sign-image {
-    max-width: 120%;        /* slightly bigger */
-    margin-top: 8px;
-    filter: brightness(0.2); /* makes it darker */
-    display: block;          /* ensures alignment works */
-    margin-left: -25%;
-}
-
-
-
-  /* hide preview when not needed */
-  .page-preview{display:none}
-  @media print{
-    .page-input, .controls { display:none !important; }
-   .preview-wrap {
-    width: 100% !important;
-    margin: 0 auto;
-  }
-
-  .a4 {
-    margin: 0 !important;          /* remove bottom spacing between pages */
-    padding-top: 10mm !important;  /* optional: reduce top padding */
-    padding-bottom: 18mm !important;
-  }
-
-  .footer {
-    position: absolute !important;
-    bottom: 18mm !important;
-  }
-  }
-
-  
-  /* Responsive adjustments */
-@media (max-width: 768px) {
-  .container {
-    padding: 16px;
-  }
-
-  .page-input {
-    padding: 20px;
-    background-color: #f9f9f9; /* subtle background for better contrast */
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* soft shadow for depth */
-    margin-bottom: 20px;
-  }
-
-  .page-input h2 {
-    font-size: 22px;
-    margin-bottom: 16px;
-    text-align: center; /* center the heading for mobile */
-    color: #333;
-  }
-
-  label {
-    font-size: 15px;
-    margin-bottom: 6px;
-    display: block;
-    color: #555;
-  }
-
-  input[type="text"],
-  input[type="date"] {
-    font-size: 15px;
-    padding: 10px;
-    width: 100%;
-    margin-bottom: 12px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    box-sizing: border-box;
-  }
-
-  .page-input div[style*="display:flex"] {
-    flex-direction: column; /* stack start/end date vertically */
-    gap: 10px;
-  }
-
-  button {
-    font-size: 16px;
-    padding: 12px 18px;
-    width: 100%;
-    background-color: #4CAF50;
-    color: #fff;
-    font-weight: 600;
-    border-radius: 8px;
-    border: none;
-    transition: background 0.3s ease;
-  }
-
-  button:hover {
-    background-color: #45a049;
-    cursor: pointer;
-  }
-
-  #sig-canvas {
-    height: 140px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    margin-top: 10px;
-  }
-}
-
-
+.preview-wrap{width:21cm;margin:0 auto; display:flex; flex-direction:column; gap:18px;}
+.a4{width:21cm;min-height:29.7cm;background:#fff;padding:18mm;box-sizing:border-box;position:relative; overflow:hidden;}
+.header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid #eee;padding-bottom:6px;margin-bottom:8px}
+.header img{height:46px}
+.contact{font-size:12px;text-align:right;line-height:1.1}
+.body{font-size:13.5px;line-height:1.54;color:#222}
+.body p,.body ol{margin:0 0 12px 0;font-size:14px;text-align:justify;}
+.body ol{margin-left:20px}
+.footer{position:absolute;bottom:14mm;left:18mm;right:18mm;text-align:center;font-size:12px}
+.sign-row{display:flex;justify-content:space-between;margin-top:18px}
+.sign-box{width:48%}
+.sign-image{max-width:120%;margin-top:8px;display:block;margin-left:-25%}
+.page-preview{display:none}
+#overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);color:#fff;z-index:9999;align-items:center;justify-content:center;font-size:20px;}
+@media print{.page-input, .controls {display:none !important}}
 </style>
 </head>
 <body>
@@ -196,16 +72,18 @@
       <canvas id="sig-canvas" style="width:100%;height:140px;background:#fff;border-radius:6px;display:block"></canvas>
       <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px">
         <button class="alt" id="clearSig">Clear</button>
-        <button id="saveSig">Save Sig</button>
         <button id="showPreview" style="background:#1f8fff">Show Preview ↓</button>
       </div>
     </div>
+
+    <label>Upload Employee Image</label>
+    <input type="file" id="employeeImage" accept="image/*">
   </div>
 
-  <!-- preview -->
   <div class="page-preview" id="previewPage">
     <div class="preview-wrap">
-      <!-- page 1 -->
+
+      <!-- Page 1 -->
       <article class="a4" id="a4page1">
         <div class="header">
           <img src="https://res.cloudinary.com/dtwcxssvj/image/upload/v1746523573/SourceOneLogo_ubsxye.png" alt="logo">
@@ -216,12 +94,9 @@
           </div>
         </div>
 
-        <br><br><br>
         <div class="body">
           <p><b>1:</b> Your contract will commence from <b><span id="outStart">Nov 11, 2025</span></b> and expire on <b><span id="outEnd">Nov 11, 2026</span></b> during which you will render services executed by you on <b><span id="outEngage">Nov 11, 2025</span></b>.</p>
-
           <p style="text-align:center"><b>You hereby agree to be liable for the following terms and conditions:</b></p>
-
           <ol>
             <li>Fully perform the services, in a professional manner, at the Client's location until the completion of the term of the Work assignment.</li>
             <li>During the term of the work assignment, render services exclusively to the Client and such performance shall not be inconsistent with any obligation you may have to other third parties.</li>
@@ -233,28 +108,20 @@
             <li>Comply with the safety, health and other rules and regulations of SOURCE ONE and the SOURCE ONE Client that you have been made aware of.</li>
             <li>During the course of your contract, you can be transferred to allocation within the territory of India as and when required by SOURCE ONE for executing the services provided herein.</li>
           </ol>
-
-          <p><b>2:</b> Should you be selected to perform the Work Assignment, the nature of your relationship with SOURCE ONE will be that of a <b>Contract of Service for a fixed period</b>. By executing this letter of engagement neither do we offer you employment with SOURCE ONE nor do you become an employee of SOURCE ONE. Upon expiry or termination of the Work Assignment, your employment with SOURCE ONE shall stand terminated forthwith.</p>
-
-          <p><b>3:</b> If the employee desires to leave the company, he/ she needs to serve <b>notice period of 15 days in prior and give a written letter</b>. If Employee is not <b>serving complete notice period then short served days will be deducted from his/her salary</b>; employee will be eligible for salary only if <b>he/she works for minimum 7 days with us</b>.</p>
-
-          <p><b>4:</b> <b>The Employee is responsible for all company assets under their supervision</b>. They are accountable <b>for any asset loss or damage that occurs during their presence or under their process control, even if not directly involved</b>. The Company may recover the cost of lost or damaged assets from the Employee's remuneration. The Employee will be notified of any recovery decision.</p>
-
-          <p><b>5:</b> Termination of this letter of engagement <b>shall not affect the obligations of the parties</b> that have been incurred prior to such termination and <b>SOURCE ONE shall promptly settle all your dues</b> after making the applicable deductions.</p>
-
-          <p><b>6:</b> <b>You agree to defend, indemnify and hold SOURCE ONE or the Client harmless</b> from any and all claims, damages, liability, attorney's fees and expenses on account of your <b>failure to satisfy any of your obligations under this work assignment letter or for misconduct or for violation of any law or creation </b> of any legal liability by you.</p>
-
-          <p><b>7:</b> Any dispute between <b>you and SOURCE ONE</b> shall be referred to a <b>sole arbitrator</b> appointed by SOURCE ONE; the arbitration shall be conducted in English language, in accordance with the Arbitration and Conciliation Act 1996, at Bangalore, Karnataka, India. This Engagement Letter shall be governed by the laws of India.</p>
-
+          <p><b>2:</b> Should you be selected to perform the Work Assignment,<b> the nature of your relationship with SOURCE ONE will be that of a Contract of Service for a fixed period</b>. By executing this letter of engagement neither do we offer you employment with SOURCE ONE nor do you become an employee of SOURCE ONE.
+             Upon expiry or termination of the Work Assignment, your employment with SOURCE ONE shall stand terminated forthwith.
+          </p>
+           <p><b>3:</b> If the employee desires to leave the company, he/ she needs to serve <b>notice period of 15 days in prior and give a written letter</b>. If Employee is not <b>serving complete notice period then short served days will be deducted from his/her salary</b>; employee will be eligible for salary only if <b>he/she works for minimum 7 days with us</b>.</p>
+           <p><b>4:</b><b>The Employee is responsible for all company assets under their supervision</b>. They are accountable <b>for any asset loss or damage that occurs during their presence or under their process control, even if not directly involved</b>. The Company may recover the cost of lost or damaged assets from the Employee's remuneration. The Employee will be notified of any recovery decision.</p>
+           <p><b>5:</b> Termination of this letter of engagement <b>shall not affect the obligations of the parties</b> that have been incurred prior to such termination and <b>SOURCE ONE shall promptly settle all your dues</b> after making the applicable deductions</p>
+           <p><b>6:</b><b>You agree to defend, indemnify and hold SOURCE ONE or the Client harmless </b>from any and all claims, damages, liability, attorney's fees and expenses on account of your <b>failure to satisfy any of your obligations under this work assignment letter or for misconduct or for violation of any law or creation</b> of any legal liability by you.</p>
+           <p><b>7:</b>Any dispute between <b>you and SOURCE ONE </b>shall be referred to a <b>sole arbitrator</b> appointed by SOURCE ONE; the arbitration shall be <b>conducted in English language</b>, in accordance with <b>the Arbitration and Conciliation Act 1996, at Bangalore, Karnataka, India</b>. This Engagement Letter shall be governed by the laws of India.</p>
         </div>
-<br><br>
-        <div class="footer">
-          <hr>
-          Address: #49/3, MEC Road, Industrial Suburb, Marappanapalya, Yeshwanthpura, Bengaluru - 560022
-        </div>
+        <br><br>
+        <div class="footer"><hr>Address: #49/3, MEC Road, Industrial Suburb, Marappanapalya, Yeshwanthpura, Bengaluru - 560022</div>
       </article>
-      <br><br><br>
-      <!-- page 2 -->
+
+      <!-- Page 2 -->
       <article class="a4" id="a4page2">
         <div class="header">
           <img src="https://res.cloudinary.com/dtwcxssvj/image/upload/v1746523573/SourceOneLogo_ubsxye.png" alt="logo">
@@ -264,29 +131,18 @@
             Mobile: 9741965944, 080-23476868
           </div>
         </div>
-        <br>
-<br><br><br>
+
         <div class="body">
-          <p><b>9:</b> Details of your salary breakup will be <b>as per the Annexure attached herein</b>. You hereby authorize SOURCE ONE to make all <b>salary payments</b> required to be made to you by SOURCE ONE including <b>all reimbursements either by way of Cheque or by directly crediting the amounts to your bank account</b>.</p>
-
-          <p><b>10:</b> You shall be <b>subject to background check</b> and in the event the background check <b>is negative</b>, the company reserves the <b>right to terminate your employment</b> without any further notice.</p>
-
-          <p><b>11:</b> Please note that we want to keep <b>payout time cycle of 21st to 20th of every month</b>, salary payout will happen by <b>9th of next month</b>.</p>
-
-          <p><b>12:</b> You will be entitled to an employer's contribution of <b> Provident fund to the extent of 12% of your basic salary</b> and <b>applicable ESI contribution</b>. You will also be covered under <b>Medical and Accident Insurance</b> and will be entitled to all other statutory benefits whichever is applicable during the contract period. It is hereby clarified that <b>if you fail to submit the ESIC, PF, Gratuity nomination forms</b> together with any other document as required under the applicable labor legislations, <b>SOURCE ONE shall not incur any liability with regards to any Claims</b> under the said applicable labor legislations.</p>
-
-          <p><b>13:</b> In addition to the terms contained herein, your relationship with SOURCE ONE may be subject to such other additional terms and conditions as may be <b>communicated to you from time to time in writing by SOURCE ONE</b> and you hereby agree to have read and clearly understood the terms of employment provided in the Service Rules, which is attached herein.</p>
-
-          <p><b>14:</b> During your employment with SOURCE ONE, if we find any <b>irregularity or insufficiency in the documents submitted by you</b>, this Appointment Letter would stand <b>cancelled / revoked</b>.</p>
-
-          <p><b>15:</b> The nature of your relationship with SOURCE ONE will be that of contract of service. <b>Upon expiry or termination of the Work Assignment</b>, your employment with SOURCE ONE shall stand terminated forthwith.</p>
-
-          <p><b>16:</b> You shall not, <b>either during or after termination</b> of your employment with client give out to any third party by word of mouth or otherwise, the Proprietary and/or Confidential Information of the Company, that shall include but not limited to all information, software (whether in object or source code), statistics, data, database, knowledge, trade secrets, inventions, products detail, know-how, formula, processes, designs, drawings, charts, maps, concepts, ideas, systems, project plans, business plans, client details, security information, any other creations of whatsoever nature. This non-disclosure obligation shall be binding on you at all times, irrespective of whether you continue to be employed by the company or not.</p>
-
-          <p><b>17:</b> This appointment letter shall be <b>co-terminus with the agreement</b> we have with our client.</p>
-
-          <p><b>18:</b> In the event the Employee is found involved in <b>any act of theft, misuse,</b> the Company reserves the right to immediately place <b>the Employee’s salary on hold</b> pending investigation. The Company may also <b>file a formal complaint</b> and <b>initiate strict disciplinary or legal action</b> as deemed necessary.</p>
-
+          <p><b>8:</b>Details of your salary breakup will be <b>as per the Annexure attached herein</b>. You hereby authorize SOURCE ONE to make all <b>salary payments</b> required to be made to you by SOURCE ONE including <b>all reimbursements either by way of Cheque or by directly crediting the amounts to your bank account</b>.</p>
+          <p><b>9:</b>You shall be <b>subject to background check</b> and in the event the background check <b>is negative</b>, the company reserves <b>the right to terminate your employment without any further notice</b>.</p>
+          <p><b>10:</b>Please note that we want to keep <b> payout time cycle of 21st to 20th of every month</b>, salary payout will happen by <b>9th of next month</b>.</p>
+          <p><b>11:</b>You will be entitled to an employer's contribution of <b>Provident fund to the extent of 12% of your basic salary</b> and <b>applicable ESI contribution</b>. You will also be covered under <b>Medical and Accident Insurance</b> and will be entitled to all other statutory benefits whichever is applicable during the contract period. It is hereby clarified that <b>if you fail to submit the ESIC, PF, Gratuity nomination forms</b> together with any other document as required under the applicable labor legislations, <b>SOURCE ONE shall not incur any liability with regards to any Claims</b> under the said applicable labor legislations</p>
+          <p><b>12:</b>In addition to the terms contained herein, your relationship with SOURCE ONE may be subject to such other additional terms and conditions as may be <b>communicated to you from time to time in writing by SOURCE ONE</b> and you hereby agree to have read and clearly understood the terms of employment provided in the Service Rules, which is attached herein.</p>
+          <p><b>13:</b>During your employment with SOURCE ONE, if we find any <b>irregularity or insufficiency in the documents submitted by you</b>, this Appointment Letter would stand <b>cancelled / revoked</b>.</p>
+          <p><b>14:</b>The nature of your relationship with SOURCE ONE will be that of contract of service. <b>Upon expiry or termination of the Work Assignment</b>, your employment with SOURCE ONE shall stand terminated forthwith.</p>
+          <p><b>15:</b>You shall not,<b> either during or after termination</b> of your employment with client give out to any <b>third party by word of mouth or otherwise</b>, the Proprietary and/or Confidential Information of the Company, that shall include but not limited to all information, software (whether in object or source code), statistics, data, database, knowledge, trade secrets, inventions, products detail, know-how, formula, processes, designs, drawings, charts, maps, concepts, ideas, systems, project plans, business plans, client details, security information, any other creations of whatsoever nature. This non-disclosure obligation shall be binding on you at all times, irrespective of whether you continue to be employed by the company or not.</p>
+          <p><b>16:</b>This appointment letter shall be <b>co-terminus with the agreement</b> we have with our client.</p>
+          <p><b>17:</b>In the event the Employee is found <b>involved in any act of theft, misuse,</b> the Company reserves the right to immediately place <b>the Employee’s salary on hold</b> pending investigation. The Company may also <b>file a formal complaint and initiate strict disciplinary or legal action</b> as deemed necessary.</p>
           <div class="sign-row">
             <div class="sign-box">
               Employee Name:<br>
@@ -294,7 +150,6 @@
               <img id="sigOutImg" class="sign-image" alt="employee signature" />
               <div style="margin-top:6px"><b>Accepted and Agreed</b></div>
             </div>
-
             <div class="sign-box" style="text-align:right">
               <div>Source One</div>
               <b>Chandan Lokesh</b>
@@ -302,179 +157,230 @@
               <div style="margin-top:6px"><b>Proprietor</b></div>
             </div>
           </div>
-
+<br><br>
         </div>
-
-        <br><br><br>
-        <div class="footer">
-          <hr>
-          Address: #49/3, MEC Road, Industrial Suburb, Marappanapalya, Yeshwanthpura, Bengaluru - 560022
-        </div>
+        <div class="footer"><hr>Address: #49/3, MEC Road, Industrial Suburb, Marappanapalya, Yeshwanthpura, Bengaluru - 560022</div>
       </article>
 
       <div style="margin:18px 0" class="controls">
-        <button id="downloadPrint">Print & Share</button>
+        <button id="downloadPrint">Print & Upload</button>
       </div>
     </div>
   </div>
 </div>
 
+<div id="overlay">Submitting, please wait...</div>
+
 <script>
-/* ---------- Helper: format date ---------- */
-function fmt(iso) {
-  if (!iso) return '';
-  const d = new Date(iso + 'T00:00:00');
-  if (isNaN(d)) return iso;
-  return d.toLocaleDateString(undefined, {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric'
+document.addEventListener('DOMContentLoaded', function() {
+  // ---------- Firebase ----------
+  const firebaseConfig = {
+    apiKey: "AIzaSyAENr32Pk-Sq44tuBPj8c_xXk4qzEa3GJw",
+    authDomain: "login-9338e.firebaseapp.com",
+    databaseURL: "https://login-9338e-default-rtdb.firebaseio.com",
+    projectId: "login-9338e",
+    storageBucket: "login-9338e.appspot.com",
+    messagingSenderId: "649880075591",
+    appId: "1:649880075591:web:a5cd336a03d80e9b656062",
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  // ---------- Cloudinary ----------
+  const CLOUD_NAME = "dzqdmkis4";
+  const UPLOAD_PRESET = "pdf_upload";
+
+  // ---------- Canvas Signature ----------
+  const canvas = document.getElementById('sig-canvas');
+  const ctx = canvas.getContext('2d');
+  let drawing = false;
+  let lastPos = {x:0,y:0};
+  let signatureDrawn = false;
+
+  function resizeCanvas(){
+    const ratio = window.devicePixelRatio || 1;
+    canvas.width = canvas.offsetWidth * ratio;
+    canvas.height = canvas.offsetHeight * ratio;
+    ctx.scale(ratio,ratio);
+    ctx.lineWidth=2;
+    ctx.lineCap='round';
+    ctx.strokeStyle='#000';
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    signatureDrawn = false;
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  function getPos(e){
+    const rect = canvas.getBoundingClientRect();
+    const t = e.touches ? e.touches[0] : e;
+    return {x: t.clientX - rect.left, y: t.clientY - rect.top};
+  }
+
+  function draw(e){
+    if(!drawing) return;
+    e.preventDefault();
+    const pos = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(lastPos.x,lastPos.y);
+    ctx.lineTo(pos.x,pos.y);
+    ctx.stroke();
+    lastPos = pos;
+    signatureDrawn = true;
+  }
+
+  canvas.addEventListener('mousedown', e=>{drawing=true; lastPos=getPos(e);});
+  canvas.addEventListener('touchstart', e=>{drawing=true; lastPos=getPos(e);});
+  canvas.addEventListener('mouseup', ()=>drawing=false);
+  canvas.addEventListener('mouseout', ()=>drawing=false);
+  canvas.addEventListener('touchend', ()=>drawing=false);
+  canvas.addEventListener('mousemove', draw);
+  canvas.addEventListener('touchmove', draw);
+
+  // ---------- Clear Signature ----------
+  document.getElementById('clearSig').addEventListener('click', ()=>{
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    document.getElementById('sigOutImg').src='';
+    signatureDrawn = false;
   });
-}
 
-/* ---------- Signature Canvas ---------- */
-const canvas = document.getElementById('sig-canvas');
-const ctx = canvas.getContext('2d');
+  // ---------- Auto-set Dates ----------
+  const startInput = document.getElementById('startDate');
+  const endInput = document.getElementById('endDate');
+  const engageInput = document.getElementById('engageDate');
 
-function resizeCanvas() {
-  const r = Math.max(window.devicePixelRatio || 1, 1);
-  canvas.width = canvas.clientWidth * r;
-  canvas.height = canvas.clientHeight * r;
-  ctx.scale(r, r);
-  ctx.lineWidth = 1.8;
-  ctx.lineCap = 'round';
-  ctx.strokeStyle = '#000';
-  ctx.beginPath();
-}
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
+  endInput.disabled = true;
+  engageInput.disabled = true;
 
-let drawing = false, last = { x: 0, y: 0 };
+  startInput.addEventListener('change', ()=>{
+    const start = new Date(startInput.value);
+    if(!isNaN(start)){
+      const end = new Date(start);
+      end.setFullYear(end.getFullYear()+1);
+      endInput.valueAsDate = end;
+      engageInput.valueAsDate = start;
+    } else {
+      endInput.value = '';
+      engageInput.value = '';
+    }
+  });
 
-function getPos(e) {
-  const r = canvas.getBoundingClientRect();
-  const t = e.touches ? e.touches[0] : e;
-  return { x: t.clientX - r.left, y: t.clientY - r.top };
-}
+  // ---------- Validate function ----------
+  function validateFields(){
+    const name = document.getElementById('employeeName').value.trim();
+    const startDate = startInput.value.trim();
+    const empImage = document.getElementById('employeeImage').files[0];
 
-canvas.addEventListener('mousedown', e => { drawing = true; last = getPos(e); });
-canvas.addEventListener('touchstart', e => { drawing = true; last = getPos(e); e.preventDefault(); }, { passive: false });
+    if(!name){
+      alert('Please enter Employee Name');
+      return false;
+    }
+    if(!startDate){
+      alert('Please select Start Date');
+      return false;
+    }
+    if(!signatureDrawn){
+      alert('Please draw signature');
+      return false;
+    }
+    if(!empImage){
+      alert('Please upload Employee Image');
+      return false;
+    }
+    return true;
+  }
 
-canvas.addEventListener('mousemove', e => {
-  if (!drawing) return;
-  const p = getPos(e);
-  ctx.beginPath(); ctx.moveTo(last.x, last.y); ctx.lineTo(p.x, p.y); ctx.stroke();
-  last = p;
+  // ---------- Show Preview ----------
+  document.getElementById('showPreview').addEventListener('click', ()=>{
+    if(!validateFields()) return;
+
+    document.getElementById('empNameOut').innerText = document.getElementById('employeeName').value || 'Employee';
+    document.getElementById('outStart').innerText = startInput.value || 'DD/MM/YYYY';
+    document.getElementById('outEnd').innerText = endInput.value || 'DD/MM/YYYY';
+    document.getElementById('outEngage').innerText = engageInput.value || 'DD/MM/YYYY';
+
+    // Capture signature
+    const sigData = canvas.toDataURL('image/png');
+    document.getElementById('sigOutImg').src = sigData;
+
+    // Show employee image
+    const fileInput = document.getElementById('employeeImage');
+    if(fileInput && fileInput.files[0]){
+      const reader = new FileReader();
+      reader.onload = e => document.getElementById('empImageOut').src = e.target.result;
+      reader.readAsDataURL(fileInput.files[0]);
+    }
+
+    document.getElementById('previewPage').style.display='block';
+    document.getElementById('previewPage').scrollIntoView({behavior:'smooth'});
+  });
+
+ document.getElementById('downloadPrint').addEventListener('click', async ()=>{
+  if(!validateFields()) return;
+
+  const overlay = document.getElementById('overlay');
+  overlay.style.display='flex';
+  try{
+    const empName = document.getElementById('employeeName').value.trim() || 'Employee';
+    const imageFile = document.getElementById('employeeImage').files[0];
+
+    // Upload employee image to Cloudinary
+    let empImageUrl = '';
+    if(imageFile){
+      const imgForm = new FormData();
+      imgForm.append('file', imageFile);
+      imgForm.append('upload_preset', UPLOAD_PRESET);
+      const imgResp = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {method:'POST', body:imgForm});
+      const imgData = await imgResp.json();
+      empImageUrl = imgData.secure_url || '';
+    }
+
+    // Generate long image for Cloudinary (JPEG)
+    const element = document.getElementById('previewPage');
+    const canvasImg = await html2canvas(element, {scale:2, useCORS:true});
+    const dataURL = canvasImg.toDataURL('image/jpeg', 0.95);
+    const blob = await (await fetch(dataURL)).blob();
+    const formData = new FormData();
+    formData.append('file', blob);
+    formData.append('upload_preset', UPLOAD_PRESET);
+
+    const cloudResp = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:formData});
+    const cloudData = await cloudResp.json();
+    if(!cloudData.secure_url) throw new Error('Cloudinary upload failed');
+
+    // Save info to Firebase
+    const newRef = db.ref('pdfs').push();
+    await newRef.set({
+      name: empName,
+      employeeImage: empImageUrl,
+      pdf: cloudData.secure_url,
+      createdAt: Date.now()
+    });
+
+    overlay.style.display='none';
+    alert('Uploaded successfully!');
+
+    // ---------- Download local PDF ----------
+    html2pdf()
+      .set({
+        margin: 10,
+        filename: `${empName}_Engagement.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      })
+      .from(element)
+      .save();
+
+  }catch(err){
+    overlay.style.display='none';
+    console.error(err);
+    alert('Error: '+err.message);
+  }
 });
 
-canvas.addEventListener('touchmove', e => {
-  if (!drawing) return;
-  const p = getPos(e);
-  ctx.beginPath(); ctx.moveTo(last.x, last.y); ctx.lineTo(p.x, p.y); ctx.stroke();
-  last = p;
-  e.preventDefault();
-}, { passive: false });
 
-window.addEventListener('mouseup', () => drawing = false);
-window.addEventListener('touchend', () => drawing = false);
-
-document.getElementById('clearSig').addEventListener('click', () => {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  document.getElementById('sigOutImg').src = '';
 });
-
-document.getElementById('saveSig').addEventListener('click', () => {
-  document.getElementById('sigOutImg').src = canvas.toDataURL('image/png');
-});
-
-
-/* ---------- Auto-update endDate & engageDate when startDate changes ---------- */
-document.getElementById('endDate').disabled = true;
-document.getElementById('engageDate').disabled = true;
-
-document.getElementById('startDate').addEventListener('change', () => {
-  const s = document.getElementById('startDate').value;
-  if (!s) return;
-
-  const start = new Date(s + "T00:00:00");
-
-  // engageDate = same as startDate
-  document.getElementById('engageDate').value = s;
-
-  // endDate = +1 year
-  const end = new Date(start);
-  end.setFullYear(end.getFullYear() + 1);
-
-  const y = end.getFullYear();
-  const m = String(end.getMonth() + 1).padStart(2, '0');
-  const d = String(end.getDate()).padStart(2, '0');
-
-  document.getElementById('endDate').value = `${y}-${m}-${d}`;
-});
-
-
-/* ---------- Show Preview ---------- */
-document.getElementById('showPreview').addEventListener('click', () => {
-  const name = document.getElementById('employeeName').value.trim() || '________';
-  const s = document.getElementById('startDate').value;
-  const e = document.getElementById('endDate').value;
-  const g = document.getElementById('engageDate').value;
-
-  document.getElementById('outStart').textContent = fmt(s) || '________';
-  document.getElementById('outEnd').textContent = fmt(e) || '________';
-  document.getElementById('outEngage').textContent = fmt(g) || '________';
-  document.getElementById('empNameOut').textContent = name;
-
-  if (!document.getElementById('sigOutImg').src)
-    document.getElementById('sigOutImg').src = canvas.toDataURL('image/png');
-
-  document.getElementById('previewPage').style.display = 'block';
-  setTimeout(() =>
-    document.getElementById('previewPage').scrollIntoView({ behavior: 'smooth' }), 200
-  );
-});
-
-
-/* ---------- High-Quality Print PDF ---------- */
-document.getElementById('downloadPrint').addEventListener('click', () => {
-  // Get employee name
-  const emp = document.getElementById('employeeName').value.trim() || 'Employee';
-  
-  // Backup old title
-  const oldTitle = document.title;
-  
-  // Set new title
-  document.title = `T&C - ${emp}`;
-
-  // Print
-  window.print();
-
-  // Restore old title after printing
-  setTimeout(() => {
-    document.title = oldTitle;
-  }, 500);
-});
-
-
-
-/* ---------- Default dates on load ---------- */
-(function setDefault() {
-  const t = new Date();
-  const y = t.getFullYear(), m = String(t.getMonth() + 1).padStart(2, '0'), d = String(t.getDate()).padStart(2, '0');
-
-  // startDate = today
-  document.getElementById('startDate').value = `${y}-${m}-${d}`;
-
-  // engageDate = today
-  document.getElementById('engageDate').value = `${y}-${m}-${d}`;
-
-  // endDate = +1 year
-  const next = new Date(t);
-  next.setFullYear(next.getFullYear() + 1);
-
-  document.getElementById('endDate').value =
-    `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}-${String(next.getDate()).padStart(2, '0')}`;
-})();
 </script>
 
 </body>
