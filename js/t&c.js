@@ -153,8 +153,6 @@ document.addEventListener('DOMContentLoaded', function() {
       reader.readAsDataURL(fileInput.files[0]);
     }
 
-     
-
     document.getElementById('previewPage').style.display='block';
     document.getElementById('previewPage').scrollIntoView({behavior:'smooth'});
   });
