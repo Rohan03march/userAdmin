@@ -158,10 +158,16 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
  document.getElementById('downloadPrint').addEventListener('click', async ()=>{
+
   if(!validateFields()) return;
 
   const overlay = document.getElementById('overlay');
   overlay.style.display='flex';
+
+  // 🔥 Hide controls BEFORE capturing & printing
+  const controls = document.querySelector('.controls');
+  if (controls) controls.style.display = 'none';
+
   try{
     const empName = document.getElementById('employeeName').value.trim() || 'Employee';
     const imageFile = document.getElementById('employeeImage').files[0];
@@ -172,21 +178,29 @@ document.addEventListener('DOMContentLoaded', function() {
       const imgForm = new FormData();
       imgForm.append('file', imageFile);
       imgForm.append('upload_preset', UPLOAD_PRESET);
-      const imgResp = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {method:'POST', body:imgForm});
+      const imgResp = await fetch(
+        `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+        { method:'POST', body:imgForm }
+      );
       const imgData = await imgResp.json();
       empImageUrl = imgData.secure_url || '';
     }
 
     // Generate long image for Cloudinary (JPEG)
     const element = document.getElementById('previewPage');
-    const canvasImg = await html2canvas(element, {scale:2, useCORS:true});
+
+    const canvasImg = await html2canvas(element, { scale:2, useCORS:true });
     const dataURL = canvasImg.toDataURL('image/jpeg', 0.95);
+
     const blob = await (await fetch(dataURL)).blob();
     const formData = new FormData();
     formData.append('file', blob);
     formData.append('upload_preset', UPLOAD_PRESET);
 
-    const cloudResp = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:formData});
+    const cloudResp = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+      { method:'POST', body:formData }
+    );
     const cloudData = await cloudResp.json();
     if(!cloudData.secure_url) throw new Error('Cloudinary upload failed');
 
@@ -199,33 +213,32 @@ document.addEventListener('DOMContentLoaded', function() {
       createdAt: Date.now()
     });
 
+    // Hide overlay
     overlay.style.display='none';
     alert('Uploaded successfully!');
 
     element.style.display = 'block';
 
-    // ---------- Download local PDF ----------
+    // ---------- PRINT as PDF ----------
     setTimeout(() => {
-    //     html2pdf()
-    //   .set({
-    //     margin: 10,
-    //     filename: `${empName}_Engagement.pdf`,
-    //     image: { type: 'jpeg', quality: 0.98 },
-    //     html2canvas: { scale: 2, useCORS: true },
-    //     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    //   })
-    //   .from(element)
-    //   .save();
+      window.print();
+    }, 300);
 
-    window.print();
-    }, 300)
-
-  }catch(err){
-    overlay.style.display='none';
+  } catch(err){
     console.error(err);
-    alert('Error: '+err.message);
+    alert('Error: ' + err.message);
+    overlay.style.display='none';
+  } finally {
+
+    // 🔥 Show controls again AFTER capture & print
+    setTimeout(() => {
+      if (controls) controls.style.display = '';
+    }, 1000); // give print dialog time
+
   }
+
 });
+
 
 
 });
