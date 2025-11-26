@@ -153,14 +153,7 @@ document.addEventListener('DOMContentLoaded', function() {
       reader.readAsDataURL(fileInput.files[0]);
     }
 
-     // 🔥 FORCE ZOOM-OUT ON MOBILE
-    const viewport = document.querySelector("meta[name=viewport]");
-    if (viewport) {
-      viewport.setAttribute(
-        "content",
-        "width=device-width, initial-scale=0.5, maximum-scale=0.5"
-      );
-    }
+     
 
     document.getElementById('previewPage').style.display='block';
     document.getElementById('previewPage').scrollIntoView({behavior:'smooth'});
