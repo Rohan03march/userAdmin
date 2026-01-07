@@ -45,10 +45,10 @@
     <i class="bx bxs-user-plus"></i>
     <span class="text">T&C PDF</span>
 </a>
-<a href="careers.html">
+<!-- <a href="careers.html">
     <i class="bx bxs-user-plus"></i>
     <span class="text">Careers</span>
-</a>
+</a> -->
 
 </li>
 
@@ -89,7 +89,7 @@
           </div>
         </div>
 
-        <ul class="box-info">
+        <!-- <ul class="box-info">
           <li>
             <i class="bx bxs-calendar-check"></i>
             <span class="text">
@@ -97,7 +97,7 @@
               <p>User Entries</p>
             </span>
           </li>
-        </ul>
+        </ul> -->
         <div class="table-data">
           <div class="order">
             <div class="head">
@@ -115,6 +115,69 @@
               </thead>
               <tbody></tbody>
             </table>
+          <div class="pagination-wrapper">
+  <div id="pagination" class="pagination"></div>
+</div>
+
+<div id="pageInfo" class="page-info"></div>
+
+<style>
+  .pagination-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin: 15px 0;
+}
+
+.pagination {
+  display: flex;
+  gap: 6px;
+  padding: 6px 10px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+.pagination button {
+  min-width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 6px;
+  background: #f1f3f5;
+  cursor: pointer;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: #3498db;
+  color: #fff;
+}
+
+.pagination .active {
+  background: #3498db;
+  color: #fff;
+}
+
+.pagination .nav-btn {
+  font-weight: 600;
+}
+
+.pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination .dots {
+  padding: 0 6px;
+  color: #888;
+  font-weight: bold;
+}
+
+.page-info {
+  text-align: right;
+  font-size: 13px;
+  color: #666;
+}
+
+</style>
           </div>
         </div>
        
@@ -124,12 +187,10 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="js/dashboard.js"></script>
-    <script type="module" src="js/data.js"></script>
+    <!-- <script type="module" src="js/data.js"></script> -->
     <script type="module" src="js/logout.js"></script>
-    <script type="module" src="js/search.js"></script>
-    <script type="module" src="js/pendingUser.js"></script>
      <!--No Inspect -->
-  <script>
+  <!-- <script>
 // Disable right-click context menu
 document.addEventListener("contextmenu", function (event) {
   event.preventDefault();
@@ -149,6 +210,6 @@ document.addEventListener("keydown", function (event) {
     event.preventDefault();
   }
 });
-</script>
+</script> -->
   </body>
 </html>
