@@ -253,13 +253,28 @@ function updateUI() {
   // clone array to avoid mutation bugs
   const filtered = query ? filterUsers(query) : [...allUsers];
 
-  // ✅ SORT FIRST
+  // ✅ SORT FIRST (latest / earliest as per your sort function)
   sortBySubmittedAt(filtered);
 
-  // ✅ THEN paginate
+  // ✅ RENDER TABLE + PAGINATION
   renderTable(filtered);
   renderPagination(filtered);
+
+  // ✅ PAGE INFO (THIS WAS MISSING)
+  const pageInfo = document.getElementById("pageInfo");
+  if (!pageInfo) return;
+
+  if (filtered.length === 0) {
+    pageInfo.textContent = "";
+    return;
+  }
+
+  const start = (currentPage - 1) * PAGE_SIZE + 1;
+  const end = Math.min(start + PAGE_SIZE - 1, filtered.length);
+
+  pageInfo.textContent = `Showing ${start}–${end} of ${filtered.length}`;
 }
+
 
 
 /* ===============================
