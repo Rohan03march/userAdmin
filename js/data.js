@@ -444,7 +444,13 @@ function collectFormData() {
     const labelEl = box.querySelector(".details");
     const inputEl = box.querySelector("input");
     if (!inputEl || !labelEl) return;
-    const key = labelToKeyMap[labelEl.textContent.trim()];
+    // const key = labelToKeyMap[labelEl.textContent.trim()];
+    const labelText =
+  labelEl.querySelector(".label-text")?.textContent.trim() ||
+  labelEl.textContent.trim();
+
+const key = labelToKeyMap[labelText];
+
     const value = inputEl.value.trim();
     if (key) data[key] = value;
 
