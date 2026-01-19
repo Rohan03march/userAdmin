@@ -292,6 +292,85 @@
               </script>
             </div>
 
+            <!-- PF Number -->
+<div class="input-box">
+  <span class="details">
+    PF Number (UAN)
+    <span class="pf-video-trigger" id="pfTrigger">
+      (For PF Number Generator refer this video)
+    </span>
+
+    <div class="pf-video-dropdown" id="pfVideoDropdown">
+      <a href="https://www.youtube.com/shorts/8_VMsIWMO_U" target="_blank">Kannada</a>
+      <a href="https://www.youtube.com/shorts/bfAkCkXWWjo" target="_blank">Hindi</a>
+    </div>
+  </span>
+
+  <input
+    type="text"
+    placeholder="Enter PF Number"
+    required
+    id="pfInput"
+  />
+  <style>
+  .details {
+  position: relative;
+  display: inline-block;
+}
+
+.pf-video-trigger {
+  color: #2563eb;
+  font-size: 12px;
+  cursor: pointer;
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+.pf-video-dropdown {
+  display: none;
+  position: absolute;
+  top: 24px;
+  left: 0;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  z-index: 100;
+  min-width: 150px;
+}
+
+.pf-video-dropdown a {
+  display: block;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #111827;
+  text-decoration: none;
+}
+
+.pf-video-dropdown a:hover {
+  background: #f3f4f6;
+}
+
+</style>
+
+<script>
+const trigger = document.getElementById("pfTrigger");
+const dropdown = document.getElementById("pfVideoDropdown");
+
+trigger.addEventListener("click", function (e) {
+  e.stopPropagation(); // 🔑 prevents instant close
+  dropdown.style.display =
+    dropdown.style.display === "block" ? "none" : "block";
+});
+
+document.addEventListener("click", function () {
+  dropdown.style.display = "none";
+});
+</script>
+</div>
+
+
+
             <!--Contact Number-->
             <div class="input-box">
   <span class="details">Contact Number</span>
