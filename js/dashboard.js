@@ -140,6 +140,7 @@ function renderTable(users) {
     const tr = document.createElement("tr");
 
     tr.innerHTML = `
+      <td>${user.submittedAt ? user.submittedAt.split(",")[0] : "N/A"}</td>
       <td>
         <a href="user.html?id=${encodeURIComponent(user.id)}"
            style="text-decoration:none;color:inherit;">
@@ -247,11 +248,38 @@ function renderPagination(users) {
    SINGLE RENDER ENTRY POINT
 ================================ */
 
-function updateUI() {
-  const query = document.getElementById("searchInput").value.trim();
+function getFilteredUsers() {
+  const query = document.getElementById("searchInput").value.trim().toLowerCase();
+  const startDateStr = document.getElementById("filterStartDate") ? document.getElementById("filterStartDate").value : "";
+  const endDateStr = document.getElementById("filterEndDate") ? document.getElementById("filterEndDate").value : "";
 
-  // clone array to avoid mutation bugs
-  const filtered = query ? filterUsers(query) : [...allUsers];
+  let filtered = [...allUsers];
+
+  if (query) {
+    filtered = filtered.filter((u) =>
+      (u.nameAsPerAadhaar || "").toLowerCase().includes(query) ||
+      (u.contactNumber || "").toLowerCase().includes(query) ||
+      (u.workingLocation || "").toLowerCase().includes(query) ||
+      (u.designation || "").toLowerCase().includes(query)
+    );
+  }
+
+  if (startDateStr || endDateStr) {
+    const startTimestamp = startDateStr ? new Date(startDateStr + "T00:00:00").getTime() : 0;
+    const endTimestamp = endDateStr ? new Date(endDateStr + "T23:59:59").getTime() : Infinity;
+
+    filtered = filtered.filter(u => {
+      const ts = getSubmittedAtTimestamp(u);
+      if (ts === 0) return false;
+      return ts >= startTimestamp && ts <= endTimestamp;
+    });
+  }
+
+  return filtered;
+}
+
+function updateUI() {
+  const filtered = getFilteredUsers();
 
   // ✅ SORT FIRST (latest / earliest as per your sort function)
   sortBySubmittedAt(filtered);
@@ -290,4 +318,76 @@ document.addEventListener("DOMContentLoaded", async () => {
 document.getElementById("searchInput").addEventListener("input", () => {
   currentPage = 1;
   updateUI();
+});
+
+if (document.getElementById("filterStartDate")) {
+  document.getElementById("filterStartDate").addEventListener("change", () => {
+    currentPage = 1;
+    updateUI();
+  });
+}
+if (document.getElementById("filterEndDate")) {
+  document.getElementById("filterEndDate").addEventListener("change", () => {
+    currentPage = 1;
+    updateUI();
+  });
+}
+
+/* ===============================
+   EXPORT TO EXCEL
+================================ */
+function exportToExcel() {
+  const dataToExport = getFilteredUsers();
+  
+  if (dataToExport.length === 0) {
+    alert("No data to export");
+    return;
+  }
+
+  // Ensure it is sorted date-wise
+  sortBySubmittedAt(dataToExport);
+
+  // Get all unique keys
+  const keys = new Set();
+  dataToExport.forEach(user => {
+    Object.keys(user).forEach(key => keys.add(key));
+  });
+  
+  // Prioritize requested keys to appear first
+  const priorityKeys = ["submittedAt", "nameAsPerAadhaar", "contactNumber", "workingLocation", "designation", "photo", "aadharFront", "aadharBack", "panCard", "passbook", "signature"];
+  const columns = [];
+  
+  priorityKeys.forEach(key => {
+    if (keys.has(key)) {
+      columns.push(key);
+      keys.delete(key);
+    }
+  });
+  
+  // Append the rest of the keys
+  keys.forEach(key => columns.push(key));
+  
+  // Create JSON array for SheetJS
+  const exportData = dataToExport.map(user => {
+    const row = {};
+    columns.forEach(col => {
+      row[col] = user[col] !== undefined && user[col] !== null ? String(user[col]) : "";
+    });
+    return row;
+  });
+  
+  // Generate Excel workbook and worksheet
+  const worksheet = XLSX.utils.json_to_sheet(exportData, { header: columns });
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Employees");
+  
+  // Download the Excel file
+  XLSX.writeFile(workbook, "employees_export.xlsx");
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const exportBtn = document.getElementById("exportExcelBtn");
+  if (exportBtn) {
+    exportBtn.addEventListener("click", exportToExcel);
+  }
 });
