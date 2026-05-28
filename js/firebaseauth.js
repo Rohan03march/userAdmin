@@ -147,6 +147,8 @@ signIn.addEventListener("click", (event) => {
     const errorCode = error.code;
     if (errorCode === "auth/invalid-credential") {
       showMessage("Incorrect Email or Password", "signInMessage");
+    } else if (errorCode === "auth/too-many-requests") {
+      showMessage("Too many failed attempts. Please try again later.", "signInMessage");
     } else if (errorCode) {
       showMessage("Error: " + errorCode, "signInMessage");
     } else {
