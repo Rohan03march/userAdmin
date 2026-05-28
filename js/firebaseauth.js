@@ -143,11 +143,14 @@ signIn.addEventListener("click", (event) => {
     window.location.href = "dashboard.html";
   })
   .catch((error) => {
+    console.error("SignIn error:", error);
     const errorCode = error.code;
     if (errorCode === "auth/invalid-credential") {
       showMessage("Incorrect Email or Password", "signInMessage");
+    } else if (errorCode) {
+      showMessage("Error: " + errorCode, "signInMessage");
     } else {
-      showMessage("Account does not Exist", "signInMessage");
+      showMessage("Error: " + error.message, "signInMessage");
     }
     signIn.innerHTML = originalText;
     signIn.disabled = false;
