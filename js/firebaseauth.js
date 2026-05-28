@@ -47,6 +47,10 @@ signUp.addEventListener("click", (event) => {
   const auth = getAuth();
   const db = getFirestore();
 
+  const originalText = signUp.innerHTML;
+  signUp.innerHTML = '<div class="loader"></div>';
+  signUp.disabled = true;
+
   createUserWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
       const user = userCredential.user;
@@ -62,13 +66,16 @@ signUp.addEventListener("click", (event) => {
       //     window.location.href = "dashboard.html";
       //   })
       const docRef = doc(db, "users", user.uid);
-setDoc(docRef, { ...userData, permission: false }) // set permission to false by default
-  .then(() => {
-    showMessage("User created. Wait for admin to give login access.", "signUpMessage");
-  })
-
+      setDoc(docRef, { ...userData, permission: false }) // set permission to false by default
+        .then(() => {
+          showMessage("User created. Wait for admin to give login access.", "signUpMessage");
+          signUp.innerHTML = originalText;
+          signUp.disabled = false;
+        })
         .catch((error) => {
           console.error("error writing document", error);
+          signUp.innerHTML = originalText;
+          signUp.disabled = false;
         });
     })
     .catch((error) => {
@@ -78,6 +85,8 @@ setDoc(docRef, { ...userData, permission: false }) // set permission to false by
       } else {
         showMessage("unable to create User", "signUpMessage");
       }
+      signUp.innerHTML = originalText;
+      signUp.disabled = false;
     });
 });
 
@@ -87,6 +96,10 @@ signIn.addEventListener("click", (event) => {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
   const auth = getAuth();
+
+  const originalText = signIn.innerHTML;
+  signIn.innerHTML = '<div class="loader"></div>';
+  signIn.disabled = true;
 
   // signInWithEmailAndPassword(auth, email, password)
   //   .then((userCredential) => {
@@ -113,37 +126,32 @@ signIn.addEventListener("click", (event) => {
 
     if (!docSnap.exists()) {
       showMessage("Account data not found. Contact admin.", "signInMessage");
+      signIn.innerHTML = originalText;
+      signIn.disabled = false;
       return;
     }
 
     const userData = docSnap.data();
     if (!userData.permission) {
       showMessage("Permission not yet given. Please contact admin.", "signInMessage");
+      signIn.innerHTML = originalText;
+      signIn.disabled = false;
       return;
     }
 
     localStorage.setItem("loggedInUserId", user.uid);
     window.location.href = "dashboard.html";
   })
-
-  createUserWithEmailAndPassword(auth, email, password)
-  .then((userCredential) => {
-    const user = userCredential.user;
-    const userData = {
-      email: email,
-      firstName: firstName,
-      lastName: lastName,
-      permission: false, // user cannot login until approved
-    };
-    const docRef = doc(db, "users", user.uid);
-    setDoc(docRef, userData)
-      .then(() => {
-        showMessage("User created. Wait for admin to give login access.", "signUpMessage");
-      })
-      .catch((error) => {
-        console.error("error writing document", error);
-      });
-  })
+  .catch((error) => {
+    const errorCode = error.code;
+    if (errorCode === "auth/invalid-credential") {
+      showMessage("Incorrect Email or Password", "signInMessage");
+    } else {
+      showMessage("Account does not Exist", "signInMessage");
+    }
+    signIn.innerHTML = originalText;
+    signIn.disabled = false;
+  });
 
 });
 
