@@ -102,6 +102,10 @@ form .input-box span.details {
   border-color: #9b59b6;
 }
 
+.user-details .input-box input:not([required]):placeholder-shown:not(:focus) {
+  border-color: #ccc;
+}
+
 form .button {
   display: flex;
   gap: 15px;

@@ -45,6 +45,7 @@ const labelToKeyMap = {
   "Aadhaar Number": "aadhaarNumber",
   "PAN Number": "panNumber",
   "PF Number (UAN)" : "pfNumber",
+  "ESI Number(Optional)": "esiNumber",
   "Contact Number": "contactNumber",
   "Alternative Contact Number": "altContactNumber",
   "Bank Name": "bankName",
@@ -56,6 +57,7 @@ let currentRecordId = null;
 let allUsersArray = [];
 let aadhaarFile = null;
 let bankFile = null;
+let panFile = null;
 
 async function updateUserCount() {
   try {
@@ -174,6 +176,15 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("BankText").value = bankFile ? bankFile.name : "";
   });
 
+  // PAN file handlers
+  document.getElementById("PanText").addEventListener("click", () => {
+    document.getElementById("PanFile").click();
+  });
+  document.getElementById("PanFile").addEventListener("change", (e) => {
+    panFile = e.target.files[0] || null;
+    document.getElementById("PanText").value = panFile ? panFile.name : "";
+  });
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -246,6 +257,18 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
+      if (panFile) {
+        const panUrl = await uploadPhotoToCloudinary(panFile);
+        data.panImage = panUrl;
+      } else if (currentRecordId) {
+        const snapshot = await get(
+          child(ref(db), `registrations/${currentRecordId}`)
+        );
+        if (snapshot.exists() && snapshot.val().panImage) {
+          data.panImage = snapshot.val().panImage;
+        }
+      }
+
       let existingId = currentRecordId;
 
       if (!existingId) {
@@ -276,8 +299,10 @@ document.addEventListener("DOMContentLoaded", () => {
       currentRecordId = null;
       aadhaarFile = null;
       bankFile = null;
+      panFile = null;
       document.getElementById("aadhaarText").value = "";
       document.getElementById("BankText").value = "";
+      document.getElementById("PanText").value = "";
       if (previewImg) {
         previewImg.src = "";
         previewImg.style.display = "none";
@@ -403,6 +428,23 @@ function autofillForm(data) {
       if (bankPreview) {
         bankPreview.src = "";
         bankPreview.style.display = "none";
+      }
+    }
+
+    // PAN image
+    const panText = document.getElementById("PanText");
+    const panPreview = document.getElementById("panPreview");
+    if (data.panImage) {
+      panText.value = "Already Uploaded";
+      if (panPreview) {
+        panPreview.src = data.panImage;
+        panPreview.style.display = "block";
+      }
+    } else {
+      panText.value = "";
+      if (panPreview) {
+        panPreview.src = "";
+        panPreview.style.display = "none";
       }
     }
   }

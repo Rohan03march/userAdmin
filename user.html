@@ -224,6 +224,19 @@
       `
           : ""
       }
+
+      ${
+        user.panImage
+          ? `
+        <div style="flex: 0 1 250px; text-align: center;">
+          <h3 style="margin-bottom: 10px;">PAN Image</h3>
+          <img src="${user.panImage}" alt="PAN Image"
+               class="zoomable"
+               style="width: 100%; max-width: 250px; height: auto; border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+      `
+          : ""
+      }
     </div>
 
     <div class="details" id="mainDetails"></div>
@@ -258,6 +271,7 @@
   "Aadhaar Number": "aadhaarNumber",
   "PAN Number": "panNumber",
   "PF Number (UAN)": "pfNumber",
+  "ESI Number(Optional)": "esiNumber",
   "Contact Number": "contactNumber",
   "Alternative Contact Number": "altContactNumber",
   "Bank Name": "bankName",
@@ -298,6 +312,7 @@
     "photo",
     "aadhaarImage",
     "bankImage",
+    "panImage",
     "employeeCode",
     ...shownKeys,
     "nameAsPerAadhaar",
@@ -342,9 +357,9 @@
   // Clone content
   const clone = container.cloneNode(true);
 
-  // Remove Aadhaar/Bank images and their headings
+  // Remove Aadhaar/Bank/PAN images and their headings
   clone.querySelectorAll("h3").forEach(h3 => {
-    if (h3.textContent.includes("Aadhaar") || h3.textContent.includes("Bank")) {
+    if (h3.textContent.includes("Aadhaar") || h3.textContent.includes("Bank") || h3.textContent.includes("PAN")) {
       h3.nextElementSibling?.remove(); // remove image under the heading
       h3.remove();                     // remove heading itself
     }

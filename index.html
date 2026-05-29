@@ -292,6 +292,28 @@
               </script>
             </div>
 
+            <!--PAN Image-->
+            <div class="input-box">
+              <span class="details">PAN Image(Optional)</span>
+              <input
+                type="text"
+                id="PanText"
+                readonly
+                placeholder="Choose PAN image"
+              />
+              <input type="file" id="PanFile" style="display: none" />
+              <img
+                id="panPreview"
+                style="
+                  display: none;
+                  margin-top: 10px;
+                  max-width: 200px;
+                  border: 1px solid #ccc;
+                  border-radius: 4px;
+                "
+              />
+            </div>
+
             <!-- PF Number -->
 <div class="input-box">
   <span class="details">
@@ -369,7 +391,11 @@ document.addEventListener("click", function () {
 </script>
 </div>
 
-
+            <!-- ESI Number -->
+            <div class="input-box">
+              <span class="details">ESI Number(Optional)</span>
+              <input type="text" placeholder="Enter ESI Number" id="esiInput" />
+            </div>
 
             <!--Contact Number-->
             <div class="input-box">
