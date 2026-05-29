@@ -6,9 +6,34 @@ const allSideMenu = document.querySelectorAll("#sidebar .side-menu.top li a");
 
 allSideMenu.forEach((item) => {
   const li = item.parentElement;
-  item.addEventListener("click", () => {
-    allSideMenu.forEach((i) => i.parentElement.classList.remove("active"));
-    li.classList.add("active");
+  item.addEventListener("click", (e) => {
+    if (item.classList.contains("tab-link")) {
+      e.preventDefault();
+      allSideMenu.forEach((i) => i.parentElement.classList.remove("active"));
+      li.classList.add("active");
+      
+      const target = item.getAttribute("data-target");
+      const dashboardView = document.getElementById("dashboardView");
+      const jobListView = document.getElementById("jobListView");
+      
+      if (target === "dashboardView") {
+        if (dashboardView) dashboardView.style.display = "block";
+        if (jobListView) jobListView.style.display = "none";
+        const searchInput = document.getElementById("searchInput");
+        if (searchInput) searchInput.placeholder = "Search Name, Contact, Location, Designation ...";
+      } else if (target === "jobListView") {
+        if (dashboardView) dashboardView.style.display = "none";
+        if (jobListView) jobListView.style.display = "block";
+        const searchInput = document.getElementById("searchInput");
+        if (searchInput) searchInput.placeholder = "Search Job Title, Location, Type ...";
+      }
+      
+      const searchInput = document.getElementById("searchInput");
+      if (searchInput) searchInput.value = "";
+      currentPage = 1;
+      updateUI();
+      updateJobsUI();
+    }
   });
 });
 
@@ -313,11 +338,47 @@ document.addEventListener("DOMContentLoaded", async () => {
   allUsers = await fetchAllUsers();
   currentPage = 1;
   updateUI();
+  
+  // Initialize jobs
+  initJobs();
+  
+  // Set up Job Form submit and cancel handlers
+  const jobForm = document.getElementById("jobForm");
+  if (jobForm) {
+    jobForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      saveJob();
+    });
+  }
+  
+  const cancelBtn = document.getElementById("cancelJobEditBtn");
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", closeJobModal);
+  }
+
+  const closeBtn = document.getElementById("closeJobModalBtn");
+  if (closeBtn) {
+    closeBtn.addEventListener("click", closeJobModal);
+  }
+
+  const jobModal = document.getElementById("jobModal");
+  if (jobModal) {
+    jobModal.addEventListener("click", (e) => {
+      if (e.target === jobModal) {
+        closeJobModal();
+      }
+    });
+  }
 });
 
 document.getElementById("searchInput").addEventListener("input", () => {
-  currentPage = 1;
-  updateUI();
+  const activeTab = document.querySelector("#sidebar .side-menu.top li.active");
+  if (activeTab && activeTab.id === "jobListTabLi") {
+    updateJobsUI();
+  } else {
+    currentPage = 1;
+    updateUI();
+  }
 });
 
 if (document.getElementById("filterStartDate")) {
@@ -391,3 +452,167 @@ document.addEventListener("DOMContentLoaded", () => {
     exportBtn.addEventListener("click", exportToExcel);
   }
 });
+
+/* ===============================
+   JOB LIST & MANAGEMENT LOGIC
+================================ */
+
+let allJobs = [];
+
+function initJobs() {
+  db.ref("jobs").on("value", (snapshot) => {
+    allJobs = [];
+    snapshot.forEach((child) => {
+      allJobs.push({ id: child.key, ...child.val() });
+    });
+    updateJobsUI();
+  });
+}
+
+function updateJobsUI() {
+  const query = document.getElementById("searchInput").value.trim().toLowerCase();
+  let filteredJobs = [...allJobs];
+
+  if (query) {
+    filteredJobs = filteredJobs.filter((job) => 
+      (job.position || "").toLowerCase().includes(query) ||
+      (job.location || "").toLowerCase().includes(query) ||
+      (job.jobType || "").toLowerCase().includes(query) ||
+      (job.requirements || "").toLowerCase().includes(query)
+    );
+  }
+
+  // Sort by createdAt desc if available
+  filteredJobs.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+  const jobsListContainer = document.getElementById("jobsListContainer");
+  if (!jobsListContainer) return;
+
+  jobsListContainer.innerHTML = "";
+
+  // 1. Render the "+ Add New Job" outline card
+  const addCard = document.createElement("div");
+  addCard.className = "job-card-item add-new-outline-card";
+  addCard.innerHTML = `
+    <div class="add-new-content">
+      <i class="bx bx-plus"></i>
+      <span>Add New Job</span>
+    </div>
+  `;
+  addCard.addEventListener("click", () => {
+    resetJobForm();
+    const jobModal = document.getElementById("jobModal");
+    if (jobModal) jobModal.classList.add("active");
+  });
+  jobsListContainer.appendChild(addCard);
+
+  // 2. Render actual jobs
+  filteredJobs.forEach((job) => {
+    const card = document.createElement("div");
+    const typeClass = (job.jobType || "").toLowerCase().replace(/\s+/g, "-");
+    card.className = `job-card-item ${typeClass}`;
+    card.innerHTML = `
+      <div class="job-card-header">
+        <span class="job-card-type ${typeClass}">${job.jobType || 'N/A'}</span>
+        <div class="job-card-actions">
+          <button class="job-btn edit-btn" title="Edit Job"><i class="bx bxs-edit"></i></button>
+          <button class="job-btn delete-btn" title="Delete Job"><i class="bx bxs-trash"></i></button>
+        </div>
+      </div>
+      <h4 class="job-card-title">${job.position || 'N/A'}</h4>
+      <div class="job-card-location">
+        <i class="bx bxs-map"></i> ${job.location || 'N/A'}
+      </div>
+      <p class="job-card-req">${job.requirements || ''}</p>
+    `;
+
+    card.querySelector(".edit-btn").addEventListener("click", () => editJob(job));
+    card.querySelector(".delete-btn").addEventListener("click", () => deleteJob(job.id));
+
+    jobsListContainer.appendChild(card);
+  });
+}
+
+function saveJob() {
+  const jobIdVal = document.getElementById("jobId").value;
+  const position = document.getElementById("jobPosition").value;
+  const location = document.getElementById("jobLocation").value;
+  const jobType = document.getElementById("jobTypeSelect").value;
+  const requirements = document.getElementById("jobRequirements").value.trim();
+
+  if (!position || !location || !jobType || !requirements) {
+    alert("Please fill all fields");
+    return;
+  }
+
+  const data = {
+    position,
+    location,
+    jobType,
+    requirements,
+    createdAt: Date.now()
+  };
+
+  if (jobIdVal) {
+    db.ref("jobs/" + jobIdVal).update(data)
+      .then(() => {
+        alert("Job updated successfully!");
+        closeJobModal();
+      })
+      .catch((error) => {
+        alert("Error updating job: " + error.message);
+      });
+  } else {
+    db.ref("jobs").push(data)
+      .then(() => {
+        alert("Job created successfully!");
+        closeJobModal();
+      })
+      .catch((error) => {
+        alert("Error creating job: " + error.message);
+      });
+  }
+}
+
+function editJob(job) {
+  document.getElementById("jobId").value = job.id;
+  document.getElementById("jobPosition").value = job.position;
+  document.getElementById("jobLocation").value = job.location;
+  document.getElementById("jobTypeSelect").value = job.jobType;
+  document.getElementById("jobRequirements").value = job.requirements;
+
+  document.getElementById("jobFormTitle").innerText = "Edit Position";
+  document.getElementById("saveJobBtn").innerText = "Update Job";
+
+  const jobModal = document.getElementById("jobModal");
+  if (jobModal) jobModal.classList.add("active");
+}
+
+function deleteJob(id) {
+  if (confirm("Delete this job opening?")) {
+    db.ref("jobs/" + id).remove()
+      .then(() => {
+        alert("Job deleted successfully!");
+      })
+      .catch((error) => {
+        alert("Error deleting job: " + error.message);
+      });
+  }
+}
+
+function resetJobForm() {
+  document.getElementById("jobId").value = "";
+  document.getElementById("jobPosition").value = "";
+  document.getElementById("jobLocation").value = "";
+  document.getElementById("jobTypeSelect").value = "";
+  document.getElementById("jobRequirements").value = "";
+
+  document.getElementById("jobFormTitle").innerText = "Add New Position";
+  document.getElementById("saveJobBtn").innerText = "Save Job";
+}
+
+function closeJobModal() {
+  const jobModal = document.getElementById("jobModal");
+  if (jobModal) jobModal.classList.remove("active");
+  resetJobForm();
+}

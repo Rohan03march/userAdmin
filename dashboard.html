@@ -20,10 +20,34 @@
 </a>
 
       <ul class="side-menu top">
-        <li class="active">
-          <a href="#">
+        <li class="active" id="dashboardTabLi">
+          <a href="#" class="tab-link" data-target="dashboardView">
             <i class="bx bxs-dashboard"></i>
             <span class="text">Dashboard</span>
+          </a>
+        </li>
+        <li id="jobListTabLi">
+          <a href="#" class="tab-link" data-target="jobListView">
+            <i class="bx bxs-briefcase"></i>
+            <span class="text">Job List</span>
+          </a>
+        </li>
+        <li>
+          <a href="login-permissions.html">
+            <i class="bx bxs-user-check"></i>
+            <span class="text">Permissions</span>
+          </a>
+        </li>
+        <li>
+          <a href="applications.html">
+            <i class="bx bxs-user-plus"></i>
+            <span class="text">New Applications</span>
+          </a>
+        </li>
+        <li>
+          <a href="terms&condition.html">
+            <i class="bx bxs-file-pdf"></i>
+            <span class="text">T&C PDF</span>
           </a>
         </li>
         <li>
@@ -32,26 +56,6 @@
             <span class="text" id="signOutBtn">Logout</span>
           </a>
         </li>
-        <li>
-  <a href="login-permissions.html">
-    <i class="bx bxs-user-check"></i>
-    <span class="text">Permissions</span>
-  </a>
-   <a href="applications.html">
-    <i class="bx bxs-user-plus"></i>
-    <span class="text">New Applications </span>
-</a>
- <a href="terms&condition.html">
-    <i class="bx bxs-user-plus"></i>
-    <span class="text">T&C PDF</span>
-</a>
-<!-- <a href="careers.html">
-    <i class="bx bxs-user-plus"></i>
-    <span class="text">Careers</span>
-</a> -->
-
-</li>
-
       </ul>
     </section>
 
@@ -78,121 +82,219 @@
 
       <!-- MAIN -->
       <main>
-        <div class="head-title">
-          <div class="left">
-            <h1>Dashboard</h1>
-            <ul class="breadcrumb">
-              <li><a href="#">Dashboard</a></li>
-              <li><i class="bx bx-chevron-right"></i></li>
-              <li><a class="active" href="#">Home</a></li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- <ul class="box-info">
-          <li>
-            <i class="bx bxs-calendar-check"></i>
-            <span class="text">
-              <h3 id="userCount">0</h3>
-              <p>User Entries</p>
-            </span>
-          </li>
-        </ul> -->
-        <div class="table-data">
-          <div class="order">
-            <div class="head" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-              <h3>Recent Entries</h3>
-              <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                <div style="display: flex; align-items: center; gap: 8px; background: var(--grey); padding: 6px 12px; border-radius: 20px;">
-                  <i class='bx bx-calendar' style="color: var(--dark-grey); font-size: 18px;"></i>
-                  <input type="date" id="filterStartDate" style="border: none; background: transparent; font-size: 14px; color: var(--dark); outline: none; font-family: var(--poppins); cursor: pointer;">
-                  <span style="color: var(--dark-grey); font-weight: 500; font-size: 14px;">-</span>
-                  <input type="date" id="filterEndDate" style="border: none; background: transparent; font-size: 14px; color: var(--dark); outline: none; font-family: var(--poppins); cursor: pointer;">
-                </div>
-                <button id="exportExcelBtn" style="background:#27ae60; color:#fff; padding:8px 16px; border:none; border-radius:4px; cursor:pointer; font-size:14px; font-weight:600;">
-                  <i class='bx bxs-file-export'></i> Export to Excel
-                </button>
-              </div>
+        <!-- 1. DASHBOARD VIEW -->
+        <div id="dashboardView">
+          <div class="head-title">
+            <div class="left">
+              <h1>Dashboard</h1>
+              <ul class="breadcrumb">
+                <li><a href="#">Dashboard</a></li>
+                <li><i class="bx bx-chevron-right"></i></li>
+                <li><a class="active" href="#">Home</a></li>
+              </ul>
             </div>
-            <table>
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>User</th>
-                  <th>Contact Number</th>
-                  <th>Working Location</th>
-                  <th>Designation</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          <div class="pagination-wrapper">
-  <div id="pagination" class="pagination"></div>
-</div>
+          </div>
 
-<div id="pageInfo" class="page-info"></div>
+          <!-- <ul class="box-info">
+            <li>
+              <i class="bx bxs-calendar-check"></i>
+              <span class="text">
+                <h3 id="userCount">0</h3>
+                <p>User Entries</p>
+              </span>
+            </li>
+          </ul> -->
+          <div class="table-data">
+            <div class="order">
+              <div class="head" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <h3>Recent Entries</h3>
+                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                  <div style="display: flex; align-items: center; gap: 8px; background: var(--grey); padding: 6px 12px; border-radius: 20px;">
+                    <i class='bx bx-calendar' style="color: var(--dark-grey); font-size: 18px;"></i>
+                    <input type="date" id="filterStartDate" style="border: none; background: transparent; font-size: 14px; color: var(--dark); outline: none; font-family: var(--poppins); cursor: pointer;">
+                    <span style="color: var(--dark-grey); font-weight: 500; font-size: 14px;">-</span>
+                    <input type="date" id="filterEndDate" style="border: none; background: transparent; font-size: 14px; color: var(--dark); outline: none; font-family: var(--poppins); cursor: pointer;">
+                  </div>
+                  <button id="exportExcelBtn" style="background:#27ae60; color:#fff; padding:8px 16px; border:none; border-radius:4px; cursor:pointer; font-size:14px; font-weight:600;">
+                    <i class='bx bxs-file-export'></i> Export to Excel
+                  </button>
+                </div>
+              </div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>User</th>
+                    <th>Contact Number</th>
+                    <th>Working Location</th>
+                    <th>Designation</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+              <div class="pagination-wrapper">
+                <div id="pagination" class="pagination"></div>
+              </div>
 
-<style>
-  .pagination-wrapper {
-  display: flex;
-  justify-content: flex-end;
-  margin: 15px 0;
-}
+              <div id="pageInfo" class="page-info"></div>
 
-.pagination {
-  display: flex;
-  gap: 6px;
-  padding: 6px 10px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-}
+              <style>
+                .pagination-wrapper {
+                  display: flex;
+                  justify-content: flex-end;
+                  margin: 15px 0;
+                }
 
-.pagination button {
-  min-width: 34px;
-  height: 34px;
-  border: none;
-  border-radius: 6px;
-  background: #f1f3f5;
-  cursor: pointer;
-}
+                .pagination {
+                  display: flex;
+                  gap: 6px;
+                  padding: 6px 10px;
+                  background: #fff;
+                  border-radius: 8px;
+                  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+                }
 
-.pagination button:hover:not(:disabled) {
-  background: #3498db;
-  color: #fff;
-}
+                .pagination button {
+                  min-width: 34px;
+                  height: 34px;
+                  border: none;
+                  border-radius: 6px;
+                  background: #f1f3f5;
+                  cursor: pointer;
+                }
 
-.pagination .active {
-  background: #3498db;
-  color: #fff;
-}
+                .pagination button:hover:not(:disabled) {
+                  background: #3498db;
+                  color: #fff;
+                }
 
-.pagination .nav-btn {
-  font-weight: 600;
-}
+                .pagination .active {
+                  background: #3498db;
+                  color: #fff;
+                }
 
-.pagination button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
+                .pagination .nav-btn {
+                  font-weight: 600;
+                }
 
-.pagination .dots {
-  padding: 0 6px;
-  color: #888;
-  font-weight: bold;
-}
+                .pagination button:disabled {
+                  opacity: 0.4;
+                  cursor: not-allowed;
+                }
 
-.page-info {
-  text-align: right;
-  font-size: 13px;
-  color: #666;
-}
+                .pagination .dots {
+                  padding: 0 6px;
+                  color: #888;
+                  font-weight: bold;
+                }
 
-</style>
+                .page-info {
+                  text-align: right;
+                  font-size: 13px;
+                  color: #666;
+                }
+              </style>
+            </div>
           </div>
         </div>
-       
+
+        <!-- 2. JOB LIST VIEW (Hidden by default) -->
+        <div id="jobListView" style="display: none;">
+          <div class="head-title">
+            <div class="left">
+              <h1>Job List</h1>
+              <ul class="breadcrumb">
+                <li><a href="#">Dashboard</a></li>
+                <li><i class="bx bx-chevron-right"></i></li>
+                <li><a class="active" href="#">Job List</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="jobs-list-panel" style="margin-top: 24px;">
+            <div id="jobsListContainer" class="jobs-grid">
+              <!-- Job cards will render here -->
+            </div>
+          </div>
+
+          <!-- Job Form Modal Overlay -->
+          <div id="jobModal" class="job-modal-overlay">
+            <div class="job-modal-content">
+              <div class="job-modal-header">
+                <h3 id="jobFormTitle">Add New Position</h3>
+                <button type="button" class="close-modal-btn" id="closeJobModalBtn">&times;</button>
+              </div>
+              <form id="jobForm">
+                <input type="hidden" id="jobId" />
+                
+                <div class="form-group">
+                  <label for="jobPosition">Position</label>
+                  <select id="jobPosition" required>
+                    <option value="">Select Position</option>
+                    <option value="Store Manager">Store Manager</option>
+                    <option value="Quantity Incharge">Quantity Incharge</option>
+                    <option value="Process Expert">Process Expert</option>
+                    <option value="Shift Incharge">Shift Incharge</option>
+                    <option value="Picker & Packer">Picker & Packer</option>
+                    <option value="Loading & Unloading Staff">Loading & Unloading Staff</option>
+                    <option value="Housekeeping Staff">Housekeeping Staff</option>
+                    <option value="Security Guard">Security Guard</option>
+                    <option value="Others">Others</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="jobLocation">Location</label>
+                  <select id="jobLocation" required>
+                    <option value="">Select Location</option>
+                    <option value="Balagere">Balagere</option>
+                    <option value="Banshankri">Banshankri</option>
+                    <option value="Begur">Begur</option>
+                    <option value="Chikathogur">Chikathogur</option>
+                    <option value="Chikkabidaralallu">Chikkabidaralallu</option>
+                    <option value="Deepanjali Nagar">Deepanjali Nagar</option>
+                    <option value="Haralur">Haralur</option>
+                    <option value="Hope Farm">Hope Farm</option>
+                    <option value="HSR Layout">HSR Layout</option>
+                    <option value="Kadugodi">Kadugodi</option>
+                    <option value="Kanamangala">Kanamangala</option>
+                    <option value="Koramangala">Koramangala</option>
+                    <option value="Kundalahalli">Kundalahalli</option>
+                    <option value="Madnayakanahalli">Madnayakanahalli</option>
+                    <option value="Malleshwaram">Malleshwaram</option>
+                    <option value="Mysore Road">Mysore Road</option>
+                    <option value="Shanthiniketan">Shanthiniketan</option>
+                    <option value="Wilson Garden">Wilson Garden</option>
+                    <option value="Yelahanka">Yelahanka</option>
+                    <option value="Yeshwantpur">Yeshwantpur</option>
+                    <option value="Others">Others</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="jobTypeSelect">Job Type</label>
+                  <select id="jobTypeSelect" required>
+                    <option value="">Select Type</option>
+                    <option value="Full-Time">Full-Time</option>
+                    <option value="Part-Time">Part-Time</option>
+                    <option value="Contract">Contract</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="jobRequirements">Requirements</label>
+                  <textarea id="jobRequirements" rows="5" placeholder="Enter requirements here..." required></textarea>
+                </div>
+
+                <div class="form-actions">
+                  <button type="submit" id="saveJobBtn" class="btn-primary">Save Job</button>
+                  <button type="button" id="cancelJobEditBtn" class="btn-secondary">Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
       </main>
     </section>
 
