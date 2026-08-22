@@ -18,9 +18,21 @@ const searchInput = document.getElementById("searchInput");
 const genderFilter = document.getElementById("genderFilter");
 const positionFilter = document.getElementById("positionFilter");
 const locationFilter = document.getElementById("locationFilter");
+const startDateFilter = document.getElementById("startDateFilter");
+const endDateFilter = document.getElementById("endDateFilter");
 const clearFilters = document.getElementById("clearFilters");
 
 let allApplications = []; // Store all apps here for filtering
+
+// 🟢 Helper to extract timestamp ms from application object
+function getAppTimestampMs(app) {
+  if (!app) return null;
+  const raw = app.timestamp || app.date || app.createdAt || app.submittedAt;
+  if (!raw) return null;
+  if (typeof raw === "number") return raw;
+  const parsed = Date.parse(raw);
+  return isNaN(parsed) ? null : parsed;
+}
 
 // 🟢 Normalization function for position (synonyms handling)
 function normalizePosition(position) {
@@ -184,6 +196,11 @@ function applyFilters() {
   const gender = genderFilter.value;
   const pos = positionFilter.value;
   const loc = locationFilter.value;
+  const startDateVal = startDateFilter ? startDateFilter.value : "";
+  const endDateVal = endDateFilter ? endDateFilter.value : "";
+
+  const startMs = startDateVal ? new Date(startDateVal + "T00:00:00").getTime() : null;
+  const endMs = endDateVal ? new Date(endDateVal + "T23:59:59.999").getTime() : null;
 
   const filteredApps = allApplications.filter(app => {
     const name = (app.name || "").toLowerCase();
@@ -207,7 +224,18 @@ function applyFilters() {
     const matchesPos = !pos || position === pos; // ✅ normalized check
     const matchesLoc = !loc || location === loc;
 
-    return matchesSearch && matchesGender && matchesPos && matchesLoc;
+    let matchesDate = true;
+    if (startMs || endMs) {
+      const appMs = getAppTimestampMs(app);
+      if (appMs !== null) {
+        if (startMs && appMs < startMs) matchesDate = false;
+        if (endMs && appMs > endMs) matchesDate = false;
+      } else {
+        matchesDate = false;
+      }
+    }
+
+    return matchesSearch && matchesGender && matchesPos && matchesLoc && matchesDate;
   });
 
   if (filteredApps.length > 0) {
@@ -222,12 +250,16 @@ searchInput.addEventListener("input", applyFilters);
 genderFilter.addEventListener("change", applyFilters);
 positionFilter.addEventListener("change", applyFilters);
 locationFilter.addEventListener("change", applyFilters);
+if (startDateFilter) startDateFilter.addEventListener("change", applyFilters);
+if (endDateFilter) endDateFilter.addEventListener("change", applyFilters);
 
 clearFilters.addEventListener("click", () => {
   searchInput.value = "";
   genderFilter.value = "";
   positionFilter.value = "";
   locationFilter.value = "";
+  if (startDateFilter) startDateFilter.value = "";
+  if (endDateFilter) endDateFilter.value = "";
   applyFilters();
 });
 

@@ -32,22 +32,32 @@
 
   <!-- 🔽 Filter bar -->
   <div class="filter-bar">
-  <select id="genderFilter">
-    <option value="">Gender</option>
-    <option value="male">Male</option>
-    <option value="female">Female</option>
-  </select>
+    <select id="genderFilter">
+      <option value="">Gender</option>
+      <option value="male">Male</option>
+      <option value="female">Female</option>
+    </select>
 
-  <select id="positionFilter">
-    <option value="">All Positions</option>
-  </select>
+    <select id="positionFilter">
+      <option value="">All Positions</option>
+    </select>
 
-  <select id="locationFilter">
-    <option value="">All Locations</option>
-  </select>
+    <select id="locationFilter">
+      <option value="">All Locations</option>
+    </select>
 
-  <button id="clearFilters">Clear Filters</button>
-</div>
+    <div class="date-filter">
+      <label for="startDateFilter">From:</label>
+      <input type="date" id="startDateFilter" title="Start Date">
+    </div>
+
+    <div class="date-filter">
+      <label for="endDateFilter">To:</label>
+      <input type="date" id="endDateFilter" title="End Date">
+    </div>
+
+    <button id="clearFilters">Clear Filters</button>
+  </div>
 
 <style>
 /* 🌟 Modern One-Line Filter Bar */
@@ -63,6 +73,7 @@
   border-radius: 14px;
   box-shadow: 0 3px 8px rgba(0,0,0,0.05);
   max-width: 1500px;
+  flex-wrap: wrap;
 }
 
 /* 🔽 Dropdown Styling */
@@ -84,6 +95,39 @@
 }
 
 .filter-bar select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.25);
+  outline: none;
+}
+
+/* 📅 Date Filter Group */
+.date-filter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.filter-bar input[type="date"] {
+  padding: 9px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background: #fff;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-family: inherit;
+}
+
+.filter-bar input[type="date"]:hover {
+  border-color: #60a5fa;
+  box-shadow: 0 0 6px rgba(59,130,246,0.25);
+}
+
+.filter-bar input[type="date"]:focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59,130,246,0.25);
   outline: none;
@@ -117,8 +161,15 @@
   }
 
   .filter-bar select,
-  .filter-bar button {
+  .filter-bar button,
+  .filter-bar input[type="date"] {
     width: 100%;
+  }
+
+  .date-filter {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
   }
 }
 </style>
