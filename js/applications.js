@@ -58,6 +58,7 @@ function renderApplications(applications) {
   table.innerHTML = `
     <thead>
       <tr>
+        <th>S.No.</th>
         <th>Applicant</th>
         <th>Contact</th>
         <th>Job Type</th>
@@ -74,7 +75,7 @@ function renderApplications(applications) {
 
   const tbody = table.querySelector("tbody");
 
-  applications.forEach(app => {
+  applications.forEach((app, index) => {
     const tr = document.createElement("tr");
 
     // Format timestamp if exists
@@ -85,6 +86,7 @@ function renderApplications(applications) {
     }
 
     tr.innerHTML = `
+      <td>${index + 1}</td>
       <td>${app.name || ""}</td>
       <td>${app.phoneNumber || ""}</td>
       <td>${app.job || ""}</td>
