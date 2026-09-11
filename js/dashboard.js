@@ -459,7 +459,297 @@ document.addEventListener("DOMContentLoaded", () => {
 
 let allJobs = [];
 
+const ALL_LOCATIONS = [
+  "Balagere",
+  "Banshankri",
+  "Begur",
+  "Chikathogur",
+  "Chikkabidaralallu",
+  "Deepanjali Nagar",
+  "Haralur",
+  "Hope Farm",
+  "HSR Layout",
+  "Kadugodi",
+  "Kanamangala",
+  "Koramangala",
+  "Kundalahalli",
+  "Madnayakanahalli",
+  "Malleshwaram",
+  "Mysore Road",
+  "Shanthiniketan",
+  "Wilson Garden",
+  "Yelahanka",
+  "Yeshwantpur",
+  "Others"
+];
+
+let isJobEventsInitialized = false;
+let customLocationsList = [];
+
+function initJobEventListeners() {
+  if (isJobEventsInitialized) return;
+  isJobEventsInitialized = true;
+
+  // Render location checkboxes
+  renderLocationCheckboxes();
+
+  // Position "Others" toggle
+  const jobPositionSelect = document.getElementById("jobPosition");
+  const customPositionGroup = document.getElementById("customPositionGroup");
+  const customPositionInput = document.getElementById("customPositionInput");
+
+  if (jobPositionSelect && customPositionGroup) {
+    jobPositionSelect.addEventListener("change", () => {
+      if (jobPositionSelect.value === "Others") {
+        customPositionGroup.style.display = "block";
+        if (customPositionInput) customPositionInput.focus();
+      } else {
+        customPositionGroup.style.display = "none";
+        if (customPositionInput) customPositionInput.value = "";
+      }
+    });
+  }
+
+  // Select All Locations button (selects all 20 standard locations)
+  const selectAllBtn = document.getElementById("selectAllLocBtn");
+  if (selectAllBtn) {
+    selectAllBtn.addEventListener("click", () => {
+      document.querySelectorAll(".loc-checkbox-item").forEach((cb) => {
+        if (cb.value !== "Others") {
+          cb.checked = true;
+          cb.closest(".loc-item").classList.add("checked");
+        }
+      });
+      updateSelectedLocationCount();
+    });
+  }
+
+  // Clear All Locations button
+  const clearAllBtn = document.getElementById("clearAllLocBtn");
+  if (clearAllBtn) {
+    clearAllBtn.addEventListener("click", () => {
+      document.querySelectorAll(".loc-checkbox-item").forEach((cb) => {
+        cb.checked = false;
+        cb.closest(".loc-item").classList.remove("checked");
+      });
+      customLocationsList = [];
+      renderCustomChips();
+      const customLocGroup = document.getElementById("customLocationGroup");
+      if (customLocGroup) customLocGroup.style.display = "none";
+      const customLocInput = document.getElementById("customLocationInput");
+      if (customLocInput) customLocInput.value = "";
+      updateSelectedLocationCount();
+    });
+  }
+
+  // Toggle Custom Location panel button
+  const toggleCustomBtn = document.getElementById("toggleCustomLocBtn");
+  const customLocGroup = document.getElementById("customLocationGroup");
+  const customLocInput = document.getElementById("customLocationInput");
+  const addCustomBtn = document.getElementById("addCustomLocTagBtn");
+
+  if (toggleCustomBtn && customLocGroup) {
+    toggleCustomBtn.addEventListener("click", () => {
+      const isHidden = customLocGroup.style.display === "none";
+      customLocGroup.style.display = isHidden ? "block" : "none";
+      if (isHidden && customLocInput) {
+        customLocInput.focus();
+      }
+    });
+  }
+
+  // Add Custom Location Tag button
+  if (addCustomBtn && customLocInput) {
+    addCustomBtn.addEventListener("click", () => {
+      const val = customLocInput.value.trim();
+      if (val) {
+        addCustomLocationTag(val);
+        customLocInput.value = "";
+        customLocInput.focus();
+      }
+    });
+  }
+
+  // Pressing Enter in Custom Location Input adds tag
+  if (customLocInput) {
+    customLocInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const val = customLocInput.value.trim();
+        if (val) {
+          addCustomLocationTag(val);
+          customLocInput.value = "";
+        }
+      }
+    });
+  }
+
+  // Filter locations live search
+  const filterInput = document.getElementById("filterLocationInput");
+  if (filterInput) {
+    filterInput.addEventListener("input", (e) => {
+      const filter = e.target.value.toLowerCase().trim();
+      document.querySelectorAll(".loc-item").forEach((item) => {
+        const text = item.textContent.toLowerCase();
+        item.style.display = text.includes(filter) ? "flex" : "none";
+      });
+    });
+  }
+}
+
+function renderLocationCheckboxes() {
+  const container = document.getElementById("locationCheckboxesContainer");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  ALL_LOCATIONS.forEach((loc) => {
+    const label = document.createElement("label");
+    label.className = "loc-item";
+    label.innerHTML = `
+      <input type="checkbox" value="${loc}" class="loc-checkbox-item" />
+      <span>${loc}</span>
+    `;
+
+    const checkbox = label.querySelector("input");
+    checkbox.addEventListener("change", () => {
+      if (checkbox.checked) {
+        label.classList.add("checked");
+      } else {
+        label.classList.remove("checked");
+      }
+
+      if (loc === "Others") {
+        const customLocGroup = document.getElementById("customLocationGroup");
+        const customLocInput = document.getElementById("customLocationInput");
+        if (customLocGroup) {
+          customLocGroup.style.display = checkbox.checked ? "block" : "none";
+          if (checkbox.checked && customLocInput) customLocInput.focus();
+        }
+      }
+
+      updateSelectedLocationCount();
+    });
+
+    container.appendChild(label);
+  });
+}
+
+function renderCustomChips() {
+  const container = document.getElementById("customChipsWrap");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  customLocationsList.forEach((loc, idx) => {
+    const chip = document.createElement("span");
+    chip.className = "loc-chip";
+    chip.innerHTML = `
+      <i class="bx bx-map-pin"></i>
+      <span>${loc}</span>
+      <span class="loc-chip-remove" title="Remove">&times;</span>
+    `;
+
+    chip.querySelector(".loc-chip-remove").addEventListener("click", (e) => {
+      e.stopPropagation();
+      customLocationsList.splice(idx, 1);
+      renderCustomChips();
+      updateSelectedLocationCount();
+    });
+
+    container.appendChild(chip);
+  });
+}
+
+function addCustomLocationTag(rawText) {
+  if (!rawText) return;
+  const items = rawText.split(",").map((t) => t.trim()).filter(Boolean);
+  let added = false;
+
+  items.forEach((item) => {
+    // If it's one of the standard locations, check that checkbox directly!
+    let matchedStandard = false;
+    document.querySelectorAll(".loc-checkbox-item").forEach((cb) => {
+      if (cb.value.toLowerCase() === item.toLowerCase() && cb.value !== "Others") {
+        cb.checked = true;
+        cb.closest(".loc-item").classList.add("checked");
+        matchedStandard = true;
+        added = true;
+      }
+    });
+
+    if (!matchedStandard && !customLocationsList.includes(item)) {
+      customLocationsList.push(item);
+      added = true;
+    }
+  });
+
+  if (added) {
+    renderCustomChips();
+    updateSelectedLocationCount();
+  }
+}
+
+function updateSelectedLocationCount() {
+  const badge = document.getElementById("locationCountBadge");
+  if (!badge) return;
+
+  const count = getSelectedLocations().length;
+  badge.innerHTML = `<i class="bx bx-check"></i> ${count} selected`;
+}
+
+function getSelectedLocations() {
+  const checkedLocations = [];
+  document.querySelectorAll(".loc-checkbox-item:checked").forEach((cb) => {
+    if (cb.value !== "Others") {
+      checkedLocations.push(cb.value);
+    }
+  });
+
+  // Include custom location tags
+  customLocationsList.forEach((loc) => {
+    if (!checkedLocations.includes(loc)) {
+      checkedLocations.push(loc);
+    }
+  });
+
+  return checkedLocations;
+}
+
+function setSelectedLocations(locs) {
+  const targetLocations = Array.isArray(locs) ? locs : [locs];
+  customLocationsList = [];
+
+  document.querySelectorAll(".loc-checkbox-item").forEach((cb) => {
+    if (targetLocations.includes(cb.value)) {
+      cb.checked = true;
+      cb.closest(".loc-item").classList.add("checked");
+    } else {
+      cb.checked = false;
+      cb.closest(".loc-item").classList.remove("checked");
+    }
+  });
+
+  // Add any locations not in predefined ALL_LOCATIONS to custom list
+  targetLocations.forEach((loc) => {
+    if (loc && !ALL_LOCATIONS.includes(loc)) {
+      if (!customLocationsList.includes(loc)) {
+        customLocationsList.push(loc);
+      }
+    }
+  });
+
+  const customGroup = document.getElementById("customLocationGroup");
+  if (customLocationsList.length > 0) {
+    if (customGroup) customGroup.style.display = "block";
+  }
+  renderCustomChips();
+  updateSelectedLocationCount();
+}
+
 function initJobs() {
+  initJobEventListeners();
+
   db.ref("jobs").on("value", (snapshot) => {
     allJobs = [];
     snapshot.forEach((child) => {
@@ -469,8 +759,45 @@ function initJobs() {
   });
 }
 
+function populateDashboardStoreFilter() {
+  const locFilterEl = document.getElementById("jobLocationFilter");
+  if (!locFilterEl) return;
+  const currentVal = locFilterEl.value;
+
+  const storesSet = new Set();
+  allJobs.forEach((j) => {
+    if (j.location && j.location.trim()) storesSet.add(j.location.trim());
+  });
+  if (typeof ALL_LOCATIONS !== "undefined") {
+    ALL_LOCATIONS.forEach((loc) => {
+      if (loc !== "Others") storesSet.add(loc);
+    });
+  }
+
+  const sortedStores = Array.from(storesSet).sort((a, b) => a.localeCompare(b));
+  let html = `<option value="">All Stores / Locations (${allJobs.length})</option>`;
+  sortedStores.forEach((s) => {
+    const count = allJobs.filter((j) => (j.location || "").toLowerCase() === s.toLowerCase()).length;
+    html += `<option value="${s}">${s} ${count > 0 ? `(${count})` : ''}</option>`;
+  });
+  locFilterEl.innerHTML = html;
+  if (currentVal && storesSet.has(currentVal)) {
+    locFilterEl.value = currentVal;
+  }
+}
+
 function updateJobsUI() {
-  const query = document.getElementById("searchInput").value.trim().toLowerCase();
+  const searchEl = document.getElementById("searchInput");
+  const jobToolbarSearchEl = document.getElementById("jobSearchFilter");
+  const query = (jobToolbarSearchEl && jobToolbarSearchEl.value.trim()) 
+    ? jobToolbarSearchEl.value.trim().toLowerCase() 
+    : (searchEl ? searchEl.value.trim().toLowerCase() : "");
+
+  const locFilterEl = document.getElementById("jobLocationFilter");
+  const selectedStore = locFilterEl ? locFilterEl.value.trim().toLowerCase() : "";
+
+  populateDashboardStoreFilter();
+
   let filteredJobs = [...allJobs];
 
   if (query) {
@@ -480,6 +807,22 @@ function updateJobsUI() {
       (job.jobType || "").toLowerCase().includes(query) ||
       (job.requirements || "").toLowerCase().includes(query)
     );
+  }
+
+  if (selectedStore) {
+    filteredJobs = filteredJobs.filter((job) =>
+      (job.location || "").toLowerCase() === selectedStore
+    );
+  }
+
+  // Update count badge
+  const countBadge = document.getElementById("jobsCountBadge");
+  if (countBadge) {
+    if (filteredJobs.length === allJobs.length) {
+      countBadge.innerText = `${allJobs.length} Openings`;
+    } else {
+      countBadge.innerText = `${filteredJobs.length} of ${allJobs.length} Openings`;
+    }
   }
 
   // Sort by createdAt desc if available
@@ -509,11 +852,30 @@ function updateJobsUI() {
   // 2. Render actual jobs
   filteredJobs.forEach((job) => {
     const card = document.createElement("div");
-    const typeClass = (job.jobType || "").toLowerCase().replace(/\s+/g, "-");
+    let typeClass = (job.jobType || "").toLowerCase().replace(/\s+/g, "-");
+    const jtLower = (job.jobType || "").toLowerCase();
+    const isBoth = jtLower.includes("both") || (jtLower.includes("full") && jtLower.includes("part"));
+
+    if (isBoth) {
+      typeClass = "full-part-time";
+    }
+
+    let tagsHTML = "";
+    if (isBoth) {
+      tagsHTML = `
+        <span class="job-card-type full-time">Full Time</span>
+        <span class="job-card-type part-time">Part Time</span>
+      `;
+    } else {
+      tagsHTML = `<span class="job-card-type ${typeClass}">${job.jobType || 'N/A'}</span>`;
+    }
+
     card.className = `job-card-item ${typeClass}`;
     card.innerHTML = `
       <div class="job-card-header">
-        <span class="job-card-type ${typeClass}">${job.jobType || 'N/A'}</span>
+        <div class="job-tags-wrap">
+          ${tagsHTML}
+        </div>
         <div class="job-card-actions">
           <button class="job-btn edit-btn" title="Edit Job"><i class="bx bxs-edit"></i></button>
           <button class="job-btn delete-btn" title="Delete Job"><i class="bx bxs-trash"></i></button>
@@ -535,25 +897,67 @@ function updateJobsUI() {
 
 function saveJob() {
   const jobIdVal = document.getElementById("jobId").value;
-  const position = document.getElementById("jobPosition").value;
-  const location = document.getElementById("jobLocation").value;
+  const positionSelect = document.getElementById("jobPosition").value;
+  const customPositionInput = document.getElementById("customPositionInput");
+  const customPosition = customPositionInput ? customPositionInput.value.trim() : "";
   const jobType = document.getElementById("jobTypeSelect").value;
   const requirements = document.getElementById("jobRequirements").value.trim();
 
-  if (!position || !location || !jobType || !requirements) {
-    alert("Please fill all fields");
+  // Determine final position
+  let position = positionSelect;
+  if (positionSelect === "Others") {
+    if (!customPosition) {
+      alert("Please specify the custom position name.");
+      if (customPositionInput) customPositionInput.focus();
+      return;
+    }
+    position = customPosition;
+  }
+
+  if (!position) {
+    alert("Please select or enter a position.");
     return;
   }
 
-  const data = {
-    position,
-    location,
-    jobType,
-    requirements,
-    createdAt: Date.now()
-  };
+  // Auto-commit any text left in customLocationInput
+  const customLocInput = document.getElementById("customLocationInput");
+  if (customLocInput && customLocInput.value.trim()) {
+    addCustomLocationTag(customLocInput.value.trim());
+    customLocInput.value = "";
+  }
+
+  const selectedLocations = getSelectedLocations();
+
+  if (!selectedLocations || selectedLocations.length === 0) {
+    alert("Please select at least one location or add a custom location.");
+    return;
+  }
+
+  if (!jobType) {
+    alert("Please select a job type.");
+    return;
+  }
+
+  if (!requirements) {
+    alert("Please enter job requirements.");
+    return;
+  }
+
+  const saveBtn = document.getElementById("saveJobBtn");
+  const originalBtnHTML = saveBtn.innerHTML;
+  saveBtn.disabled = true;
 
   if (jobIdVal) {
+    // Editing an existing single job
+    saveBtn.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> <span>Updating...</span>";
+    const data = {
+      position,
+      location: selectedLocations[0],
+      jobType,
+      requirements,
+      updatedAt: Date.now()
+    };
+
     db.ref("jobs/" + jobIdVal).update(data)
       .then(() => {
         alert("Job updated successfully!");
@@ -561,28 +965,90 @@ function saveJob() {
       })
       .catch((error) => {
         alert("Error updating job: " + error.message);
+      })
+      .finally(() => {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalBtnHTML;
       });
   } else {
-    db.ref("jobs").push(data)
+    // Bulk or single creation for all selected locations
+    const count = selectedLocations.length;
+    saveBtn.innerHTML = count > 1 
+      ? `<i class='bx bx-loader-alt bx-spin'></i> <span>Creating ${count} Jobs...</span>`
+      : "<i class='bx bx-loader-alt bx-spin'></i> <span>Saving...</span>";
+
+    const updates = {};
+    const now = Date.now();
+
+    selectedLocations.forEach((loc, idx) => {
+      const newKey = db.ref("jobs").push().key;
+      updates["jobs/" + newKey] = {
+        position,
+        location: loc,
+        jobType,
+        requirements,
+        createdAt: now - idx
+      };
+    });
+
+    db.ref().update(updates)
       .then(() => {
-        alert("Job created successfully!");
+        const msg = count > 1 
+          ? `Successfully created ${count} job openings across all selected locations!`
+          : "Job created successfully!";
+        alert(msg);
         closeJobModal();
       })
       .catch((error) => {
         alert("Error creating job: " + error.message);
+      })
+      .finally(() => {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalBtnHTML;
       });
   }
 }
 
 function editJob(job) {
+  resetJobForm();
   document.getElementById("jobId").value = job.id;
-  document.getElementById("jobPosition").value = job.position;
-  document.getElementById("jobLocation").value = job.location;
-  document.getElementById("jobTypeSelect").value = job.jobType;
-  document.getElementById("jobRequirements").value = job.requirements;
+
+  // Check if position exists in dropdown options
+  const positionSelect = document.getElementById("jobPosition");
+  let foundPosition = false;
+  for (let i = 0; i < positionSelect.options.length; i++) {
+    if (positionSelect.options[i].value === job.position) {
+      positionSelect.value = job.position;
+      foundPosition = true;
+      break;
+    }
+  }
+
+  const customPosGroup = document.getElementById("customPositionGroup");
+  const customPosInput = document.getElementById("customPositionInput");
+  if (!foundPosition && job.position) {
+    positionSelect.value = "Others";
+    if (customPosGroup) customPosGroup.style.display = "block";
+    if (customPosInput) customPosInput.value = job.position;
+  } else {
+    if (customPosGroup) customPosGroup.style.display = "none";
+    if (customPosInput) customPosInput.value = "";
+  }
+
+  // Set location
+  if (job.location) {
+    setSelectedLocations([job.location]);
+  }
+
+  if (job.jobType && job.jobType.toLowerCase().includes("both")) {
+    document.getElementById("jobTypeSelect").value = "Full-Time & Part-Time";
+  } else {
+    document.getElementById("jobTypeSelect").value = job.jobType || "";
+  }
+  document.getElementById("jobRequirements").value = job.requirements || "";
 
   document.getElementById("jobFormTitle").innerText = "Edit Position";
-  document.getElementById("saveJobBtn").innerText = "Update Job";
+  document.getElementById("saveJobBtn").innerHTML = "<i class='bx bx-check-double'></i> <span>Update Job</span>";
 
   const jobModal = document.getElementById("jobModal");
   if (jobModal) jobModal.classList.add("active");
@@ -603,16 +1069,61 @@ function deleteJob(id) {
 function resetJobForm() {
   document.getElementById("jobId").value = "";
   document.getElementById("jobPosition").value = "";
-  document.getElementById("jobLocation").value = "";
+  
+  const customPosGroup = document.getElementById("customPositionGroup");
+  if (customPosGroup) customPosGroup.style.display = "none";
+  const customPosInput = document.getElementById("customPositionInput");
+  if (customPosInput) customPosInput.value = "";
+
   document.getElementById("jobTypeSelect").value = "";
   document.getElementById("jobRequirements").value = "";
 
+  setSelectedLocations([]);
+  customLocationsList = [];
+  renderCustomChips();
+  const customLocGroup = document.getElementById("customLocationGroup");
+  if (customLocGroup) customLocGroup.style.display = "none";
+  const customLocInput = document.getElementById("customLocationInput");
+  if (customLocInput) customLocInput.value = "";
+
+  const filterInput = document.getElementById("filterLocationInput");
+  if (filterInput) {
+    filterInput.value = "";
+    document.querySelectorAll(".loc-item").forEach((item) => (item.style.display = "flex"));
+  }
+
   document.getElementById("jobFormTitle").innerText = "Add New Position";
-  document.getElementById("saveJobBtn").innerText = "Save Job";
+  document.getElementById("saveJobBtn").innerHTML = "<i class='bx bx-check-circle'></i> <span>Save Job</span>";
 }
 
 function closeJobModal() {
   const jobModal = document.getElementById("jobModal");
   if (jobModal) jobModal.classList.remove("active");
   resetJobForm();
+}
+
+// Job Toolbar Filter Listeners
+const jobSearchFilterEl = document.getElementById("jobSearchFilter");
+if (jobSearchFilterEl) {
+  jobSearchFilterEl.addEventListener("input", () => {
+    updateJobsUI();
+  });
+}
+
+const jobLocationFilterEl = document.getElementById("jobLocationFilter");
+if (jobLocationFilterEl) {
+  jobLocationFilterEl.addEventListener("change", () => {
+    updateJobsUI();
+  });
+}
+
+const clearJobFiltersBtnEl = document.getElementById("clearJobFiltersBtn");
+if (clearJobFiltersBtnEl) {
+  clearJobFiltersBtnEl.addEventListener("click", () => {
+    if (jobSearchFilterEl) jobSearchFilterEl.value = "";
+    if (jobLocationFilterEl) jobLocationFilterEl.value = "";
+    const navSearch = document.getElementById("searchInput");
+    if (navSearch) navSearch.value = "";
+    updateJobsUI();
+  });
 }

@@ -34,7 +34,7 @@
     }
 
     .admin-container {
-      max-width: 1100px;
+      max-width: 1300px;
       margin: auto;
       padding: 48px 20px;
     }
@@ -128,14 +128,39 @@
       justify-content: space-between;
     }
 
+    .job-tags-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
     .job-type {
-      font-size: 12px;
-      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
       border-radius: 20px;
       background: rgba(211,55,98,0.15);
       color: var(--brand);
-      margin-bottom: 6px;
       display: inline-block;
+    }
+
+    .job-type.full-time {
+      background: rgba(59, 130, 246, 0.15);
+      color: #3b82f6;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .job-type.part-time {
+      background: rgba(249, 115, 22, 0.15);
+      color: #f97316;
+      border: 1px solid rgba(249, 115, 22, 0.3);
+    }
+
+    .job-type.contract {
+      background: rgba(234, 179, 8, 0.15);
+      color: #eab308;
+      border: 1px solid rgba(234, 179, 8, 0.3);
     }
 
     .job-title {
@@ -168,6 +193,202 @@
       display: flex;
       gap: 10px;
     }
+
+    /* Location Selector Styles */
+    .location-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .loc-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 12px;
+      background: rgba(211,55,98,0.2);
+      color: var(--brand);
+      margin-left: 6px;
+    }
+
+    .loc-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .loc-action-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .loc-action-btn:hover {
+      border-color: var(--brand);
+      color: #fff;
+    }
+
+    .location-selector-box {
+      background: #0f0f13;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px;
+      max-height: 160px;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .loc-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text);
+      cursor: pointer;
+      padding: 5px 8px;
+      border-radius: 6px;
+      background: #18181c;
+      border: 1px solid var(--border);
+      user-select: none;
+      transition: all 0.2s ease;
+      margin-bottom: 0;
+    }
+
+    .loc-item:hover {
+      border-color: var(--brand);
+    }
+
+    .loc-item.checked {
+      background: rgba(211,55,98,0.15);
+      border-color: var(--brand);
+      color: #fff;
+    }
+
+    .loc-item input[type="checkbox"] {
+      cursor: pointer;
+      accent-color: var(--brand);
+    }
+
+    /* Openings Filter Toolbar */
+    .openings-header-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .openings-filter-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      flex-grow: 1;
+      justify-content: flex-end;
+    }
+
+    .filter-input-wrap {
+      position: relative;
+      min-width: 220px;
+    }
+
+    .filter-input-wrap i {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+      font-size: 13px;
+    }
+
+    .filter-input-wrap .form-control {
+      padding-left: 34px;
+      height: 38px;
+      font-size: 13px;
+    }
+
+    .filter-select-wrap {
+      position: relative;
+      min-width: 220px;
+    }
+
+    .filter-select-wrap i {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--brand);
+      pointer-events: none;
+      font-size: 13px;
+    }
+
+    .filter-select-wrap .form-control {
+      padding-left: 34px;
+      height: 38px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .btn-reset-filters {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      height: 38px;
+      padding: 0 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-reset-filters:hover {
+      background: rgba(211, 55, 98, 0.15);
+      border-color: var(--brand);
+      color: #fff;
+    }
+
+    .openings-count-badge {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--brand);
+      background: rgba(211, 55, 98, 0.12);
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-left: 8px;
+    }
+
+    .no-openings-box {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 48px 20px;
+      background: #111115;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      color: var(--muted);
+    }
+
+    .no-openings-box i {
+      font-size: 36px;
+      color: var(--brand);
+      margin-bottom: 12px;
+      display: block;
+      opacity: 0.8;
+    }
   </style>
 </head>
 
@@ -192,7 +413,7 @@
     <div class="row mb-3">
       <div class="col-md-6">
         <label>Position</label>
-        <select id="position" class="form-control">
+        <select id="position" class="form-control" onchange="toggleCareersCustomPosition()">
           <option value="">Select Position</option>
           <option>Store Manager</option>
           <option>Quantity Incharge</option>
@@ -204,46 +425,36 @@
           <option>Security Guard</option>
           <option>Others</option>
         </select>
+        <div id="customPositionGroup" style="display: none; margin-top: 8px;">
+          <input type="text" id="customPosition" class="form-control" placeholder="Specify position name">
+        </div>
       </div>
 
-      <div class="col-md-6">
-        <label>Location</label>
-        <select id="location" class="form-control">
-          <option value="">Select Location</option>
-          <option value="Balagere">Balagere</option>
-          <option value="Banshankri">Banshankri</option>
-          <option value="Begur">Begur</option>
-          <option value="Chikathogur">Chikathogur</option>
-          <option value="Chikkabidaralallu">Chikkabidaralallu</option>
-          <option value="Deepanjali Nagar">Deepanjali Nagar</option>
-          <option value="Haralur">Haralur</option>
-          <option value="Hope Farm">Hope Farm</option>
-          <option value="HSR Layout">HSR Layout</option>
-          <option value="Kadugodi">Kadugodi</option>
-          <option value="Kanamangala">Kanamangala</option>
-          <option value="Koramangala">Koramangala</option>
-          <option value="Kundalahalli">Kundalahalli</option>
-          <option value="Madnayakanahalli">Madnayakanahalli</option>
-          <option value="Malleshwaram">Malleshwaram</option>
-          <option value="Mysore Road">Mysore Road</option>
-          <option value="Shanthiniketan">Shanthiniketan</option>
-          <option value="Wilson Garden">Wilson Garden</option>
-          <option value="Yelahanka">Yelahanka</option>
-          <option value="Yeshwantpur">Yeshwantpur</option>
-          <option value="Others">Others</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="row mb-3">
       <div class="col-md-6">
         <label>Job Type</label>
         <select id="jobType" class="form-control">
           <option value="">Select Type</option>
           <option>Full-Time</option>
           <option>Part-Time</option>
+          <option>Full-Time & Part-Time</option>
           <option>Contract</option>
         </select>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <div class="location-toolbar">
+        <label style="margin-bottom: 0;">Location(s) <span id="careersLocBadge" class="loc-badge">0 selected</span></label>
+        <div class="loc-actions">
+          <button type="button" class="loc-action-btn" onclick="careersSelectAllLoc()">Select All (20)</button>
+          <button type="button" class="loc-action-btn" onclick="careersClearLoc()">Clear</button>
+        </div>
+      </div>
+      <div class="location-selector-box" id="careersLocBox">
+        <!-- populated dynamically -->
+      </div>
+      <div id="customLocationGroup" style="display: none; margin-top: 8px;">
+        <input type="text" id="customLocation" class="form-control" placeholder="Specify custom location(s), comma-separated">
       </div>
     </div>
 
@@ -253,17 +464,42 @@
     </div>
 
     <div class="d-flex gap-2">
-      <button class="btn-brand" onclick="saveJob()">Save Job</button>
+      <button class="btn-brand" id="saveJobBtn" onclick="saveJob()">Save Job</button>
       <button class="btn-muted d-none" id="cancelEdit" onclick="resetForm()">Cancel</button>
     </div>
   </div>
 
   <!-- GRID -->
   <div class="panel">
-    <div class="panel-title">
-      <i class="bi bi-grid"></i>
-      <span>Existing Openings</span>
+    <div class="openings-header-row">
+      <div class="panel-title" style="margin-bottom: 0;">
+        <i class="bi bi-grid"></i>
+        <span>Existing Openings</span>
+        <span id="openingsCountBadge" class="openings-count-badge">0 Openings</span>
+      </div>
+
+      <div class="openings-filter-group">
+        <!-- Search Keyword -->
+        <div class="filter-input-wrap">
+          <i class="bi bi-search"></i>
+          <input type="text" id="openingsSearchInput" class="form-control" placeholder="Search position or store..." oninput="filterCareersOpenings()" />
+        </div>
+
+        <!-- Store / Location Dropdown -->
+        <div class="filter-select-wrap">
+          <i class="bi bi-geo-alt"></i>
+          <select id="openingsStoreFilter" class="form-control" onchange="filterCareersOpenings()">
+            <option value="">All Stores / Locations</option>
+          </select>
+        </div>
+
+        <!-- Reset Button -->
+        <button type="button" class="btn-reset-filters" id="btnResetFilters" onclick="resetCareersFilters()" title="Reset Filters">
+          <i class="bi bi-arrow-counterclockwise"></i> Reset
+        </button>
+      </div>
     </div>
+
     <div id="jobsList" class="jobs-grid"></div>
   </div>
 
@@ -283,44 +519,260 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
+  const ALL_LOCATIONS = [
+    "Balagere", "Banshankri", "Begur", "Chikathogur", "Chikkabidaralallu",
+    "Deepanjali Nagar", "Haralur", "Hope Farm", "HSR Layout", "Kadugodi",
+    "Kanamangala", "Koramangala", "Kundalahalli", "Madnayakanahalli",
+    "Malleshwaram", "Mysore Road", "Shanthiniketan", "Wilson Garden",
+    "Yelahanka", "Yeshwantpur", "Others"
+  ];
+
   const positionInput = document.getElementById("position");
-  const locationInput = document.getElementById("location");
+  const customPositionInput = document.getElementById("customPosition");
+  const customPositionGroup = document.getElementById("customPositionGroup");
   const jobTypeInput = document.getElementById("jobType");
   const requirementsInput = document.getElementById("requirements");
   const jobId = document.getElementById("jobId");
   const jobsList = document.getElementById("jobsList");
   const formTitle = document.getElementById("formTitle");
   const cancelEdit = document.getElementById("cancelEdit");
+  const careersLocBox = document.getElementById("careersLocBox");
+  const customLocationGroup = document.getElementById("customLocationGroup");
+  const customLocationInput = document.getElementById("customLocation");
+
+  function initCareersLoc() {
+    careersLocBox.innerHTML = "";
+    ALL_LOCATIONS.forEach(loc => {
+      const lbl = document.createElement("label");
+      lbl.className = "loc-item";
+      lbl.innerHTML = `<input type="checkbox" value="${loc}" class="careers-loc-cb"> <span>${loc}</span>`;
+      const cb = lbl.querySelector("input");
+      cb.addEventListener("change", () => {
+        lbl.classList.toggle("checked", cb.checked);
+        if (loc === "Others") {
+          customLocationGroup.style.display = cb.checked ? "block" : "none";
+          if (cb.checked) customLocationInput.focus();
+        }
+        updateCareersLocBadge();
+      });
+      careersLocBox.appendChild(lbl);
+    });
+  }
+  initCareersLoc();
+
+  function updateCareersLocBadge() {
+    const count = getCareersSelectedLocs().length;
+    document.getElementById("careersLocBadge").innerText = `${count} selected`;
+  }
+
+  function careersSelectAllLoc() {
+    document.querySelectorAll(".careers-loc-cb").forEach(cb => {
+      if (cb.value !== "Others") {
+        cb.checked = true;
+        cb.closest(".loc-item").classList.add("checked");
+      }
+    });
+    updateCareersLocBadge();
+  }
+
+  function careersClearLoc() {
+    document.querySelectorAll(".careers-loc-cb").forEach(cb => {
+      cb.checked = false;
+      cb.closest(".loc-item").classList.remove("checked");
+    });
+    customLocationGroup.style.display = "none";
+    customLocationInput.value = "";
+    updateCareersLocBadge();
+  }
+
+  function getCareersSelectedLocs() {
+    const locs = [];
+    document.querySelectorAll(".careers-loc-cb:checked").forEach(cb => {
+      if (cb.value !== "Others") locs.push(cb.value);
+    });
+    const othersCb = document.querySelector('.careers-loc-cb[value="Others"]');
+    if (othersCb && othersCb.checked && customLocationInput.value.trim()) {
+      customLocationInput.value.split(",").map(l => l.trim()).filter(Boolean).forEach(l => {
+        if (!locs.includes(l)) locs.push(l);
+      });
+    }
+    return locs;
+  }
+
+  function toggleCareersCustomPosition() {
+    if (positionInput.value === "Others") {
+      customPositionGroup.style.display = "block";
+      customPositionInput.focus();
+    } else {
+      customPositionGroup.style.display = "none";
+      customPositionInput.value = "";
+    }
+  }
 
   function saveJob() {
-    const data = {
-      position: positionInput.value,
-      location: locationInput.value,
-      jobType: jobTypeInput.value,
-      requirements: requirementsInput.value.trim(),
-      createdAt: Date.now()
-    };
+    let pos = positionInput.value;
+    if (pos === "Others") {
+      pos = customPositionInput.value.trim();
+      if (!pos) {
+        alert("Please enter custom position name");
+        return;
+      }
+    }
 
-    if (!data.position || !data.location || !data.jobType || !data.requirements) {
-      alert("Please fill all fields");
+    const locs = getCareersSelectedLocs();
+    const jt = jobTypeInput.value;
+    const req = requirementsInput.value.trim();
+
+    if (!pos || locs.length === 0 || !jt || !req) {
+      alert("Please fill all required fields and select at least one location");
       return;
     }
 
-    jobId.value
-      ? db.ref("jobs/" + jobId.value).update(data)
-      : db.ref("jobs").push(data);
+    if (jobId.value) {
+      db.ref("jobs/" + jobId.value).update({
+        position: pos,
+        location: locs[0],
+        jobType: jt,
+        requirements: req,
+        updatedAt: Date.now()
+      }).then(() => {
+        alert("Job updated successfully!");
+        resetForm();
+      });
+    } else {
+      const updates = {};
+      const now = Date.now();
+      locs.forEach((loc, idx) => {
+        const k = db.ref("jobs").push().key;
+        updates["jobs/" + k] = {
+          position: pos,
+          location: loc,
+          jobType: jt,
+          requirements: req,
+          createdAt: now - idx
+        };
+      });
 
-    resetForm();
+      db.ref().update(updates).then(() => {
+        alert(locs.length > 1 ? `Successfully created ${locs.length} job openings!` : "Job created successfully!");
+        resetForm();
+      });
+    }
   }
 
+  let allCachedJobs = [];
+
   db.ref("jobs").on("value", snap => {
-    jobsList.innerHTML = "";
+    allCachedJobs = [];
     snap.forEach(child => {
-      const j = child.val();
+      allCachedJobs.push({
+        id: child.key,
+        ...child.val()
+      });
+    });
+    // Sort recent first
+    allCachedJobs.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+    populateStoreFilterDropdown();
+    filterCareersOpenings();
+  });
+
+  function populateStoreFilterDropdown() {
+    const storeFilter = document.getElementById("openingsStoreFilter");
+    if (!storeFilter) return;
+    const currentVal = storeFilter.value;
+
+    const storesSet = new Set();
+    allCachedJobs.forEach(j => {
+      if (j.location && j.location.trim()) {
+        storesSet.add(j.location.trim());
+      }
+    });
+    ALL_LOCATIONS.forEach(loc => {
+      if (loc !== "Others") storesSet.add(loc);
+    });
+
+    const sortedStores = Array.from(storesSet).sort((a, b) => a.localeCompare(b));
+
+    let html = `<option value="">All Stores / Locations (${allCachedJobs.length})</option>`;
+    sortedStores.forEach(s => {
+      const count = allCachedJobs.filter(j => (j.location || "").toLowerCase() === s.toLowerCase()).length;
+      html += `<option value="${s}">${s} ${count > 0 ? `(${count})` : ''}</option>`;
+    });
+
+    storeFilter.innerHTML = html;
+    if (currentVal && storesSet.has(currentVal)) {
+      storeFilter.value = currentVal;
+    }
+  }
+
+  function filterCareersOpenings() {
+    const searchVal = (document.getElementById("openingsSearchInput")?.value || "").trim().toLowerCase();
+    const selectedStore = (document.getElementById("openingsStoreFilter")?.value || "").trim().toLowerCase();
+
+    const filtered = allCachedJobs.filter(j => {
+      const posMatch = (j.position || "").toLowerCase().includes(searchVal);
+      const locMatch = (j.location || "").toLowerCase().includes(searchVal);
+      const reqMatch = (j.requirements || "").toLowerCase().includes(searchVal);
+      const typeMatch = (j.jobType || "").toLowerCase().includes(searchVal);
+      const textMatches = !searchVal || posMatch || locMatch || reqMatch || typeMatch;
+
+      const storeMatches = !selectedStore || (j.location || "").toLowerCase() === selectedStore;
+
+      return textMatches && storeMatches;
+    });
+
+    renderCareersJobs(filtered);
+  }
+
+  function resetCareersFilters() {
+    const searchInput = document.getElementById("openingsSearchInput");
+    const storeFilter = document.getElementById("openingsStoreFilter");
+    if (searchInput) searchInput.value = "";
+    if (storeFilter) storeFilter.value = "";
+    filterCareersOpenings();
+  }
+
+  function renderCareersJobs(jobs) {
+    const countBadge = document.getElementById("openingsCountBadge");
+    if (countBadge) {
+      if (jobs.length === allCachedJobs.length) {
+        countBadge.innerText = `${allCachedJobs.length} Openings`;
+      } else {
+        countBadge.innerText = `${jobs.length} of ${allCachedJobs.length} Openings`;
+      }
+    }
+
+    if (jobs.length === 0) {
+      jobsList.innerHTML = `
+        <div class="no-openings-box">
+          <i class="bi bi-search"></i>
+          <div style="font-size: 16px; font-weight: 600; margin-bottom: 6px; color: #fff;">No Openings Found</div>
+          <div>No job vacancies match the selected store or search filter.</div>
+        </div>
+      `;
+      return;
+    }
+
+    jobsList.innerHTML = "";
+    jobs.forEach(j => {
+      const jtLower = (j.jobType || "").toLowerCase();
+      const isBoth = jtLower.includes("both") || (jtLower.includes("full") && jtLower.includes("part"));
+
+      let tagsHTML = "";
+      if (isBoth) {
+        tagsHTML = `<span class="job-type full-time">Full Time</span><span class="job-type part-time">Part Time</span>`;
+      } else {
+        const cClass = jtLower.includes("part") ? "part-time" : (jtLower.includes("contract") ? "contract" : "full-time");
+        tagsHTML = `<span class="job-type ${cClass}">${j.jobType || ''}</span>`;
+      }
+
       jobsList.innerHTML += `
         <div class="job-card">
           <div>
-            <div class="job-type">${j.jobType}</div>
+            <div class="job-tags-wrap" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px;">
+              ${tagsHTML}
+            </div>
             <div class="job-title">${j.position}</div>
             <div class="job-location">
               <i class="bi bi-geo-alt"></i>${j.location}
@@ -328,20 +780,58 @@
             <div class="job-req">${j.requirements}</div>
           </div>
           <div class="job-actions">
-            <button class="btn-muted" onclick="editJob('${child.key}')">Edit</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteJob('${child.key}')">Delete</button>
+            <button class="btn-muted" onclick="editJob('${j.id}')">Edit</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteJob('${j.id}')">Delete</button>
           </div>
         </div>`;
     });
-  });
+  }
 
   function editJob(id) {
     db.ref("jobs/" + id).once("value").then(s => {
       const j = s.val();
       jobId.value = id;
-      positionInput.value = j.position;
-      locationInput.value = j.location;
-      jobTypeInput.value = j.jobType;
+
+      let foundPos = false;
+      for (let i = 0; i < positionInput.options.length; i++) {
+        if (positionInput.options[i].value === j.position) {
+          positionInput.value = j.position;
+          foundPos = true;
+          break;
+        }
+      }
+      if (!foundPos && j.position) {
+        positionInput.value = "Others";
+        customPositionGroup.style.display = "block";
+        customPositionInput.value = j.position;
+      } else {
+        customPositionGroup.style.display = "none";
+        customPositionInput.value = "";
+      }
+
+      careersClearLoc();
+      if (j.location) {
+        let matched = false;
+        document.querySelectorAll(".careers-loc-cb").forEach(cb => {
+          if (cb.value === j.location) {
+            cb.checked = true;
+            cb.closest(".loc-item").classList.add("checked");
+            matched = true;
+          }
+        });
+        if (!matched) {
+          const othersCb = document.querySelector('.careers-loc-cb[value="Others"]');
+          if (othersCb) {
+            othersCb.checked = true;
+            othersCb.closest(".loc-item").classList.add("checked");
+            customLocationGroup.style.display = "block";
+            customLocationInput.value = j.location;
+          }
+        }
+        updateCareersLocBadge();
+      }
+
+      jobTypeInput.value = (j.jobType && j.jobType.toLowerCase().includes("both")) ? "Full-Time & Part-Time" : (j.jobType || "");
       requirementsInput.value = j.requirements;
       formTitle.innerText = "Edit Position";
       cancelEdit.classList.remove("d-none");
@@ -357,7 +847,9 @@
   function resetForm() {
     jobId.value = "";
     positionInput.value = "";
-    locationInput.value = "";
+    customPositionGroup.style.display = "none";
+    customPositionInput.value = "";
+    careersClearLoc();
     jobTypeInput.value = "";
     requirementsInput.value = "";
     formTitle.innerText = "Add New Position";

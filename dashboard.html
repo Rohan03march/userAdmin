@@ -213,6 +213,29 @@
           </div>
 
           <div class="jobs-list-panel" style="margin-top: 24px;">
+            <div class="jobs-toolbar-row">
+              <div class="jobs-toolbar-title">
+                <i class="bx bx-briefcase-alt-2"></i>
+                <span>Active Openings</span>
+                <span id="jobsCountBadge" class="jobs-count-badge">0 Openings</span>
+              </div>
+              <div class="jobs-toolbar-controls">
+                <div class="filter-input-box">
+                  <i class="bx bx-search"></i>
+                  <input type="text" id="jobSearchFilter" placeholder="Search position or store..." />
+                </div>
+                <div class="filter-select-box">
+                  <i class="bx bx-map"></i>
+                  <select id="jobLocationFilter">
+                    <option value="">All Stores / Locations</option>
+                  </select>
+                </div>
+                <button type="button" class="btn-clear-job-filter" id="clearJobFiltersBtn" title="Reset Filters">
+                  <i class="bx bx-refresh"></i> Reset
+                </button>
+              </div>
+            </div>
+
             <div id="jobsListContainer" class="jobs-grid">
               <!-- Job cards will render here -->
             </div>
@@ -222,74 +245,118 @@
           <div id="jobModal" class="job-modal-overlay">
             <div class="job-modal-content">
               <div class="job-modal-header">
-                <h3 id="jobFormTitle">Add New Position</h3>
-                <button type="button" class="close-modal-btn" id="closeJobModalBtn">&times;</button>
+                <div class="header-left">
+                  <div class="modal-icon-badge">
+                    <i class="bx bx-briefcase-alt-2"></i>
+                  </div>
+                  <div>
+                    <h3 id="jobFormTitle">Add New Position</h3>
+                    <p class="modal-subtitle">Configure job vacancy details & target locations</p>
+                  </div>
+                </div>
+                <button type="button" class="close-modal-btn" id="closeJobModalBtn" title="Close">
+                  <i class="bx bx-x"></i>
+                </button>
               </div>
+              
               <form id="jobForm">
                 <input type="hidden" id="jobId" />
                 
-                <div class="form-group">
-                  <label for="jobPosition">Position</label>
-                  <select id="jobPosition" required>
-                    <option value="">Select Position</option>
-                    <option value="Store Manager">Store Manager</option>
-                    <option value="Quantity Incharge">Quantity Incharge</option>
-                    <option value="Process Expert">Process Expert</option>
-                    <option value="Shift Incharge">Shift Incharge</option>
-                    <option value="Picker & Packer">Picker & Packer</option>
-                    <option value="Loading & Unloading Staff">Loading & Unloading Staff</option>
-                    <option value="Housekeeping Staff">Housekeeping Staff</option>
-                    <option value="Security Guard">Security Guard</option>
-                    <option value="Others">Others</option>
-                  </select>
+                <!-- Position & Employment Type Row -->
+                <div class="form-row-2col">
+                  <div class="form-group">
+                    <label for="jobPosition"><i class="bx bx-id-card"></i> Position / Role</label>
+                    <select id="jobPosition" required>
+                      <option value="">Select Position</option>
+                      <option value="Store Manager">Store Manager</option>
+                      <option value="Quantity Incharge">Quantity Incharge</option>
+                      <option value="Process Expert">Process Expert</option>
+                      <option value="Shift Incharge">Shift Incharge</option>
+                      <option value="Picker & Packer">Picker & Packer</option>
+                      <option value="Loading & Unloading Staff">Loading & Unloading Staff</option>
+                      <option value="Housekeeping Staff">Housekeeping Staff</option>
+                      <option value="Security Guard">Security Guard</option>
+                      <option value="Others">Others</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="jobTypeSelect"><i class="bx bx-time-five"></i> Job Type</label>
+                    <select id="jobTypeSelect" required>
+                      <option value="">Select Type</option>
+                      <option value="Full-Time">Full-Time</option>
+                      <option value="Part-Time">Part-Time</option>
+                      <option value="Full-Time & Part-Time">Full-Time & Part-Time</option>
+                      <option value="Contract">Contract</option>
+                    </select>
+                  </div>
                 </div>
 
-                <div class="form-group">
-                  <label for="jobLocation">Location</label>
-                  <select id="jobLocation" required>
-                    <option value="">Select Location</option>
-                    <option value="Balagere">Balagere</option>
-                    <option value="Banshankri">Banshankri</option>
-                    <option value="Begur">Begur</option>
-                    <option value="Chikathogur">Chikathogur</option>
-                    <option value="Chikkabidaralallu">Chikkabidaralallu</option>
-                    <option value="Deepanjali Nagar">Deepanjali Nagar</option>
-                    <option value="Haralur">Haralur</option>
-                    <option value="Hope Farm">Hope Farm</option>
-                    <option value="HSR Layout">HSR Layout</option>
-                    <option value="Kadugodi">Kadugodi</option>
-                    <option value="Kanamangala">Kanamangala</option>
-                    <option value="Koramangala">Koramangala</option>
-                    <option value="Kundalahalli">Kundalahalli</option>
-                    <option value="Madnayakanahalli">Madnayakanahalli</option>
-                    <option value="Malleshwaram">Malleshwaram</option>
-                    <option value="Mysore Road">Mysore Road</option>
-                    <option value="Shanthiniketan">Shanthiniketan</option>
-                    <option value="Wilson Garden">Wilson Garden</option>
-                    <option value="Yelahanka">Yelahanka</option>
-                    <option value="Yeshwantpur">Yeshwantpur</option>
-                    <option value="Others">Others</option>
-                  </select>
+                <!-- Custom Position Field (Appears when Others selected) -->
+                <div class="form-group" id="customPositionGroup" style="display: none;">
+                  <label for="customPositionInput"><i class="bx bx-edit-alt"></i> Specify Position Name</label>
+                  <input type="text" id="customPositionInput" placeholder="e.g. Warehouse Associate, Logistics Specialist" />
                 </div>
 
-                <div class="form-group">
-                  <label for="jobTypeSelect">Job Type</label>
-                  <select id="jobTypeSelect" required>
-                    <option value="">Select Type</option>
-                    <option value="Full-Time">Full-Time</option>
-                    <option value="Part-Time">Part-Time</option>
-                    <option value="Contract">Contract</option>
-                  </select>
+                <!-- Locations Panel Card -->
+                <div class="locations-panel-card">
+                  <div class="location-toolbar">
+                    <div class="loc-title-wrap">
+                      <label><i class="bx bx-map-pin"></i> Target Locations</label>
+                      <span id="locationCountBadge" class="loc-badge">0 selected</span>
+                    </div>
+                    <div class="loc-actions">
+                      <button type="button" id="selectAllLocBtn" class="loc-action-btn primary" title="Select all 20 standard locations">
+                        <i class="bx bx-check-double"></i> Select All (20)
+                      </button>
+                      <button type="button" id="clearAllLocBtn" class="loc-action-btn" title="Clear selection">
+                        <i class="bx bx-reset"></i> Clear
+                      </button>
+                      <button type="button" id="toggleCustomLocBtn" class="loc-action-btn custom-toggle" title="Add a custom location">
+                        <i class="bx bx-plus"></i> + Custom
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div class="loc-search-box">
+                    <i class="bx bx-search"></i>
+                    <input type="text" id="filterLocationInput" class="loc-search-input" placeholder="Quick search location branch..." />
+                  </div>
+
+                  <div class="location-selector-box" id="locationCheckboxesContainer">
+                    <!-- Populated dynamically via JS -->
+                  </div>
+
+                  <!-- Enhanced Custom Location Section -->
+                  <div class="custom-loc-box" id="customLocationGroup" style="display: none;">
+                    <div class="custom-loc-header">
+                      <label for="customLocationInput"><i class="bx bx-plus-circle"></i> Add Custom Location(s)</label>
+                      <span class="custom-loc-badge">Custom</span>
+                    </div>
+                    <div class="custom-loc-input-wrapper">
+                      <i class="bx bx-building-house loc-input-icon"></i>
+                      <input type="text" id="customLocationInput" class="custom-loc-input" placeholder="Type location (e.g. Indiranagar) and click Add..." />
+                      <button type="button" id="addCustomLocTagBtn" class="btn-add-tag"><i class="bx bx-plus"></i> Add</button>
+                    </div>
+                    <div id="customChipsWrap" class="custom-chips-container"></div>
+                    <small class="loc-help-text"><i class="bx bx-info-circle"></i> Type a custom location and click <b>Add</b> (or separate multiple locations with commas).</small>
+                  </div>
                 </div>
 
-                <div class="form-group">
-                  <label for="jobRequirements">Requirements</label>
-                  <textarea id="jobRequirements" rows="5" placeholder="Enter requirements here..." required></textarea>
+                <!-- Requirements Textarea -->
+                <div class="form-group" style="margin-top: 14px;">
+                  <label for="jobRequirements"><i class="bx bx-list-check"></i> Requirements & Notes</label>
+                  <textarea id="jobRequirements" rows="3" placeholder="Enter key qualifications, documents required, shift timings, or responsibilities..." required></textarea>
                 </div>
 
-                <div class="form-actions">
-                  <button type="submit" id="saveJobBtn" class="btn-primary">Save Job</button>
-                  <button type="button" id="cancelJobEditBtn" class="btn-secondary">Cancel</button>
+                <!-- Form Action Buttons -->
+                <div class="form-actions-footer">
+                  <button type="button" id="cancelJobEditBtn" class="btn-modal-cancel">
+                    <i class="bx bx-x"></i> Cancel
+                  </button>
+                  <button type="submit" id="saveJobBtn" class="btn-modal-save">
+                    <i class="bx bx-check-circle"></i> <span>Save Job</span>
+                  </button>
                 </div>
               </form>
             </div>
