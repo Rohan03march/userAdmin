@@ -11,11 +11,11 @@ allSideMenu.forEach((item) => {
       e.preventDefault();
       allSideMenu.forEach((i) => i.parentElement.classList.remove("active"));
       li.classList.add("active");
-      
+
       const target = item.getAttribute("data-target");
       const dashboardView = document.getElementById("dashboardView");
       const jobListView = document.getElementById("jobListView");
-      
+
       if (target === "dashboardView") {
         if (dashboardView) dashboardView.style.display = "block";
         if (jobListView) jobListView.style.display = "none";
@@ -27,7 +27,7 @@ allSideMenu.forEach((item) => {
         const searchInput = document.getElementById("searchInput");
         if (searchInput) searchInput.placeholder = "Search Job Title, Location, Type ...";
       }
-      
+
       const searchInput = document.getElementById("searchInput");
       if (searchInput) searchInput.value = "";
       currentPage = 1;
@@ -196,11 +196,11 @@ function renderTable(users) {
     };
 
     console.log(
-  "RAW:",
-  user.submittedAt,
-  "| TYPE:",
-  typeof user.submittedAt
-);
+      "RAW:",
+      user.submittedAt,
+      "| TYPE:",
+      typeof user.submittedAt
+    );
 
 
     tbody.appendChild(tr);
@@ -338,10 +338,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   allUsers = await fetchAllUsers();
   currentPage = 1;
   updateUI();
-  
+
   // Initialize jobs
   initJobs();
-  
+
   // Set up Job Form submit and cancel handlers
   const jobForm = document.getElementById("jobForm");
   if (jobForm) {
@@ -350,7 +350,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       saveJob();
     });
   }
-  
+
   const cancelBtn = document.getElementById("cancelJobEditBtn");
   if (cancelBtn) {
     cancelBtn.addEventListener("click", closeJobModal);
@@ -399,7 +399,7 @@ if (document.getElementById("filterEndDate")) {
 ================================ */
 function exportToExcel() {
   const dataToExport = getFilteredUsers();
-  
+
   if (dataToExport.length === 0) {
     alert("No data to export");
     return;
@@ -413,21 +413,21 @@ function exportToExcel() {
   dataToExport.forEach(user => {
     Object.keys(user).forEach(key => keys.add(key));
   });
-  
+
   // Prioritize requested keys to appear first
   const priorityKeys = ["submittedAt", "nameAsPerAadhaar", "contactNumber", "workingLocation", "designation", "photo", "aadharFront", "aadharBack", "panCard", "passbook", "signature"];
   const columns = [];
-  
+
   priorityKeys.forEach(key => {
     if (keys.has(key)) {
       columns.push(key);
       keys.delete(key);
     }
   });
-  
+
   // Append the rest of the keys
   keys.forEach(key => columns.push(key));
-  
+
   // Create JSON array for SheetJS
   const exportData = dataToExport.map(user => {
     const row = {};
@@ -436,12 +436,12 @@ function exportToExcel() {
     });
     return row;
   });
-  
+
   // Generate Excel workbook and worksheet
   const worksheet = XLSX.utils.json_to_sheet(exportData, { header: columns });
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "Employees");
-  
+
   // Download the Excel file
   XLSX.writeFile(workbook, "employees_export.xlsx");
 }
@@ -456,6 +456,8 @@ document.addEventListener("DOMContentLoaded", () => {
 /* ===============================
    JOB LIST & MANAGEMENT LOGIC
 ================================ */
+
+const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.sourceone.app&pcampaignid=web_share";
 
 let allJobs = [];
 
@@ -486,6 +488,21 @@ const ALL_LOCATIONS = [
 let isJobEventsInitialized = false;
 let customLocationsList = [];
 
+/**
+ * Checks if a position is Picker & Packer (case-insensitive)
+ */
+function isPickerAndPacker(position) {
+  if (!position) return false;
+  const p = position.toLowerCase().trim();
+  return (
+    (p.includes("pick") && p.includes("pack")) ||
+    p === "picker & packer" ||
+    p === "picker and packer" ||
+    p === "pickers and packers" ||
+    p === "picker & packer staff"
+  );
+}
+
 function initJobEventListeners() {
   if (isJobEventsInitialized) return;
   isJobEventsInitialized = true;
@@ -493,19 +510,48 @@ function initJobEventListeners() {
   // Render location checkboxes
   renderLocationCheckboxes();
 
-  // Position "Others" toggle
+  // Position selection handler
   const jobPositionSelect = document.getElementById("jobPosition");
   const customPositionGroup = document.getElementById("customPositionGroup");
   const customPositionInput = document.getElementById("customPositionInput");
+  const locationsPanelCard = document.getElementById("locationsPanelCard");
+  const pickerPackerNotice = document.getElementById("pickerPackerNotice");
 
-  if (jobPositionSelect && customPositionGroup) {
-    jobPositionSelect.addEventListener("change", () => {
-      if (jobPositionSelect.value === "Others") {
-        customPositionGroup.style.display = "block";
-        if (customPositionInput) customPositionInput.focus();
-      } else {
-        customPositionGroup.style.display = "none";
-        if (customPositionInput) customPositionInput.value = "";
+  function handlePositionSelection() {
+    const val = jobPositionSelect ? jobPositionSelect.value : "";
+    if (val === "Others") {
+      if (customPositionGroup) customPositionGroup.style.display = "block";
+      if (customPositionInput) customPositionInput.focus();
+    } else {
+      if (customPositionGroup) customPositionGroup.style.display = "none";
+      if (customPositionInput) customPositionInput.value = "";
+    }
+
+    // Toggle location panel vs Play Store notice for Picker & Packer
+    const effectivePosition = val === "Others" && customPositionInput ? customPositionInput.value.trim() : val;
+    if (isPickerAndPacker(effectivePosition)) {
+      if (locationsPanelCard) locationsPanelCard.style.display = "none";
+      if (pickerPackerNotice) pickerPackerNotice.style.display = "flex";
+    } else {
+      if (locationsPanelCard) locationsPanelCard.style.display = "block";
+      if (pickerPackerNotice) pickerPackerNotice.style.display = "none";
+    }
+  }
+
+  if (jobPositionSelect) {
+    jobPositionSelect.addEventListener("change", handlePositionSelection);
+  }
+
+  if (customPositionInput) {
+    customPositionInput.addEventListener("input", () => {
+      if (jobPositionSelect && jobPositionSelect.value === "Others") {
+        if (isPickerAndPacker(customPositionInput.value.trim())) {
+          if (locationsPanelCard) locationsPanelCard.style.display = "none";
+          if (pickerPackerNotice) pickerPackerNotice.style.display = "flex";
+        } else {
+          if (locationsPanelCard) locationsPanelCard.style.display = "block";
+          if (pickerPackerNotice) pickerPackerNotice.style.display = "none";
+        }
       }
     });
   }
@@ -759,14 +805,188 @@ function initJobs() {
   });
 }
 
-function populateDashboardStoreFilter() {
+function escapeHtml(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function getJobLocationsArray(job) {
+  if (!job) return [];
+  // For Picker & Packer, there is no physical location
+  if (isPickerAndPacker(job.position)) {
+    return [];
+  }
+  if (Array.isArray(job.locations) && job.locations.length > 0) {
+    return job.locations.map((s) => String(s).trim()).filter(Boolean);
+  }
+  if (job.location && typeof job.location === "string" && !job.location.includes("Mobile App")) {
+    return job.location.split(",").map((s) => s.trim()).filter(Boolean);
+  }
+  return [];
+}
+
+/**
+ * Consolidates jobs so identical roles with multiple locations
+ * are always represented as ONE opening card rather than multiple boxes.
+ */
+function getConsolidatedJobs() {
+  const map = new Map();
+
+  allJobs.forEach((job) => {
+    const normPos = (job.position || "").trim().toLowerCase();
+    const normType = (job.jobType || "").trim().toLowerCase();
+    const key = `${normPos}|||${normType}`;
+
+    const locs = getJobLocationsArray(job);
+    const isPP = isPickerAndPacker(job.position);
+
+    if (map.has(key)) {
+      const existing = map.get(key);
+      if (!isPP) {
+        locs.forEach((l) => {
+          if (!existing.locations.some((el) => el.toLowerCase() === l.toLowerCase())) {
+            existing.locations.push(l);
+          }
+        });
+        existing.location = existing.locations.join(", ");
+      } else {
+        existing.locations = [];
+        existing.location = "SourceOne Mobile App";
+        existing.isAppRedirect = true;
+        existing.redirectUrl = PLAY_STORE_URL;
+      }
+      if (!existing.allIds.includes(job.id)) {
+        existing.allIds.push(job.id);
+      }
+      if ((job.createdAt || 0) > (existing.createdAt || 0)) {
+        existing.createdAt = job.createdAt;
+      }
+      if (job.requirements && (!existing.requirements || existing.requirements.length < job.requirements.length)) {
+        existing.requirements = job.requirements;
+      }
+    } else {
+      map.set(key, {
+        id: job.id,
+        allIds: [job.id],
+        position: job.position,
+        jobType: job.jobType,
+        requirements: job.requirements || "",
+        locations: isPP ? [] : [...locs],
+        location: isPP ? "SourceOne Mobile App" : locs.join(", "),
+        isAppRedirect: isPP,
+        redirectUrl: isPP ? PLAY_STORE_URL : "",
+        createdAt: job.createdAt || 0,
+        updatedAt: job.updatedAt || 0
+      });
+    }
+  });
+
+  return Array.from(map.values());
+}
+
+/**
+ * Renders location pills/badges for a job card.
+ * For Picker & Packer: renders Play Store redirect box with NO physical location.
+ */
+function renderJobLocations(locations, job) {
+  // Picker & Packer has NO physical location - redirects to Play Store app
+  if (job && isPickerAndPacker(job.position)) {
+    return `
+      <div class="job-card-app-redirect-box">
+        <div class="app-redirect-badge">
+          <i class="bx bxl-play-store"></i>
+          <span>SourceOne App Only</span>
+        </div>
+        <a href="${PLAY_STORE_URL}" target="_blank" rel="noopener noreferrer" class="btn-playstore-action" title="Redirects to SourceOne app on Google Play">
+          <i class="bx bxl-google-play"></i>
+          <span>Open on Play Store</span>
+          <i class="bx bx-right-arrow-alt"></i>
+        </a>
+      </div>
+    `;
+  }
+
+  if (!locations || locations.length === 0) {
+    return `<div class="job-card-location single-loc"><i class="bx bxs-map"></i> <span>Location not specified</span></div>`;
+  }
+
+  if (locations.length === 1) {
+    return `
+      <div class="job-card-location single-loc">
+        <i class="bx bxs-map"></i>
+        <span class="job-loc-name" title="${escapeHtml(locations[0])}">${escapeHtml(locations[0])}</span>
+      </div>
+    `;
+  }
+
+  // Check if all 20 standard locations are present
+  const standardLocationsLower = ALL_LOCATIONS.filter((l) => l !== "Others").map((l) => l.toLowerCase());
+  const jobLocsLower = locations.map((l) => l.toLowerCase());
+  const hasAllStandard = standardLocationsLower.every((l) => jobLocsLower.includes(l));
+
+  if (hasAllStandard && locations.length >= 20) {
+    return `
+      <div class="job-card-location-multi">
+        <div class="job-loc-header">
+          <i class="bx bxs-map"></i>
+          <span class="job-loc-all-badge" title="Available across all ${locations.length} store branches">
+            <i class="bx bx-check-double"></i> All Locations (${locations.length} Stores)
+          </span>
+          <button type="button" class="job-loc-expand-btn" title="Toggle store list">
+            <i class="bx bx-chevron-down"></i>
+          </button>
+        </div>
+        <div class="job-loc-chips-grid collapsed">
+          ${locations.map((loc) => `<span class="job-loc-chip">${escapeHtml(loc)}</span>`).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  // Multiple locations (2 or more)
+  const previewLimit = 3;
+  const showMoreCount = locations.length - previewLimit;
+
+  return `
+    <div class="job-card-location-multi">
+      <div class="job-loc-header">
+        <i class="bx bxs-map"></i>
+        <span class="job-loc-count-label">${locations.length} Locations</span>
+      </div>
+      <div class="job-loc-chips-wrap">
+        ${locations.slice(0, previewLimit).map((loc) => `<span class="job-loc-chip">${escapeHtml(loc)}</span>`).join("")}
+        ${showMoreCount > 0 ? `
+          <button type="button" class="job-loc-more-btn" title="Click to view all ${locations.length} locations">
+            +${showMoreCount} more
+          </button>
+        ` : ""}
+      </div>
+      ${showMoreCount > 0 ? `
+        <div class="job-loc-chips-all" style="display: none;">
+          ${locations.map((loc) => `<span class="job-loc-chip">${escapeHtml(loc)}</span>`).join("")}
+          <button type="button" class="job-loc-less-btn">Show less</button>
+        </div>
+      ` : ""}
+    </div>
+  `;
+}
+
+function populateDashboardStoreFilter(consolidatedList) {
   const locFilterEl = document.getElementById("jobLocationFilter");
   if (!locFilterEl) return;
   const currentVal = locFilterEl.value;
 
   const storesSet = new Set();
-  allJobs.forEach((j) => {
-    if (j.location && j.location.trim()) storesSet.add(j.location.trim());
+  consolidatedList.forEach((j) => {
+    const locs = getJobLocationsArray(j);
+    locs.forEach((l) => {
+      if (l && l.trim()) storesSet.add(l.trim());
+    });
   });
   if (typeof ALL_LOCATIONS !== "undefined") {
     ALL_LOCATIONS.forEach((loc) => {
@@ -775,10 +995,13 @@ function populateDashboardStoreFilter() {
   }
 
   const sortedStores = Array.from(storesSet).sort((a, b) => a.localeCompare(b));
-  let html = `<option value="">All Stores / Locations (${allJobs.length})</option>`;
+  let html = `<option value="">All Stores / Locations (${consolidatedList.length} Openings)</option>`;
   sortedStores.forEach((s) => {
-    const count = allJobs.filter((j) => (j.location || "").toLowerCase() === s.toLowerCase()).length;
-    html += `<option value="${s}">${s} ${count > 0 ? `(${count})` : ''}</option>`;
+    const count = consolidatedList.filter((j) => {
+      const locs = getJobLocationsArray(j).map((l) => l.toLowerCase());
+      return locs.includes(s.toLowerCase());
+    }).length;
+    html += `<option value="${s}">${s} ${count > 0 ? `(${count})` : ""}</option>`;
   });
   locFilterEl.innerHTML = html;
   if (currentVal && storesSet.has(currentVal)) {
@@ -786,42 +1009,64 @@ function populateDashboardStoreFilter() {
   }
 }
 
+function getRoleIconClass(position) {
+  const p = (position || "").toLowerCase();
+  if (p.includes("picker") || p.includes("packer")) return "bxs-package";
+  if (p.includes("manager")) return "bxs-user-badge";
+  if (p.includes("quantity")) return "bx-coin-stack";
+  if (p.includes("process")) return "bx-cog";
+  if (p.includes("shift")) return "bx-time-five";
+  if (p.includes("security") || p.includes("guard")) return "bxs-shield";
+  if (p.includes("loading") || p.includes("unloading")) return "bx-transfer-alt";
+  if (p.includes("housekeeping")) return "bx-spray-can";
+  return "bxs-briefcase-alt-2";
+}
+
 function updateJobsUI() {
   const searchEl = document.getElementById("searchInput");
   const jobToolbarSearchEl = document.getElementById("jobSearchFilter");
-  const query = (jobToolbarSearchEl && jobToolbarSearchEl.value.trim()) 
-    ? jobToolbarSearchEl.value.trim().toLowerCase() 
+  const query = (jobToolbarSearchEl && jobToolbarSearchEl.value.trim())
+    ? jobToolbarSearchEl.value.trim().toLowerCase()
     : (searchEl ? searchEl.value.trim().toLowerCase() : "");
 
   const locFilterEl = document.getElementById("jobLocationFilter");
   const selectedStore = locFilterEl ? locFilterEl.value.trim().toLowerCase() : "";
 
-  populateDashboardStoreFilter();
+  const consolidatedJobs = getConsolidatedJobs();
+  populateDashboardStoreFilter(consolidatedJobs);
 
-  let filteredJobs = [...allJobs];
+  let filteredJobs = [...consolidatedJobs];
 
   if (query) {
-    filteredJobs = filteredJobs.filter((job) => 
-      (job.position || "").toLowerCase().includes(query) ||
-      (job.location || "").toLowerCase().includes(query) ||
-      (job.jobType || "").toLowerCase().includes(query) ||
-      (job.requirements || "").toLowerCase().includes(query)
-    );
+    filteredJobs = filteredJobs.filter((job) => {
+      const locs = getJobLocationsArray(job);
+      const locMatch = locs.some((l) => l.toLowerCase().includes(query)) || (job.location || "").toLowerCase().includes(query);
+      const isPP = isPickerAndPacker(job.position);
+      const appMatch = isPP && (query.includes("app") || query.includes("play") || query.includes("store"));
+      return (
+        (job.position || "").toLowerCase().includes(query) ||
+        locMatch ||
+        appMatch ||
+        (job.jobType || "").toLowerCase().includes(query) ||
+        (job.requirements || "").toLowerCase().includes(query)
+      );
+    });
   }
 
   if (selectedStore) {
-    filteredJobs = filteredJobs.filter((job) =>
-      (job.location || "").toLowerCase() === selectedStore
-    );
+    filteredJobs = filteredJobs.filter((job) => {
+      const locs = getJobLocationsArray(job).map((l) => l.toLowerCase());
+      return locs.includes(selectedStore);
+    });
   }
 
   // Update count badge
   const countBadge = document.getElementById("jobsCountBadge");
   if (countBadge) {
-    if (filteredJobs.length === allJobs.length) {
-      countBadge.innerText = `${allJobs.length} Openings`;
+    if (filteredJobs.length === consolidatedJobs.length) {
+      countBadge.innerText = `${consolidatedJobs.length} Openings`;
     } else {
-      countBadge.innerText = `${filteredJobs.length} of ${allJobs.length} Openings`;
+      countBadge.innerText = `${filteredJobs.length} of ${consolidatedJobs.length} Openings`;
     }
   }
 
@@ -838,8 +1083,11 @@ function updateJobsUI() {
   addCard.className = "job-card-item add-new-outline-card";
   addCard.innerHTML = `
     <div class="add-new-content">
-      <i class="bx bx-plus"></i>
-      <span>Add New Job</span>
+      <div class="add-new-icon-circle">
+        <i class="bx bx-plus"></i>
+      </div>
+      <span class="add-new-title">Post New Job</span>
+      <span class="add-new-sub">Create opening across branches</span>
     </div>
   `;
   addCard.addEventListener("click", () => {
@@ -849,7 +1097,20 @@ function updateJobsUI() {
   });
   jobsListContainer.appendChild(addCard);
 
-  // 2. Render actual jobs
+  // If no matching jobs
+  if (filteredJobs.length === 0) {
+    const emptyState = document.createElement("div");
+    emptyState.className = "jobs-empty-state";
+    emptyState.innerHTML = `
+      <i class="bx bx-briefcase-alt-2"></i>
+      <h4>No Job Openings Found</h4>
+      <p>Try adjusting your search or location filter, or click "+ Add New Job" to post an opening.</p>
+    `;
+    jobsListContainer.appendChild(emptyState);
+    return;
+  }
+
+  // 2. Render actual jobs (each position is ONE card)
   filteredJobs.forEach((job) => {
     const card = document.createElement("div");
     let typeClass = (job.jobType || "").toLowerCase().replace(/\s+/g, "-");
@@ -860,6 +1121,8 @@ function updateJobsUI() {
       typeClass = "full-part-time";
     }
 
+    const isPP = isPickerAndPacker(job.position);
+
     let tagsHTML = "";
     if (isBoth) {
       tagsHTML = `
@@ -867,29 +1130,140 @@ function updateJobsUI() {
         <span class="job-card-type part-time">Part Time</span>
       `;
     } else {
-      tagsHTML = `<span class="job-card-type ${typeClass}">${job.jobType || 'N/A'}</span>`;
+      tagsHTML = `<span class="job-card-type ${typeClass}">${escapeHtml(job.jobType || 'N/A')}</span>`;
     }
 
-    card.className = `job-card-item ${typeClass}`;
+    if (isPP) {
+      tagsHTML += `
+        <span class="job-card-type app-play-badge" style="background: rgba(16, 185, 129, 0.15); color: #059669; font-weight: 700;">
+          <i class="bx bxl-play-store"></i> Play Store App
+        </span>
+      `;
+    }
+
+    const jobLocations = getJobLocationsArray(job);
+    const locationsHTML = renderJobLocations(jobLocations, job);
+
+    let redirectIconBtnHTML = "";
+    if (isPP) {
+      redirectIconBtnHTML = `
+        <a href="${PLAY_STORE_URL}" target="_blank" rel="noopener noreferrer" class="job-btn redirect-btn" title="Open Google Play Store">
+          <i class="bx bx-link-external"></i>
+        </a>
+      `;
+    }
+
+    card.className = `job-card-item ${typeClass} ${isPP ? 'is-app-redirect' : ''}`;
+    const roleIcon = getRoleIconClass(job.position);
+    const subCategory = isPP ? "Mobile App Hiring" : "Store Operations";
+    const locCount = jobLocations.length;
+    const footerLocText = locCount > 1 
+      ? `${locCount} Locations` 
+      : (locCount === 1 ? jobLocations[0] : "All Stores");
+
     card.innerHTML = `
       <div class="job-card-header">
         <div class="job-tags-wrap">
           ${tagsHTML}
         </div>
         <div class="job-card-actions">
-          <button class="job-btn edit-btn" title="Edit Job"><i class="bx bxs-edit"></i></button>
-          <button class="job-btn delete-btn" title="Delete Job"><i class="bx bxs-trash"></i></button>
+          ${redirectIconBtnHTML}
+          <button class="job-btn edit-btn" title="Edit Job Opening"><i class="bx bxs-edit"></i></button>
+          <button class="job-btn delete-btn" title="Delete Job Opening"><i class="bx bxs-trash"></i></button>
         </div>
       </div>
-      <h4 class="job-card-title">${job.position || 'N/A'}</h4>
-      <div class="job-card-location">
-        <i class="bx bxs-map"></i> ${job.location || 'N/A'}
+
+      <div class="job-title-row">
+        <div class="job-role-icon ${typeClass} ${isPP ? 'is-pp' : ''}">
+          <i class="bx ${roleIcon}"></i>
+        </div>
+        <div class="job-title-meta">
+          <h4 class="job-card-title" title="${escapeHtml(job.position || 'N/A')}">${escapeHtml(job.position || 'N/A')}</h4>
+          <span class="job-card-sub">${subCategory}</span>
+        </div>
       </div>
-      <p class="job-card-req">${job.requirements || ''}</p>
+
+      <div class="job-card-body">
+        ${locationsHTML}
+        <div class="job-card-req-box">
+          <div class="req-header">
+            <i class="bx bx-list-check"></i>
+            <span>Role Overview & Requirements</span>
+          </div>
+          <p class="job-card-req">${escapeHtml(job.requirements || 'No specific requirements listed.')}</p>
+        </div>
+      </div>
+
+      <div class="job-card-footer">
+        <div class="job-status-pill">
+          <span class="pulse-dot"></span>
+          <span class="status-label">Active Vacancy</span>
+        </div>
+        <div class="job-footer-meta">
+          ${isPP 
+            ? '<span class="footer-app-tag"><i class="bx bxl-android"></i> App Role</span>' 
+            : `<span class="footer-loc-count"><i class="bx bx-store"></i> ${escapeHtml(footerLocText)}</span>`
+          }
+        </div>
+      </div>
     `;
 
+    // If Picker & Packer, clicking the card redirects to Play Store
+    if (isPP) {
+      card.style.cursor = "pointer";
+      card.title = "Click to open SourceOne app on Google Play Store";
+      card.addEventListener("click", (e) => {
+        if (e.target.closest(".job-card-actions") || e.target.closest("button") || e.target.closest("a")) {
+          return;
+        }
+        window.open(PLAY_STORE_URL, "_blank");
+      });
+    }
+
+    // Hook up more/less buttons inside card
+    const moreBtn = card.querySelector(".job-loc-more-btn");
+    const lessBtn = card.querySelector(".job-loc-less-btn");
+    const chipsWrap = card.querySelector(".job-loc-chips-wrap");
+    const chipsAll = card.querySelector(".job-loc-chips-all");
+
+    if (moreBtn && chipsWrap && chipsAll) {
+      moreBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        chipsWrap.style.display = "none";
+        chipsAll.style.display = "flex";
+      });
+    }
+
+    if (lessBtn && chipsWrap && chipsAll) {
+      lessBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        chipsAll.style.display = "none";
+        chipsWrap.style.display = "flex";
+      });
+    }
+
+    const expandBtn = card.querySelector(".job-loc-expand-btn");
+    const allBadge = card.querySelector(".job-loc-all-badge");
+    const chipsGrid = card.querySelector(".job-loc-chips-grid");
+
+    if (expandBtn && chipsGrid) {
+      const toggleAll = (e) => {
+        e.stopPropagation();
+        const isCollapsed = chipsGrid.classList.contains("collapsed");
+        if (isCollapsed) {
+          chipsGrid.classList.remove("collapsed");
+          expandBtn.innerHTML = '<i class="bx bx-chevron-up"></i>';
+        } else {
+          chipsGrid.classList.add("collapsed");
+          expandBtn.innerHTML = '<i class="bx bx-chevron-down"></i>';
+        }
+      };
+      expandBtn.addEventListener("click", toggleAll);
+      if (allBadge) allBadge.addEventListener("click", toggleAll);
+    }
+
     card.querySelector(".edit-btn").addEventListener("click", () => editJob(job));
-    card.querySelector(".delete-btn").addEventListener("click", () => deleteJob(job.id));
+    card.querySelector(".delete-btn").addEventListener("click", () => deleteJob(job));
 
     jobsListContainer.appendChild(card);
   });
@@ -897,6 +1271,7 @@ function updateJobsUI() {
 
 function saveJob() {
   const jobIdVal = document.getElementById("jobId").value;
+  const legacyIdsVal = document.getElementById("jobLegacyIds") ? document.getElementById("jobLegacyIds").value : "";
   const positionSelect = document.getElementById("jobPosition").value;
   const customPositionInput = document.getElementById("customPositionInput");
   const customPosition = customPositionInput ? customPositionInput.value.trim() : "";
@@ -919,6 +1294,8 @@ function saveJob() {
     return;
   }
 
+  const isPickerPacker = isPickerAndPacker(position);
+
   // Auto-commit any text left in customLocationInput
   const customLocInput = document.getElementById("customLocationInput");
   if (customLocInput && customLocInput.value.trim()) {
@@ -926,11 +1303,17 @@ function saveJob() {
     customLocInput.value = "";
   }
 
-  const selectedLocations = getSelectedLocations();
+  let selectedLocations = [];
+  if (!isPickerPacker) {
+    selectedLocations = getSelectedLocations();
 
-  if (!selectedLocations || selectedLocations.length === 0) {
-    alert("Please select at least one location or add a custom location.");
-    return;
+    if (!selectedLocations || selectedLocations.length === 0) {
+      alert("Please select at least one location or add a custom location.");
+      return;
+    }
+  } else {
+    // Picker & Packer has NO physical location - managed via Google Play app
+    selectedLocations = [];
   }
 
   if (!jobType) {
@@ -948,11 +1331,14 @@ function saveJob() {
   saveBtn.disabled = true;
 
   if (jobIdVal) {
-    // Editing an existing single job
-    saveBtn.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> <span>Updating...</span>";
+    // Editing an existing job opening
+    saveBtn.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> <span>Updating Job...</span>";
     const data = {
       position,
-      location: selectedLocations[0],
+      location: isPickerPacker ? "SourceOne Mobile App" : selectedLocations.join(", "),
+      locations: selectedLocations,
+      isAppRedirect: isPickerPacker,
+      redirectUrl: isPickerPacker ? PLAY_STORE_URL : "",
       jobType,
       requirements,
       updatedAt: Date.now()
@@ -960,7 +1346,14 @@ function saveJob() {
 
     db.ref("jobs/" + jobIdVal).update(data)
       .then(() => {
-        alert("Job updated successfully!");
+        // If there were legacy duplicate IDs consolidated into this job, clean them up
+        if (legacyIdsVal) {
+          const idsToDelete = legacyIdsVal.split(",").map((id) => id.trim()).filter((id) => id && id !== jobIdVal);
+          idsToDelete.forEach((id) => {
+            db.ref("jobs/" + id).remove().catch(() => { });
+          });
+        }
+        alert("Job opening updated successfully!");
         closeJobModal();
       })
       .catch((error) => {
@@ -971,47 +1364,79 @@ function saveJob() {
         saveBtn.innerHTML = originalBtnHTML;
       });
   } else {
-    // Bulk or single creation for all selected locations
-    const count = selectedLocations.length;
-    saveBtn.innerHTML = count > 1 
-      ? `<i class='bx bx-loader-alt bx-spin'></i> <span>Creating ${count} Jobs...</span>`
-      : "<i class='bx bx-loader-alt bx-spin'></i> <span>Saving...</span>";
+    // Creating a single job opening with all selected locations
+    saveBtn.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> <span>Saving Job...</span>";
 
-    const updates = {};
-    const now = Date.now();
+    // Check if a job with the same position and type already exists in allJobs
+    const existingJob = allJobs.find((j) =>
+      (j.position || "").trim().toLowerCase() === position.trim().toLowerCase() &&
+      (j.jobType || "").trim().toLowerCase() === jobType.trim().toLowerCase()
+    );
 
-    selectedLocations.forEach((loc, idx) => {
-      const newKey = db.ref("jobs").push().key;
-      updates["jobs/" + newKey] = {
+    if (existingJob) {
+      // Merge locations into the existing job so it remains a single card
+      const existingLocs = getJobLocationsArray(existingJob);
+      const mergedLocations = isPickerPacker ? [] : Array.from(new Set([...existingLocs, ...selectedLocations]));
+
+      const updateData = {
         position,
-        location: loc,
+        locations: mergedLocations,
+        location: isPickerPacker ? "SourceOne Mobile App" : mergedLocations.join(", "),
+        isAppRedirect: isPickerPacker,
+        redirectUrl: isPickerPacker ? PLAY_STORE_URL : "",
+        jobType,
+        requirements: requirements || existingJob.requirements || "",
+        updatedAt: Date.now()
+      };
+
+      db.ref("jobs/" + existingJob.id).update(updateData)
+        .then(() => {
+          alert(`Job opening for "${position}" already existed. Its details have been updated!`);
+          closeJobModal();
+        })
+        .catch((error) => {
+          alert("Error saving job: " + error.message);
+        })
+        .finally(() => {
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = originalBtnHTML;
+        });
+    } else {
+      // Brand new single job opening
+      const newKey = db.ref("jobs").push().key;
+      const jobData = {
+        position,
+        location: isPickerPacker ? "SourceOne Mobile App" : selectedLocations.join(", "),
+        locations: selectedLocations,
+        isAppRedirect: isPickerPacker,
+        redirectUrl: isPickerPacker ? PLAY_STORE_URL : "",
         jobType,
         requirements,
-        createdAt: now - idx
+        createdAt: Date.now()
       };
-    });
 
-    db.ref().update(updates)
-      .then(() => {
-        const msg = count > 1 
-          ? `Successfully created ${count} job openings across all selected locations!`
-          : "Job created successfully!";
-        alert(msg);
-        closeJobModal();
-      })
-      .catch((error) => {
-        alert("Error creating job: " + error.message);
-      })
-      .finally(() => {
-        saveBtn.disabled = false;
-        saveBtn.innerHTML = originalBtnHTML;
-      });
+      db.ref("jobs/" + newKey).set(jobData)
+        .then(() => {
+          alert("Job opening created successfully!");
+          closeJobModal();
+        })
+        .catch((error) => {
+          alert("Error creating job: " + error.message);
+        })
+        .finally(() => {
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = originalBtnHTML;
+        });
+    }
   }
 }
 
 function editJob(job) {
   resetJobForm();
   document.getElementById("jobId").value = job.id;
+  if (document.getElementById("jobLegacyIds")) {
+    document.getElementById("jobLegacyIds").value = (job.allIds || [job.id]).join(",");
+  }
 
   // Check if position exists in dropdown options
   const positionSelect = document.getElementById("jobPosition");
@@ -1035,9 +1460,20 @@ function editJob(job) {
     if (customPosInput) customPosInput.value = "";
   }
 
-  // Set location
-  if (job.location) {
-    setSelectedLocations([job.location]);
+  // Handle location vs Play Store notice for Picker & Packer
+  const isPP = isPickerAndPacker(job.position);
+  const locationsPanelCard = document.getElementById("locationsPanelCard");
+  const pickerPackerNotice = document.getElementById("pickerPackerNotice");
+
+  if (isPP) {
+    if (locationsPanelCard) locationsPanelCard.style.display = "none";
+    if (pickerPackerNotice) pickerPackerNotice.style.display = "flex";
+    setSelectedLocations([]);
+  } else {
+    if (locationsPanelCard) locationsPanelCard.style.display = "block";
+    if (pickerPackerNotice) pickerPackerNotice.style.display = "none";
+    const locs = getJobLocationsArray(job);
+    setSelectedLocations(locs);
   }
 
   if (job.jobType && job.jobType.toLowerCase().includes("both")) {
@@ -1054,9 +1490,18 @@ function editJob(job) {
   if (jobModal) jobModal.classList.add("active");
 }
 
-function deleteJob(id) {
-  if (confirm("Delete this job opening?")) {
-    db.ref("jobs/" + id).remove()
+function deleteJob(jobOrId) {
+  const idsToDelete = (typeof jobOrId === "object" && jobOrId !== null)
+    ? (jobOrId.allIds && jobOrId.allIds.length > 0 ? jobOrId.allIds : [jobOrId.id])
+    : [jobOrId];
+
+  const confirmMsg = idsToDelete.length > 1
+    ? `Delete this job opening across all locations?`
+    : `Delete this job opening?`;
+
+  if (confirm(confirmMsg)) {
+    const promises = idsToDelete.map((id) => db.ref("jobs/" + id).remove());
+    Promise.all(promises)
       .then(() => {
         alert("Job deleted successfully!");
       })
@@ -1068,12 +1513,20 @@ function deleteJob(id) {
 
 function resetJobForm() {
   document.getElementById("jobId").value = "";
+  if (document.getElementById("jobLegacyIds")) {
+    document.getElementById("jobLegacyIds").value = "";
+  }
   document.getElementById("jobPosition").value = "";
-  
+
   const customPosGroup = document.getElementById("customPositionGroup");
   if (customPosGroup) customPosGroup.style.display = "none";
   const customPosInput = document.getElementById("customPositionInput");
   if (customPosInput) customPosInput.value = "";
+
+  const locationsPanelCard = document.getElementById("locationsPanelCard");
+  if (locationsPanelCard) locationsPanelCard.style.display = "block";
+  const pickerPackerNotice = document.getElementById("pickerPackerNotice");
+  if (pickerPackerNotice) pickerPackerNotice.style.display = "none";
 
   document.getElementById("jobTypeSelect").value = "";
   document.getElementById("jobRequirements").value = "";
