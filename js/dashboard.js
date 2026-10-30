@@ -15,24 +15,35 @@ allSideMenu.forEach((item) => {
       const target = item.getAttribute("data-target");
       const dashboardView = document.getElementById("dashboardView");
       const jobListView = document.getElementById("jobListView");
+      const recruitmentView = document.getElementById("recruitmentView");
 
       if (target === "dashboardView") {
         if (dashboardView) dashboardView.style.display = "block";
         if (jobListView) jobListView.style.display = "none";
+        if (recruitmentView) recruitmentView.style.display = "none";
         const searchInput = document.getElementById("searchInput");
         if (searchInput) searchInput.placeholder = "Search Name, Contact, Location, Designation ...";
       } else if (target === "jobListView") {
         if (dashboardView) dashboardView.style.display = "none";
         if (jobListView) jobListView.style.display = "block";
+        if (recruitmentView) recruitmentView.style.display = "none";
         const searchInput = document.getElementById("searchInput");
         if (searchInput) searchInput.placeholder = "Search Job Title, Location, Type ...";
+      } else if (target === "recruitmentView") {
+        if (dashboardView) dashboardView.style.display = "none";
+        if (jobListView) jobListView.style.display = "none";
+        if (recruitmentView) recruitmentView.style.display = "block";
+        const searchInput = document.getElementById("searchInput");
+        if (searchInput) searchInput.placeholder = "Search Company, Contact, Job Title, Location, Phone ...";
       }
 
       const searchInput = document.getElementById("searchInput");
       if (searchInput) searchInput.value = "";
       currentPage = 1;
+      recruitmentCurrentPage = 1;
       updateUI();
       updateJobsUI();
+      if (typeof updateRecruitmentUI === "function") updateRecruitmentUI();
     }
   });
 });
@@ -342,6 +353,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Initialize jobs
   initJobs();
 
+  // Initialize recruitment leads
+  if (typeof initRecruitment === "function") {
+    initRecruitment();
+  }
+
   // Set up Job Form submit and cancel handlers
   const jobForm = document.getElementById("jobForm");
   if (jobForm) {
@@ -375,6 +391,9 @@ document.getElementById("searchInput").addEventListener("input", () => {
   const activeTab = document.querySelector("#sidebar .side-menu.top li.active");
   if (activeTab && activeTab.id === "jobListTabLi") {
     updateJobsUI();
+  } else if (activeTab && activeTab.id === "recruitmentTabLi") {
+    recruitmentCurrentPage = 1;
+    if (typeof updateRecruitmentUI === "function") updateRecruitmentUI();
   } else {
     currentPage = 1;
     updateUI();
@@ -1579,4 +1598,1167 @@ if (clearJobFiltersBtnEl) {
     if (navSearch) navSearch.value = "";
     updateJobsUI();
   });
+}
+
+
+/* ==========================================================================
+   RECRUITMENT & RECRUITER LEADS LOGIC
+   Fetches and manages data from Firebase RTDB under /recruiter_leads
+   ========================================================================== */
+
+let allRecruiterLeads = [];
+let recruitmentCurrentPage = 1;
+const RECRUITMENT_PAGE_SIZE = 10;
+let isRecruitmentEventsInitialized = false;
+
+/**
+ * Extracts a numeric timestamp (in milliseconds) from any timestamp/date field.
+ */
+function getLeadTimestampMs(lead) {
+  if (!lead) return 0;
+  const raw = lead.timestamp || lead.createdAt || lead.submittedAt || lead.date || lead.time;
+  if (!raw) return 0;
+  if (typeof raw === "number") return raw;
+  const parsed = Date.parse(raw);
+  return isNaN(parsed) ? 0 : parsed;
+}
+
+/**
+ * Formats date and time for the recruitment table cell.
+ */
+function formatLeadDate(lead) {
+  const ms = getLeadTimestampMs(lead);
+  let datePart = "N/A";
+  let timePart = "";
+  if (ms) {
+    const d = new Date(ms);
+    datePart = d.toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric"
+    });
+    timePart = d.toLocaleTimeString("en-IN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true
+    });
+  } else if (lead.date || lead.time || lead.timestamp) {
+    datePart = String(lead.date || lead.timestamp || "N/A");
+    if (lead.time) timePart = String(lead.time);
+  }
+
+  const sourceHtml = lead.source ? `<span class="lead-source-tag"><i class="bx bx-radio-circle-marked"></i> ${escapeHtml(lead.source)}</span>` : "";
+
+  return `
+    <div class="lead-date-cell">
+      <span class="lead-date-main">${escapeHtml(datePart)}</span>
+      ${timePart ? `<span class="lead-time-sub">${escapeHtml(timePart)}</span>` : ""}
+      ${sourceHtml}
+    </div>
+  `;
+}
+
+/**
+ * Formats a timestamp into human-readable plain text.
+ */
+function formatLeadDatePlain(lead) {
+  const ms = getLeadTimestampMs(lead);
+  if (ms) return new Date(ms).toLocaleString("en-IN");
+  return lead.date || lead.time || lead.timestamp || "N/A";
+}
+
+/**
+ * Maps status keys to display labels for recruiter inquiries.
+ */
+function getLeadStatusLabel(status) {
+  if (!status) return "New / Inbound";
+  const s = String(status).toLowerCase().trim();
+  switch (s) {
+    case "new":
+    case "inbound":
+    case "pending":
+      return "New / Inbound";
+    case "contacted":
+      return "Contacted";
+    case "in discussion":
+    case "discussion":
+    case "yet":
+      return "In Discussion";
+    case "requirements finalized":
+    case "finalized":
+      return "Reqs Finalized";
+    case "hiring started":
+    case "selected":
+      return "Hiring Started";
+    case "fulfilled":
+    case "closed":
+    case "joined":
+      return "Fulfilled";
+    case "dropped":
+    case "rejected":
+    case "not interested":
+      return "Dropped";
+    default:
+      return status.charAt(0).toUpperCase() + status.slice(1);
+  }
+}
+
+/**
+ * Maps status keys to CSS color classes for the status dropdown select pill.
+ */
+function getLeadStatusClass(status) {
+  if (!status) return "status-new";
+  const s = String(status).toLowerCase().trim();
+  if (s === "new" || s === "inbound" || s === "pending") return "status-new";
+  if (s === "contacted") return "status-contacted";
+  if (s.includes("discuss") || s === "yet") return "status-in-discussion";
+  if (s.includes("finalized") || s.includes("requirement")) return "status-requirements-finalized";
+  if (s.includes("hiring") || s === "selected") return "status-hiring-started";
+  if (s.includes("fulfill") || s.includes("closed") || s === "joined") return "status-fulfilled";
+  if (s.includes("drop") || s.includes("reject") || s.includes("not")) return "status-dropped";
+  return "status-new";
+}
+
+/**
+ * Maps urgency strings to styling classes.
+ */
+function getUrgencyClass(urgency) {
+  if (!urgency) return "urgency-normal";
+  const u = String(urgency).toLowerCase().trim();
+  if (u.includes("urgent") || u.includes("immediate") || u.includes("asap") || u.includes("high")) {
+    return "urgency-urgent";
+  }
+  if (u.includes("moderate") || u.includes("medium") || u.includes("week") || u.includes("15")) {
+    return "urgency-moderate";
+  }
+  return "urgency-normal";
+}
+
+/**
+ * Formats minimum and maximum monthly salary cleanly.
+ */
+function formatSalaryRange(min, max) {
+  const numMin = parseInt(min, 10);
+  const numMax = parseInt(max, 10);
+  if (!isNaN(numMin) && !isNaN(numMax)) {
+    return `₹${numMin.toLocaleString("en-IN")} – ₹${numMax.toLocaleString("en-IN")}/mo`;
+  }
+  if (!isNaN(numMin)) {
+    return `₹${numMin.toLocaleString("en-IN")}+ /mo`;
+  }
+  if (!isNaN(numMax)) {
+    return `Up to ₹${numMax.toLocaleString("en-IN")}/mo`;
+  }
+  if (min || max) {
+    return `${min || ""} - ${max || ""}`;
+  }
+  return "Negotiable";
+}
+
+/**
+ * Cleans a phone number string for click-to-call and WhatsApp integration.
+ */
+function getCleanPhoneNumber(phoneStr) {
+  if (!phoneStr) return "";
+  const cleaned = String(phoneStr).replace(/\D/g, "");
+  if (!cleaned) return "";
+  if (cleaned.length === 10) return "91" + cleaned;
+  return cleaned;
+}
+
+/**
+ * Computes 1-2 character initials for the company avatar circle.
+ */
+function getCompanyInitials(name) {
+  if (!name || typeof name !== "string") return "CO";
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
+}
+
+/**
+ * Computes 1-2 character initials for candidate avatars (fallback).
+ */
+function getCandidateInitials(name) {
+  if (!name || typeof name !== "string") return "C";
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+}
+
+/**
+ * Initializes recruitment listeners and subscribes to Firebase RTDB /recruiter_leads.
+ */
+function initRecruitment() {
+  initRecruitmentEventListeners();
+
+  db.ref("recruiter_leads").on("value", (snapshot) => {
+    allRecruiterLeads = [];
+    if (snapshot.exists()) {
+      snapshot.forEach((child) => {
+        allRecruiterLeads.push({ id: child.key, ...child.val() });
+      });
+    }
+
+    // Sort descending: most recent leads first
+    allRecruiterLeads.sort((a, b) => getLeadTimestampMs(b) - getLeadTimestampMs(a));
+
+    populateRecruitmentFilterOptions(allRecruiterLeads);
+    updateRecruitmentUI();
+  }, (error) => {
+    console.error("Firebase error reading recruiter_leads:", error);
+    const tbody = document.getElementById("recruitmentTableBody");
+    if (tbody) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" style="text-align: center; padding: 32px 0; color: #ef4444;">
+            <i class="bx bx-error-circle" style="font-size: 24px; vertical-align: middle;"></i>
+            Failed to load recruiter leads. Error: ${escapeHtml(error.message || "Permission or network error")}
+          </td>
+        </tr>
+      `;
+    }
+  });
+}
+
+/**
+ * Attaches UI event listeners for toolbar filters, exports, and modals.
+ */
+function initRecruitmentEventListeners() {
+  if (isRecruitmentEventsInitialized) return;
+  isRecruitmentEventsInitialized = true;
+
+  // Search input filter
+  const searchInput = document.getElementById("recruitmentSearchFilter");
+  if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      recruitmentCurrentPage = 1;
+      updateRecruitmentUI();
+    });
+  }
+
+  // Status dropdown filter
+  const statusFilter = document.getElementById("recruitmentStatusFilter");
+  if (statusFilter) {
+    statusFilter.addEventListener("change", () => {
+      recruitmentCurrentPage = 1;
+      updateRecruitmentUI();
+    });
+  }
+
+  // Urgency dropdown filter
+  const urgencyFilter = document.getElementById("recruitmentUrgencyFilter");
+  if (urgencyFilter) {
+    urgencyFilter.addEventListener("change", () => {
+      recruitmentCurrentPage = 1;
+      updateRecruitmentUI();
+    });
+  }
+
+  // Location dropdown filter
+  const locationFilter = document.getElementById("recruitmentLocationFilter");
+  if (locationFilter) {
+    locationFilter.addEventListener("change", () => {
+      recruitmentCurrentPage = 1;
+      updateRecruitmentUI();
+    });
+  }
+
+  // Date range filters
+  const startDateFilter = document.getElementById("recruitmentStartDate");
+  const endDateFilter = document.getElementById("recruitmentEndDate");
+  if (startDateFilter) {
+    startDateFilter.addEventListener("change", () => {
+      recruitmentCurrentPage = 1;
+      updateRecruitmentUI();
+    });
+  }
+  if (endDateFilter) {
+    endDateFilter.addEventListener("change", () => {
+      recruitmentCurrentPage = 1;
+      updateRecruitmentUI();
+    });
+  }
+
+  // Clear filters button
+  const clearBtn = document.getElementById("clearRecruitmentFiltersBtn");
+  if (clearBtn) {
+    clearBtn.addEventListener("click", () => {
+      if (searchInput) searchInput.value = "";
+      if (statusFilter) statusFilter.value = "";
+      if (urgencyFilter) urgencyFilter.value = "";
+      if (locationFilter) locationFilter.value = "";
+      if (startDateFilter) startDateFilter.value = "";
+      if (endDateFilter) endDateFilter.value = "";
+      const navSearch = document.getElementById("searchInput");
+      if (navSearch) navSearch.value = "";
+      recruitmentCurrentPage = 1;
+      updateRecruitmentUI();
+    });
+  }
+
+  // Export to Excel button
+  const exportBtn = document.getElementById("exportRecruitmentExcelBtn");
+  if (exportBtn) {
+    exportBtn.addEventListener("click", exportRecruitmentToExcel);
+  }
+
+  // Modal close buttons
+  const modal = document.getElementById("recruitmentLeadModal");
+  const closeBtn = document.getElementById("closeLeadModalBtn");
+  const closeFooterBtn = document.getElementById("closeLeadModalFooterBtn");
+
+  const closeModal = () => {
+    if (modal) modal.classList.remove("active");
+    document.body.style.overflow = "";
+  };
+
+  if (closeBtn) closeBtn.addEventListener("click", closeModal);
+  if (closeFooterBtn) closeFooterBtn.addEventListener("click", closeModal);
+  if (modal) {
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closeModal();
+    });
+  }
+
+  // Close modal on Escape key
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modal && modal.classList.contains("active")) {
+      closeModal();
+    }
+  });
+}
+
+/**
+ * Populates dynamic urgency and location options in the recruitment toolbar filters.
+ */
+function populateRecruitmentFilterOptions(leads) {
+  // 1. Populate Urgency Filter
+  const urgencyFilter = document.getElementById("recruitmentUrgencyFilter");
+  if (urgencyFilter) {
+    const currentVal = urgencyFilter.value;
+    const urgencyMap = new Map();
+
+    leads.forEach((l) => {
+      const urg = l.fillUrgency ? String(l.fillUrgency).trim() : "";
+      if (urg) {
+        urgencyMap.set(urg, (urgencyMap.get(urg) || 0) + 1);
+      }
+    });
+
+    let urgencyHtml = `<option value="">All Urgencies (${leads.length})</option>`;
+    Array.from(urgencyMap.keys()).sort().forEach((urg) => {
+      urgencyHtml += `<option value="${escapeHtml(urg)}">${escapeHtml(urg)} (${urgencyMap.get(urg)})</option>`;
+    });
+
+    urgencyFilter.innerHTML = urgencyHtml;
+    if (currentVal && urgencyMap.has(currentVal)) {
+      urgencyFilter.value = currentVal;
+    }
+  }
+
+  // 2. Populate Location Filter
+  const locationFilter = document.getElementById("recruitmentLocationFilter");
+  if (locationFilter) {
+    const currentVal = locationFilter.value;
+    const locationMap = new Map();
+
+    leads.forEach((l) => {
+      const loc = l.jobLocation ? String(l.jobLocation).trim() : "";
+      if (loc) {
+        locationMap.set(loc, (locationMap.get(loc) || 0) + 1);
+      }
+    });
+
+    let locationHtml = `<option value="">All Locations (${leads.length})</option>`;
+    Array.from(locationMap.keys()).sort().forEach((loc) => {
+      locationHtml += `<option value="${escapeHtml(loc)}">${escapeHtml(loc)} (${locationMap.get(loc)})</option>`;
+    });
+
+    locationFilter.innerHTML = locationHtml;
+    if (currentVal && locationMap.has(currentVal)) {
+      locationFilter.value = currentVal;
+    }
+  }
+}
+
+/**
+ * Returns the filtered list of recruiter leads based on active search, status, urgency, location, and date filters.
+ */
+function getFilteredRecruiterLeads() {
+  const globalSearchEl = document.getElementById("searchInput");
+  const inlineSearchEl = document.getElementById("recruitmentSearchFilter");
+  const activeTab = document.querySelector("#sidebar .side-menu.top li.active");
+  const isRecruitmentTabActive = activeTab && activeTab.id === "recruitmentTabLi";
+
+  const query = (inlineSearchEl && inlineSearchEl.value.trim())
+    ? inlineSearchEl.value.trim().toLowerCase()
+    : (isRecruitmentTabActive && globalSearchEl && globalSearchEl.value.trim() ? globalSearchEl.value.trim().toLowerCase() : "");
+
+  const statusFilterEl = document.getElementById("recruitmentStatusFilter");
+  const selectedStatus = statusFilterEl ? statusFilterEl.value.trim().toLowerCase() : "";
+
+  const urgencyFilterEl = document.getElementById("recruitmentUrgencyFilter");
+  const selectedUrgency = urgencyFilterEl ? urgencyFilterEl.value.trim().toLowerCase() : "";
+
+  const locationFilterEl = document.getElementById("recruitmentLocationFilter");
+  const selectedLocation = locationFilterEl ? locationFilterEl.value.trim().toLowerCase() : "";
+
+  const startDateEl = document.getElementById("recruitmentStartDate");
+  const endDateEl = document.getElementById("recruitmentEndDate");
+
+  let startMs = 0;
+  if (startDateEl && startDateEl.value) {
+    startMs = new Date(startDateEl.value + "T00:00:00").getTime();
+  }
+
+  let endMs = 0;
+  if (endDateEl && endDateEl.value) {
+    endMs = new Date(endDateEl.value + "T23:59:59.999").getTime();
+  }
+
+  return allRecruiterLeads.filter((lead) => {
+    // 1. Search Query Filter across all 24 schema fields
+    if (query) {
+      const company = (lead.companyName || "").toLowerCase();
+      const person = (lead.contactPersonName || "").toLowerCase();
+      const phone = String(lead.contactPhone || lead.phoneNumber || "").toLowerCase();
+      const email = (lead.contactEmail || "").toLowerCase();
+      const title = (lead.jobTitle || "").toLowerCase();
+      const loc = (lead.jobLocation || "").toLowerCase();
+      const address = (lead.jobAddress || "").toLowerCase();
+      const skills = (lead.skillsRequired || "").toLowerCase();
+      const profile = (lead.contactProfile || "").toLowerCase();
+      const type = (lead.jobType || "").toLowerCase();
+      const urgency = (lead.fillUrgency || "").toLowerCase();
+      const info = (lead.additionalInfo || "").toLowerCase();
+      const source = (lead.source || "").toLowerCase();
+      const status = (lead.status || "").toLowerCase();
+
+      const matches = company.includes(query) ||
+                      person.includes(query) ||
+                      phone.includes(query) ||
+                      email.includes(query) ||
+                      title.includes(query) ||
+                      loc.includes(query) ||
+                      address.includes(query) ||
+                      skills.includes(query) ||
+                      profile.includes(query) ||
+                      type.includes(query) ||
+                      urgency.includes(query) ||
+                      info.includes(query) ||
+                      source.includes(query) ||
+                      status.includes(query);
+      if (!matches) return false;
+    }
+
+    // 2. Status Filter
+    if (selectedStatus) {
+      const leadStatus = (lead.status || "new").toLowerCase();
+      if (selectedStatus === "new") {
+        if (leadStatus !== "new" && leadStatus !== "inbound" && leadStatus !== "pending" && leadStatus !== "") return false;
+      } else if (selectedStatus === "contacted") {
+        if (!leadStatus.includes("contacted")) return false;
+      } else if (selectedStatus === "in discussion") {
+        if (!leadStatus.includes("discuss") && leadStatus !== "yet") return false;
+      } else if (selectedStatus === "requirements finalized") {
+        if (!leadStatus.includes("finalized") && !leadStatus.includes("requirement")) return false;
+      } else if (selectedStatus === "hiring started") {
+        if (!leadStatus.includes("hiring") && leadStatus !== "selected") return false;
+      } else if (selectedStatus === "fulfilled") {
+        if (!leadStatus.includes("fulfill") && !leadStatus.includes("closed") && leadStatus !== "joined") return false;
+      } else if (selectedStatus === "dropped") {
+        if (!leadStatus.includes("drop") && !leadStatus.includes("reject") && !leadStatus.includes("not")) return false;
+      } else {
+        if (!leadStatus.includes(selectedStatus)) return false;
+      }
+    }
+
+    // 3. Urgency Filter
+    if (selectedUrgency) {
+      const leadUrgency = (lead.fillUrgency || "").toLowerCase().trim();
+      if (leadUrgency !== selectedUrgency) return false;
+    }
+
+    // 4. Location Filter
+    if (selectedLocation) {
+      const leadLocation = (lead.jobLocation || "").toLowerCase().trim();
+      if (leadLocation !== selectedLocation) return false;
+    }
+
+    // 5. Date Range Filter
+    if (startMs || endMs) {
+      const leadMs = getLeadTimestampMs(lead);
+      if (leadMs) {
+        if (startMs && leadMs < startMs) return false;
+        if (endMs && leadMs > endMs) return false;
+      } else if (startMs || endMs) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+}
+
+/**
+ * Re-renders the recruitment statistics metrics, recruiter inquiries table, and pagination controls.
+ */
+function updateRecruitmentUI() {
+  const filtered = getFilteredRecruiterLeads();
+
+  // 1. Count Badge
+  const badgeEl = document.getElementById("recruitmentCountBadge");
+  if (badgeEl) {
+    if (filtered.length === allRecruiterLeads.length) {
+      badgeEl.innerText = `${allRecruiterLeads.length} Leads`;
+    } else {
+      badgeEl.innerText = `${filtered.length} of ${allRecruiterLeads.length} Leads`;
+    }
+  }
+
+  // 2. Render Table Rows (5 Columns: Date, Company, Contact Person, Number, Action)
+  const tbody = document.getElementById("recruitmentTableBody");
+  if (!tbody) return;
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" style="text-align: center; padding: 48px 16px; color: var(--dark-grey);">
+          <div style="font-size: 38px; margin-bottom: 8px; opacity: 0.6;"><i class="bx bxs-inbox"></i></div>
+          <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 4px; color: var(--dark);">No Recruiter Leads Found</h4>
+          <p style="font-size: 13px; color: var(--dark-grey); margin: 0;">Try adjusting your search query, status, urgency, location, or date range filters.</p>
+        </td>
+      </tr>
+    `;
+    renderRecruitmentPagination(0);
+    return;
+  }
+
+  // Pagination slice
+  const totalPages = Math.ceil(filtered.length / RECRUITMENT_PAGE_SIZE);
+  if (recruitmentCurrentPage > totalPages) {
+    recruitmentCurrentPage = Math.max(1, totalPages);
+  }
+
+  const startIdx = (recruitmentCurrentPage - 1) * RECRUITMENT_PAGE_SIZE;
+  const pageItems = filtered.slice(startIdx, startIdx + RECRUITMENT_PAGE_SIZE);
+
+  tbody.innerHTML = "";
+
+  pageItems.forEach((lead) => {
+    const tr = document.createElement("tr");
+
+    // 1. Date
+    const dateHtml = formatLeadDate(lead);
+
+    // 2. Company
+    const companyName = lead.companyName || "Unnamed Company";
+    const initials = getCompanyInitials(companyName);
+    const orgSize = lead.organizationSize ? escapeHtml(lead.organizationSize) : "";
+
+    // 3. Contact Person
+    const contactPerson = lead.contactPersonName || "Not Provided";
+    const contactProfile = lead.contactProfile ? escapeHtml(lead.contactProfile) : "";
+
+    // 4. Contact Number
+    const rawPhone = lead.contactPhone || lead.phoneNumber || lead.phone || "";
+    const cleanPhone = getCleanPhoneNumber(rawPhone);
+
+    tr.innerHTML = `
+      <td style="padding-left: 16px; white-space: nowrap;">${dateHtml}</td>
+      <td>
+        <div class="lead-company-cell">
+          <div class="company-avatar">${initials}</div>
+          <div class="company-name-wrap">
+            <span class="company-name-title" title="${escapeHtml(companyName)}">${escapeHtml(companyName)}</span>
+            ${orgSize ? `<span class="org-size-pill"><i class="bx bx-buildings"></i> ${orgSize}</span>` : ""}
+          </div>
+        </div>
+      </td>
+      <td>
+        <div class="contact-person-cell">
+          <span class="contact-name-title" title="${escapeHtml(contactPerson)}">${escapeHtml(contactPerson)}</span>
+          ${contactProfile ? `<span class="contact-profile-pill"><i class="bx bx-id-card"></i> ${contactProfile}</span>` : ""}
+        </div>
+      </td>
+      <td style="white-space: nowrap;">
+        ${rawPhone ? `
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <a href="tel:${cleanPhone}" class="lead-contact-link phone" title="Click to call ${escapeHtml(String(rawPhone))}">
+              <i class="bx bx-phone"></i> ${escapeHtml(String(rawPhone))}
+            </a>
+            <a href="https://wa.me/${cleanPhone}?text=${encodeURIComponent(`Hello ${contactPerson !== 'Not Provided' ? contactPerson : ''}, thank you for reaching out to SourceOne regarding your inquiry for ${companyName}.`)}" target="_blank" rel="noopener noreferrer" class="lead-action-btn wa-btn" style="width: 28px; height: 28px; font-size: 14px;" title="Chat on WhatsApp">
+              <i class="bx bxl-whatsapp"></i>
+            </a>
+          </div>
+        ` : `<span style="color: var(--dark-grey); font-size: 12px; font-style: italic;">No Phone</span>`}
+      </td>
+      <td style="text-align: right; padding-right: 18px;">
+        <div class="lead-actions-cell">
+          <button type="button" class="lead-action-btn view-btn" title="View Full Details">
+            <i class="bx bx-show"></i>
+          </button>
+          <button type="button" class="lead-action-btn delete-btn" title="Delete Inquiry">
+            <i class="bx bxs-trash"></i>
+          </button>
+        </div>
+      </td>
+    `;
+
+    // View Details click
+    const viewBtn = tr.querySelector(".view-btn");
+    if (viewBtn) {
+      viewBtn.addEventListener("click", () => showLeadDetailsModal(lead));
+    }
+
+    // Delete Lead click
+    const deleteBtn = tr.querySelector(".delete-btn");
+    if (deleteBtn) {
+      deleteBtn.addEventListener("click", () => deleteLead(lead));
+    }
+
+    tbody.appendChild(tr);
+  });
+
+  // 4. Render Pagination Controls
+  renderRecruitmentPagination(filtered.length);
+}
+
+/**
+ * Updates a recruiter lead's status in Firebase RTDB /recruiter_leads/{leadId}.
+ */
+function updateLeadStatus(leadId, newStatus) {
+  if (!leadId) return;
+
+  db.ref(`recruiter_leads/${leadId}`).update({
+    status: newStatus,
+    statusUpdatedAt: Date.now(),
+    updatedAt: Date.now()
+  }).then(() => {
+    const idx = allRecruiterLeads.findIndex((l) => l.id === leadId);
+    if (idx !== -1) {
+      allRecruiterLeads[idx].status = newStatus;
+      allRecruiterLeads[idx].statusUpdatedAt = Date.now();
+    }
+  }).catch((err) => {
+    alert("Failed to update status: " + err.message);
+    updateRecruitmentUI();
+  });
+}
+
+/**
+ * Permanently removes a recruiter inquiry record from Firebase RTDB.
+ */
+function deleteLead(lead) {
+  if (!lead || !lead.id) return;
+  const company = lead.companyName || "this company";
+  const role = lead.jobTitle || "opening";
+
+  if (!confirm(`Are you sure you want to delete the hiring inquiry for "${company}" (${role})?`)) {
+    return;
+  }
+
+  db.ref(`recruiter_leads/${lead.id}`).remove().then(() => {
+    allRecruiterLeads = allRecruiterLeads.filter((l) => l.id !== lead.id);
+    updateRecruitmentUI();
+  }).catch((err) => {
+    alert("Failed to delete lead: " + err.message);
+  });
+}
+
+/**
+ * Renders and displays the Lead Details modal with all 24 schema fields grouped into 5 structured visual cards.
+ */
+function showLeadDetailsModal(lead) {
+  if (!lead) return;
+  try {
+    const modal = document.getElementById("recruitmentLeadModal");
+    const modalTitle = document.getElementById("leadModalTitle");
+    const modalBody = document.getElementById("leadModalBody");
+    if (!modal || !modalBody) return;
+
+  const company = lead.companyName || "Employer Inquiry";
+  const role = lead.jobTitle ? ` – ${lead.jobTitle}` : "";
+  if (modalTitle) modalTitle.innerText = `${company}${role}`;
+
+  const rawPhone = lead.contactPhone || lead.phoneNumber || lead.phone || "";
+  const cleanPhone = getCleanPhoneNumber(rawPhone);
+  const contactPerson = lead.contactPersonName || "Not Provided";
+  const jobTitle = lead.jobTitle || "Role Not Specified";
+
+  // Parse skills into array tags
+  let skillsHtml = "";
+  if (lead.skillsRequired) {
+    const skillsList = Array.isArray(lead.skillsRequired)
+      ? lead.skillsRequired
+      : String(lead.skillsRequired).split(/[,|\n]+/).map((s) => s.trim()).filter(Boolean);
+
+    if (skillsList.length > 0) {
+      skillsHtml = `
+        <div class="lead-modal-skills-cloud">
+          ${skillsList.map((skill) => `<span class="lead-modal-skill-pill">${escapeHtml(skill)}</span>`).join("")}
+        </div>
+      `;
+    } else {
+      skillsHtml = escapeHtml(String(lead.skillsRequired));
+    }
+  }
+
+  // Check which keys are handled
+  const handledKeys = new Set([
+    "id", "key",
+    "companyName", "organizationSize",
+    "contactPersonName", "contactProfile", "contactPhone", "contactEmail", "candidateCallWindow",
+    "jobTitle", "jobType", "numberOfOpenings", "fillUrgency", "hiringFrequency", "jobTimings",
+    "monthlySalaryMin", "monthlySalaryMax", "bonusOffered",
+    "jobLocation", "jobAddress",
+    "candidateExperience", "skillsRequired", "additionalInfo", "source", "status", "timestamp",
+    "statusUpdatedAt", "updatedAt", "createdAt"
+  ]);
+
+  // Collect any remaining custom unhandled fields
+  const extraFields = [];
+  Object.keys(lead).forEach((k) => {
+    if (!handledKeys.has(k) && lead[k] !== undefined && lead[k] !== null && String(lead[k]).trim() !== "") {
+      const formattedKey = k.replace(/([A-Z])/g, " $1").replace(/_/g, " ").replace(/^./, (str) => str.toUpperCase());
+      extraFields.push({ label: formattedKey, value: String(lead[k]) });
+    }
+  });
+
+  const salaryDisplay = formatSalaryRange(lead.monthlySalaryMin, lead.monthlySalaryMax);
+  const submissionDate = formatLeadDatePlain(lead);
+  const statusLabel = getLeadStatusLabel(lead.status);
+  const statusClass = getLeadStatusClass(lead.status);
+  const currentStatus = String(lead.status || "new").trim();
+
+  const formatSalaryVal = (val) => {
+    if (val === undefined || val === null || String(val).trim() === "") return "N/A";
+    const cleaned = String(val).replace(/,/g, "").trim();
+    const num = parseInt(cleaned, 10);
+    return !isNaN(num) ? `₹${num.toLocaleString("en-IN")}` : escapeHtml(String(val));
+  };
+
+  modalBody.innerHTML = `
+    <div class="lead-modal-sections-grid">
+      <!-- Section 1: Company & Contact Person Info -->
+      <div class="lead-modal-card">
+        <div class="lead-modal-card-header">
+          <i class="bx bxs-business"></i>
+          <h4>Company & Contact Person</h4>
+        </div>
+        <div class="lead-modal-fields-grid">
+          <div class="lead-modal-field">
+            <span class="lead-modal-field-label">Company Name</span>
+            <span class="lead-modal-field-value" style="font-weight: 700; color: #2563eb;">${escapeHtml(lead.companyName || "N/A")}</span>
+          </div>
+          <div class="lead-modal-field">
+            <span class="lead-modal-field-label">Organization Size</span>
+            <span class="lead-modal-field-value">${escapeHtml(lead.organizationSize || "Not Specified")}</span>
+          </div>
+          <div class="lead-modal-field">
+            <span class="lead-modal-field-label">Contact Person</span>
+            <span class="lead-modal-field-value" style="font-weight: 600;">${escapeHtml(contactPerson)}</span>
+          </div>
+          <div class="lead-modal-field">
+            <span class="lead-modal-field-label">Contact Profile / Role</span>
+            <span class="lead-modal-field-value">${escapeHtml(lead.contactProfile || "Not Specified")}</span>
+          </div>
+          <div class="lead-modal-field">
+            <span class="lead-modal-field-label">Contact Phone</span>
+            <span class="lead-modal-field-value">
+              ${rawPhone ? `
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                  <a href="tel:${cleanPhone}" class="lead-contact-link phone">
+                    <i class="bx bx-phone"></i> ${escapeHtml(String(rawPhone))}
+                  </a>
+                  <a href="https://wa.me/${cleanPhone}?text=${encodeURIComponent(`Hello ${contactPerson !== 'Not Provided' ? contactPerson : ''}, thank you for contacting SourceOne regarding hiring for ${lead.companyName || 'your company'}.`)}" target="_blank" rel="noopener noreferrer" class="lead-contact-link phone" style="background: rgba(16, 185, 129, 0.12); color: #047857; border-color: rgba(16, 185, 129, 0.25);">
+                    <i class="bx bxl-whatsapp"></i> WhatsApp
+                  </a>
+                </div>
+              ` : `<span style="color: var(--dark-grey);">Not Provided</span>`}
+            </span>
+          </div>
+          <div class="lead-modal-field">
+            <span class="lead-modal-field-label">Contact Email</span>
+            <span class="lead-modal-field-value">
+              ${lead.contactEmail ? `
+                <a href="mailto:${escapeHtml(lead.contactEmail)}" class="lead-contact-link email" style="display: inline-flex;">
+                  <i class="bx bx-envelope"></i> ${escapeHtml(lead.contactEmail)}
+                </a>
+              ` : `<span style="color: var(--dark-grey);">Not Provided</span>`}
+            </span>
+          </div>
+          <div class="lead-modal-field">
+            <span class="lead-modal-field-label">Preferred Call Window</span>
+            <span class="lead-modal-field-value">${escapeHtml(lead.candidateCallWindow || "Anytime")}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Job & Hiring Requirements -->
+      <div class="lead-modal-card">
+        <div class="lead-modal-card-header">
+          <i class="bx bxs-briefcase-alt-2"></i>
+          <h4>Job & Hiring Requirements</h4>
+        </div>
+        <div class="lead-modal-fields-grid">
+          <div class="lead-modal-field">
+            <span class="lead-modal-field-label">Job Title / Designation</span>
+            <span class="lead-modal-field-value" style="font-weight: 700;">${escapeHtml(jobTitle)}</span>
+          </div>
+          <div class="lead-modal-field">
+            <span class="lead-modal-field-label">Job Type</span>
+            <span class="lead-modal-field-value">${escapeHtml(lead.jobType || "Full-Time")}</span>
+          </div>
+          <div class="lead-modal-field">
+            <span class="lead-modal-field-label">Number of Openings</span>
+            <span class="lead-modal-field-value" style="font-weight: 700; color: #059669;">${escapeHtml(String(lead.numberOfOpenings || "1"))} Openings</span>
+          </div>
+          <div class="lead-modal-field">
+            <span class="lead-modal-field-label">Fill Urgency</span>
+            <span class="lead-modal-field-value">
+              <span class="urgency-pill ${getUrgencyClass(lead.fillUrgency)}">
+                <i class="bx bx-zap"></i> ${escapeHtml(lead.fillUrgency || "Normal")}
+              </span>
+            </span>
+          </div>
+          <div class="lead-modal-field">
+            <span class="lead-modal-field-label">Hiring Frequency</span>
+            <span class="lead-modal-field-value">${escapeHtml(lead.hiringFrequency || "One-Time Need")}</span>
+          </div>
+          <div class="lead-modal-field">
+            <span class="lead-modal-field-label">Job / Shift Timings</span>
+            <span class="lead-modal-field-value">${escapeHtml(lead.jobTimings || "Standard Shifts")}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 3: Compensation & Bonus -->
+      <div class="lead-modal-card">
+        <div class="lead-modal-card-header">
+          <i class="bx bx-rupee"></i>
+          <h4>Compensation & Incentives</h4>
+        </div>
+        <div class="lead-modal-fields-grid">
+          <div class="lead-modal-field">
+            <span class="lead-modal-field-label">Monthly Salary Range</span>
+            <span class="lead-modal-field-value" style="font-weight: 700; color: #059669; font-size: 14.5px;">${salaryDisplay}</span>
+          </div>
+          <div class="lead-modal-field">
+            <span class="lead-modal-field-label">Min Salary</span>
+            <span class="lead-modal-field-value">${formatSalaryVal(lead.monthlySalaryMin)}</span>
+          </div>
+          <div class="lead-modal-field">
+            <span class="lead-modal-field-label">Max Salary</span>
+            <span class="lead-modal-field-value">${formatSalaryVal(lead.monthlySalaryMax)}</span>
+          </div>
+          <div class="lead-modal-field">
+            <span class="lead-modal-field-label">Bonus / Incentives Offered</span>
+            <span class="lead-modal-field-value">
+              ${lead.bonusOffered ? `
+                <span class="bonus-offered-badge"><i class="bx bx-gift"></i> ${escapeHtml(lead.bonusOffered)}</span>
+              ` : `<span style="color: var(--dark-grey);">None Specified</span>`}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 4: Workplace Location & Address -->
+      <div class="lead-modal-card">
+        <div class="lead-modal-card-header">
+          <i class="bx bxs-map-pin"></i>
+          <h4>Workplace Location & Address</h4>
+        </div>
+        <div class="lead-modal-fields-grid">
+          <div class="lead-modal-field">
+            <span class="lead-modal-field-label">Job Location / Area</span>
+            <span class="lead-modal-field-value" style="font-weight: 600;">
+              <i class="bx bx-map-pin" style="color: #2563eb;"></i> ${escapeHtml(lead.jobLocation || "Not Specified")}
+            </span>
+          </div>
+          <div class="lead-modal-field" style="grid-column: 1 / -1;">
+            <span class="lead-modal-field-label">Full Workplace Address</span>
+            <span class="lead-modal-field-value" style="line-height: 1.45;">${escapeHtml(lead.jobAddress || "Not Specified")}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 5: Candidate Profile, Skills & System Meta -->
+      <div class="lead-modal-card">
+        <div class="lead-modal-card-header">
+          <i class="bx bxs-user-detail"></i>
+          <h4>Candidate Profile, Skills & Inquiry Info</h4>
+        </div>
+        <div class="lead-modal-fields-grid">
+          <div class="lead-modal-field">
+            <span class="lead-modal-field-label">Candidate Experience Needed</span>
+            <span class="lead-modal-field-value" style="font-weight: 600;">${escapeHtml(lead.candidateExperience || "Fresher / Any Experience")}</span>
+          </div>
+          <div class="lead-modal-field">
+            <span class="lead-modal-field-label">Inquiry Source</span>
+            <span class="lead-modal-field-value">${escapeHtml(lead.source || "Direct Website / App")}</span>
+          </div>
+          <div class="lead-modal-field">
+            <span class="lead-modal-field-label">Current Status</span>
+            <div style="margin-top: 3px;">
+              <select class="recruitment-status-select ${statusClass}" id="modalLeadStatusSelect" data-lead-id="${lead.id}" title="Change Lead Status">
+                <option value="new" ${currentStatus.toLowerCase() === "new" || currentStatus.toLowerCase() === "inbound" || currentStatus.toLowerCase() === "pending" ? "selected" : ""}>New / Inbound</option>
+                <option value="contacted" ${currentStatus.toLowerCase() === "contacted" ? "selected" : ""}>Contacted</option>
+                <option value="in discussion" ${currentStatus.toLowerCase() === "in discussion" || currentStatus.toLowerCase() === "yet" || currentStatus.toLowerCase().includes("discuss") ? "selected" : ""}>In Discussion</option>
+                <option value="requirements finalized" ${currentStatus.toLowerCase() === "requirements finalized" || currentStatus.toLowerCase().includes("finalized") ? "selected" : ""}>Reqs Finalized</option>
+                <option value="hiring started" ${currentStatus.toLowerCase() === "hiring started" || currentStatus.toLowerCase() === "selected" || currentStatus.toLowerCase().includes("hiring") ? "selected" : ""}>Hiring Started</option>
+                <option value="fulfilled" ${currentStatus.toLowerCase() === "fulfilled" || currentStatus.toLowerCase() === "joined" || currentStatus.toLowerCase().includes("fulfill") ? "selected" : ""}>Fulfilled</option>
+                <option value="dropped" ${currentStatus.toLowerCase() === "dropped" || currentStatus.toLowerCase() === "rejected" || currentStatus.toLowerCase().includes("drop") ? "selected" : ""}>Dropped</option>
+              </select>
+            </div>
+          </div>
+          <div class="lead-modal-field">
+            <span class="lead-modal-field-label">Submission Date & Time</span>
+            <span class="lead-modal-field-value">${escapeHtml(submissionDate)}</span>
+          </div>
+          <div class="lead-modal-field" style="grid-column: 1 / -1;">
+            <span class="lead-modal-field-label">Skills Required</span>
+            <span class="lead-modal-field-value">${skillsHtml || `<span style="color: var(--dark-grey);">No specific skills listed</span>`}</span>
+          </div>
+          ${lead.additionalInfo ? `
+            <div class="lead-modal-field" style="grid-column: 1 / -1;">
+              <span class="lead-modal-field-label">Additional Instructions / Notes</span>
+              <div class="lead-modal-note-box">${escapeHtml(lead.additionalInfo)}</div>
+            </div>
+          ` : ""}
+        </div>
+      </div>
+
+      ${extraFields.length > 0 ? `
+        <!-- Extra Dynamic Attributes -->
+        <div class="lead-modal-card">
+          <div class="lead-modal-card-header">
+            <i class="bx bx-list-plus"></i>
+            <h4>Additional Inbound Attributes</h4>
+          </div>
+          <div class="lead-modal-fields-grid">
+            ${extraFields.map((field) => `
+              <div class="lead-modal-field">
+                <span class="lead-modal-field-label">${escapeHtml(field.label)}</span>
+                <span class="lead-modal-field-value">${escapeHtml(field.value)}</span>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      ` : ""}
+    </div>
+  `;
+
+  // Attach status change listener inside modal
+  const modalStatusSelect = modalBody.querySelector("#modalLeadStatusSelect");
+  if (modalStatusSelect) {
+    modalStatusSelect.addEventListener("change", (e) => {
+      const newStatus = e.target.value;
+      modalStatusSelect.className = `recruitment-status-select ${getLeadStatusClass(newStatus)}`;
+      updateLeadStatus(lead.id, newStatus);
+    });
+  }
+
+    modal.classList.add("active");
+    document.body.style.overflow = "hidden";
+  } catch (err) {
+    console.error("Error opening recruitment lead details modal:", err);
+    alert("Unable to open lead details: " + err.message);
+  }
+}
+
+/**
+ * Renders pagination buttons and page counter for recruitment leads.
+ */
+function renderRecruitmentPagination(totalItems) {
+  const paginationContainer = document.getElementById("recruitmentPagination");
+  const pageInfoContainer = document.getElementById("recruitmentPageInfo");
+  if (!paginationContainer) return;
+
+  paginationContainer.innerHTML = "";
+
+  if (totalItems === 0) {
+    if (pageInfoContainer) pageInfoContainer.textContent = "0 leads found";
+    return;
+  }
+
+  const totalPages = Math.max(1, Math.ceil(totalItems / RECRUITMENT_PAGE_SIZE));
+
+  if (recruitmentCurrentPage > totalPages) {
+    recruitmentCurrentPage = totalPages;
+  }
+  if (recruitmentCurrentPage < 1) {
+    recruitmentCurrentPage = 1;
+  }
+
+  const startIdx = (recruitmentCurrentPage - 1) * RECRUITMENT_PAGE_SIZE + 1;
+  const endIdx = Math.min(startIdx + RECRUITMENT_PAGE_SIZE - 1, totalItems);
+  if (pageInfoContainer) {
+    pageInfoContainer.textContent = `Showing ${startIdx}–${endIdx} of ${totalItems} leads`;
+  }
+
+  // Previous Page Button
+  const prevBtn = document.createElement("button");
+  prevBtn.type = "button";
+  prevBtn.className = "nav-btn";
+  prevBtn.innerHTML = "<i class='bx bx-chevron-left'></i> Prev";
+  prevBtn.disabled = recruitmentCurrentPage <= 1;
+  prevBtn.addEventListener("click", () => {
+    if (recruitmentCurrentPage > 1) {
+      recruitmentCurrentPage--;
+      updateRecruitmentUI();
+    }
+  });
+  paginationContainer.appendChild(prevBtn);
+
+  // Numbered Page Buttons
+  const maxButtons = 5;
+  let startPage = Math.max(1, recruitmentCurrentPage - 2);
+  let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+
+  if (endPage - startPage < maxButtons - 1) {
+    startPage = Math.max(1, endPage - maxButtons + 1);
+  }
+
+  if (startPage > 1) {
+    const firstBtn = document.createElement("button");
+    firstBtn.type = "button";
+    firstBtn.textContent = "1";
+    firstBtn.addEventListener("click", () => {
+      recruitmentCurrentPage = 1;
+      updateRecruitmentUI();
+    });
+    paginationContainer.appendChild(firstBtn);
+
+    if (startPage > 2) {
+      const dots = document.createElement("span");
+      dots.className = "dots";
+      dots.textContent = "...";
+      paginationContainer.appendChild(dots);
+    }
+  }
+
+  for (let i = startPage; i <= endPage; i++) {
+    const pageBtn = document.createElement("button");
+    pageBtn.type = "button";
+    pageBtn.textContent = i;
+    if (i === recruitmentCurrentPage) {
+      pageBtn.classList.add("active");
+    }
+    pageBtn.addEventListener("click", () => {
+      recruitmentCurrentPage = i;
+      updateRecruitmentUI();
+    });
+    paginationContainer.appendChild(pageBtn);
+  }
+
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) {
+      const dots = document.createElement("span");
+      dots.className = "dots";
+      dots.textContent = "...";
+      paginationContainer.appendChild(dots);
+    }
+
+    const lastBtn = document.createElement("button");
+    lastBtn.type = "button";
+    lastBtn.textContent = totalPages;
+    lastBtn.addEventListener("click", () => {
+      recruitmentCurrentPage = totalPages;
+      updateRecruitmentUI();
+    });
+    paginationContainer.appendChild(lastBtn);
+  }
+
+  // Next Page Button
+  const nextBtn = document.createElement("button");
+  nextBtn.type = "button";
+  nextBtn.className = "nav-btn";
+  nextBtn.innerHTML = "Next <i class='bx bx-chevron-right'></i>";
+  nextBtn.disabled = recruitmentCurrentPage >= totalPages;
+  nextBtn.addEventListener("click", () => {
+    if (recruitmentCurrentPage < totalPages) {
+      recruitmentCurrentPage++;
+      updateRecruitmentUI();
+    }
+  });
+  paginationContainer.appendChild(nextBtn);
+}
+
+/**
+ * Exports all currently filtered recruiter inquiries to an Excel workbook using SheetJS.
+ * Maps all 24 schema fields with clean, readable English column headers.
+ */
+function exportRecruitmentToExcel() {
+  if (typeof XLSX === "undefined") {
+    alert("SheetJS library is not loaded. Please verify internet connection.");
+    return;
+  }
+
+  const filtered = getFilteredRecruiterLeads();
+  if (filtered.length === 0) {
+    alert("No recruitment leads match your current filter criteria.");
+    return;
+  }
+
+  const exportRows = filtered.map((lead, idx) => {
+    const rawDate = getLeadTimestampMs(lead);
+    const dateStr = rawDate ? new Date(rawDate).toLocaleString("en-IN") : (lead.date || lead.time || lead.timestamp || "N/A");
+
+    const row = {
+      "S.No": idx + 1,
+      "Submission Date": dateStr,
+      "Company Name": lead.companyName || "",
+      "Organization Size": lead.organizationSize || "",
+      "Contact Person Name": lead.contactPersonName || "",
+      "Contact Profile / Role": lead.contactProfile || "",
+      "Contact Phone": lead.contactPhone || lead.phoneNumber || "",
+      "Contact Email": lead.contactEmail || "",
+      "Candidate Call Window": lead.candidateCallWindow || "",
+      "Job Title": lead.jobTitle || "",
+      "Job Type": lead.jobType || "",
+      "Number of Openings": lead.numberOfOpenings || "1",
+      "Fill Urgency": lead.fillUrgency || "",
+      "Hiring Frequency": lead.hiringFrequency || "",
+      "Job Timings": lead.jobTimings || "",
+      "Monthly Salary Min (₹)": lead.monthlySalaryMin !== undefined && lead.monthlySalaryMin !== null ? String(lead.monthlySalaryMin) : "",
+      "Monthly Salary Max (₹)": lead.monthlySalaryMax !== undefined && lead.monthlySalaryMax !== null ? String(lead.monthlySalaryMax) : "",
+      "Bonus Offered": lead.bonusOffered || "",
+      "Job Location": lead.jobLocation || "",
+      "Job Address": lead.jobAddress || "",
+      "Candidate Experience": lead.candidateExperience || "",
+      "Skills Required": Array.isArray(lead.skillsRequired) ? lead.skillsRequired.join(", ") : (lead.skillsRequired || ""),
+      "Additional Info": lead.additionalInfo || "",
+      "Source": lead.source || "Website",
+      "Status": getLeadStatusLabel(lead.status)
+    };
+
+    // Include other dynamic attributes if present
+    const standardKeys = new Set([
+      "id", "key",
+      "companyName", "organizationSize",
+      "contactPersonName", "contactProfile", "contactPhone", "phoneNumber", "phone", "contactEmail", "candidateCallWindow",
+      "jobTitle", "jobType", "numberOfOpenings", "fillUrgency", "hiringFrequency", "jobTimings",
+      "monthlySalaryMin", "monthlySalaryMax", "bonusOffered",
+      "jobLocation", "jobAddress",
+      "candidateExperience", "skillsRequired", "additionalInfo", "source", "status",
+      "timestamp", "createdAt", "submittedAt", "date", "time", "updatedAt", "statusUpdatedAt"
+    ]);
+
+    Object.keys(lead).forEach((k) => {
+      if (!standardKeys.has(k) && lead[k] !== undefined && lead[k] !== null) {
+        row[k] = String(lead[k]);
+      }
+    });
+
+    return row;
+  });
+
+  const worksheet = XLSX.utils.json_to_sheet(exportRows);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Recruiter Leads");
+
+  const todayStr = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(workbook, `recruiter_leads_${todayStr}.xlsx`);
 }

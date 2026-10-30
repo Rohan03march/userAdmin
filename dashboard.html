@@ -7,6 +7,7 @@
   <link href="https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="styles/dashboardStyle.css" />
   <link rel="stylesheet" href="styles/jobCards.css" />
+  <link rel="stylesheet" href="styles/recruitment.css" />
   <title>Admin Dashboard</title>
   <link rel="icon" type="image/png" href="SourceOnebg.png" />
 </head>
@@ -30,6 +31,12 @@
         <a href="#" class="tab-link" data-target="jobListView">
           <i class="bx bxs-briefcase"></i>
           <span class="text">Job List</span>
+        </a>
+      </li>
+      <li id="recruitmentTabLi">
+        <a href="#" class="tab-link" data-target="recruitmentView">
+          <i class="bx bxs-group"></i>
+          <span class="text">Recruitment</span>
         </a>
       </li>
       <li>
@@ -91,15 +98,6 @@
           </div>
         </div>
 
-        <!-- <ul class="box-info">
-            <li>
-              <i class="bx bxs-calendar-check"></i>
-              <span class="text">
-                <h3 id="userCount">0</h3>
-                <p>User Entries</p>
-              </span>
-            </li>
-          </ul> -->
         <div class="table-data">
           <div class="order">
             <div class="head"
@@ -391,6 +389,146 @@
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. RECRUITMENT VIEW (Hidden by default) -->
+      <div id="recruitmentView" style="display: none;">
+        <div class="head-title">
+          <div class="left">
+            <h1>Recruiter & Employer Leads</h1>
+            <ul class="breadcrumb">
+              <li><a href="#">Dashboard</a></li>
+              <li><i class="bx bx-chevron-right"></i></li>
+              <li><a class="active" href="#">Recruiter Leads</a></li>
+            </ul>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <button type="button" id="exportRecruitmentExcelBtn" class="btn-recruitment-export">
+              <i class="bx bxs-file-export"></i> Export All Leads (Excel)
+            </button>
+          </div>
+        </div>
+
+        <!-- Recruiter Leads Table Panel -->
+        <div class="table-data" style="margin-top: 24px;">
+          <div class="order" style="width: 100%;">
+            <!-- Filter Toolbar -->
+            <div class="head" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <h3 style="margin: 0;">Recruiter Leads</h3>
+                <span id="recruitmentCountBadge" class="recruitment-count-badge">0 Leads</span>
+              </div>
+
+              <div class="recruitment-toolbar-controls">
+                <!-- Search Input -->
+                <div class="filter-input-box">
+                  <i class="bx bx-search"></i>
+                  <input type="text" id="recruitmentSearchFilter" placeholder="Search company, contact, job title, phone..." />
+                </div>
+
+                <!-- Status Filter -->
+                <div class="filter-select-box">
+                  <i class="bx bx-filter-alt"></i>
+                  <select id="recruitmentStatusFilter">
+                    <option value="">All Statuses</option>
+                    <option value="new">New / Inbound</option>
+                    <option value="contacted">Contacted</option>
+                    <option value="in discussion">In Discussion</option>
+                    <option value="requirements finalized">Requirements Finalized</option>
+                    <option value="hiring started">Hiring Started</option>
+                    <option value="fulfilled">Fulfilled / Closed</option>
+                    <option value="dropped">Dropped / Not Interested</option>
+                  </select>
+                </div>
+
+                <!-- Urgency Filter -->
+                <div class="filter-select-box">
+                  <i class="bx bx-time-five"></i>
+                  <select id="recruitmentUrgencyFilter">
+                    <option value="">All Urgencies</option>
+                  </select>
+                </div>
+
+                <!-- Location Filter -->
+                <div class="filter-select-box">
+                  <i class="bx bx-map"></i>
+                  <select id="recruitmentLocationFilter">
+                    <option value="">All Locations</option>
+                  </select>
+                </div>
+
+                <!-- Date Range Filter -->
+                <div class="filter-date-box">
+                  <i class="bx bx-calendar"></i>
+                  <input type="date" id="recruitmentStartDate" title="From date" />
+                  <span>-</span>
+                  <input type="date" id="recruitmentEndDate" title="To date" />
+                </div>
+
+                <!-- Reset Button -->
+                <button type="button" id="clearRecruitmentFiltersBtn" class="btn-clear-recruitment-filter" title="Reset Filters">
+                  <i class="bx bx-refresh"></i> Reset
+                </button>
+              </div>
+            </div>
+
+            <!-- Leads Table -->
+            <div style="overflow-x: auto; width: 100%;">
+              <table id="recruitmentTable" class="recruitment-table">
+                <thead>
+                  <tr>
+                    <th style="padding-left: 16px;">Date</th>
+                    <th>Company</th>
+                    <th>Contact Person</th>
+                    <th>Number</th>
+                    <th style="text-align: right; padding-right: 18px;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="recruitmentTableBody">
+                  <tr>
+                    <td colspan="5" style="text-align: center; padding: 36px 0; color: var(--dark-grey);">
+                      <i class="bx bx-loader-alt bx-spin" style="font-size: 24px; vertical-align: middle;"></i> Loading recruiter leads...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination & Info -->
+            <div class="recruitment-pagination-row">
+              <div id="recruitmentPageInfo" class="recruitment-page-info"></div>
+              <div id="recruitmentPagination" class="pagination"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recruiter Lead Full Details Modal Overlay -->
+        <div id="recruitmentLeadModal" class="job-modal-overlay">
+          <div class="job-modal-content" style="max-width: 820px; max-height: 90vh;">
+            <div class="job-modal-header">
+              <div class="header-left">
+                <div class="modal-icon-badge" style="background: rgba(59, 130, 246, 0.12); color: #2563eb;">
+                  <i class="bx bxs-buildings"></i>
+                </div>
+                <div>
+                  <h3 id="leadModalTitle">Company Hiring Requirement Details</h3>
+                  <p class="modal-subtitle">Full requirement record from realtime database (recruiter_leads)</p>
+                </div>
+              </div>
+              <button type="button" class="close-modal-btn" id="closeLeadModalBtn" title="Close">
+                <i class="bx bx-x"></i>
+              </button>
+            </div>
+            <div id="leadModalBody" style="margin-top: 18px; max-height: 65vh; overflow-y: auto;">
+              <!-- Dynamic structured sections rendered by JS -->
+            </div>
+            <div class="form-actions-footer" style="margin-top: 20px;">
+              <button type="button" id="closeLeadModalFooterBtn" class="btn-modal-cancel">
+                <i class="bx bx-x"></i> Close
+              </button>
+            </div>
           </div>
         </div>
       </div>
