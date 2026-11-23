@@ -229,6 +229,14 @@
                   <option value="">All Stores / Locations</option>
                 </select>
               </div>
+              <div class="filter-select-box">
+                <i class="bx bx-check-circle"></i>
+                <select id="jobStatusFilter" title="Filter by vacancy status">
+                  <option value="">All Statuses</option>
+                  <option value="active">Active Only</option>
+                  <option value="inactive">Inactive Only</option>
+                </select>
+              </div>
               <button type="button" class="btn-clear-job-filter" id="clearJobFiltersBtn" title="Reset Filters">
                 <i class="bx bx-refresh"></i> Reset
               </button>
@@ -377,6 +385,15 @@
                 <textarea id="jobRequirements" rows="3"
                   placeholder="Enter key qualifications, documents required, shift timings, or responsibilities..."
                   required></textarea>
+              </div>
+
+              <!-- Vacancy Status -->
+              <div class="form-group" style="margin-top: 14px;">
+                <label for="jobStatusSelect"><i class="bx bx-toggle-right"></i> Vacancy Status</label>
+                <select id="jobStatusSelect">
+                  <option value="active">Active (Visible & Open for applications)</option>
+                  <option value="inactive">Inactive (Paused / Hidden)</option>
+                </select>
               </div>
 
               <!-- Form Action Buttons -->

@@ -863,6 +863,7 @@ function getConsolidatedJobs() {
 
     const locs = getJobLocationsArray(job);
     const isPP = isPickerAndPacker(job.position);
+    const isJobActive = job.isActive !== false && job.status !== "inactive";
 
     if (map.has(key)) {
       const existing = map.get(key);
@@ -888,6 +889,10 @@ function getConsolidatedJobs() {
       if (job.requirements && (!existing.requirements || existing.requirements.length < job.requirements.length)) {
         existing.requirements = job.requirements;
       }
+      if (job.isActive === false || job.status === "inactive") {
+        existing.isActive = false;
+        existing.status = "inactive";
+      }
     } else {
       map.set(key, {
         id: job.id,
@@ -900,7 +905,9 @@ function getConsolidatedJobs() {
         isAppRedirect: isPP,
         redirectUrl: isPP ? PLAY_STORE_URL : "",
         createdAt: job.createdAt || 0,
-        updatedAt: job.updatedAt || 0
+        updatedAt: job.updatedAt || 0,
+        isActive: isJobActive,
+        status: isJobActive ? "active" : "inactive"
       });
     }
   });
@@ -1079,11 +1086,28 @@ function updateJobsUI() {
     });
   }
 
+  const statusFilterEl = document.getElementById("jobStatusFilter");
+  const selectedStatus = statusFilterEl ? statusFilterEl.value.trim().toLowerCase() : "";
+
+  if (selectedStatus === "active") {
+    filteredJobs = filteredJobs.filter((job) => job.isActive !== false);
+  } else if (selectedStatus === "inactive") {
+    filteredJobs = filteredJobs.filter((job) => job.isActive === false);
+  }
+
   // Update count badge
   const countBadge = document.getElementById("jobsCountBadge");
   if (countBadge) {
-    if (filteredJobs.length === consolidatedJobs.length) {
-      countBadge.innerText = `${consolidatedJobs.length} Openings`;
+    const totalActive = consolidatedJobs.filter((j) => j.isActive !== false).length;
+    const totalInactive = consolidatedJobs.length - totalActive;
+    if (selectedStatus === "active") {
+      countBadge.innerText = `${filteredJobs.length} Active Openings`;
+    } else if (selectedStatus === "inactive") {
+      countBadge.innerText = `${filteredJobs.length} Inactive Openings`;
+    } else if (filteredJobs.length === consolidatedJobs.length) {
+      countBadge.innerText = totalInactive > 0
+        ? `${totalActive} Active · ${totalInactive} Inactive`
+        : `${consolidatedJobs.length} Openings`;
     } else {
       countBadge.innerText = `${filteredJobs.length} of ${consolidatedJobs.length} Openings`;
     }
@@ -1152,6 +1176,11 @@ function updateJobsUI() {
       tagsHTML = `<span class="job-card-type ${typeClass}">${escapeHtml(job.jobType || 'N/A')}</span>`;
     }
 
+    const isJobActive = job.isActive !== false;
+    if (!isJobActive) {
+      tagsHTML += `<span class="job-card-type inactive-pill"><i class="bx bx-pause-circle"></i> Inactive</span>`;
+    }
+
     if (isPP) {
       tagsHTML += `
         <span class="job-card-type app-play-badge" style="background: rgba(16, 185, 129, 0.15); color: #059669; font-weight: 700;">
@@ -1172,7 +1201,7 @@ function updateJobsUI() {
       `;
     }
 
-    card.className = `job-card-item ${typeClass} ${isPP ? 'is-app-redirect' : ''}`;
+    card.className = `job-card-item ${typeClass} ${isPP ? 'is-app-redirect' : ''} ${isJobActive ? 'is-active' : 'is-inactive'}`;
     const roleIcon = getRoleIconClass(job.position);
     const subCategory = isPP ? "Mobile App Hiring" : "Store Operations";
     const locCount = jobLocations.length;
@@ -1214,10 +1243,16 @@ function updateJobsUI() {
       </div>
 
       <div class="job-card-footer">
-        <div class="job-status-pill">
-          <span class="pulse-dot"></span>
-          <span class="status-label">Active Vacancy</span>
-        </div>
+        <label class="job-status-toggle-wrap" title="Click to make opening ${isJobActive ? 'Inactive' : 'Active'}">
+          <div class="job-status-toggle">
+            <input type="checkbox" class="job-active-toggle-input" ${isJobActive ? 'checked' : ''} />
+            <span class="job-toggle-slider"></span>
+          </div>
+          <span class="job-status-text ${isJobActive ? 'active' : 'inactive'}">
+            <span class="status-dot"></span>
+            <span class="status-label-text">${isJobActive ? 'Active Vacancy' : 'Inactive'}</span>
+          </span>
+        </label>
         <div class="job-footer-meta">
           ${isPP 
             ? '<span class="footer-app-tag"><i class="bx bxl-android"></i> App Role</span>' 
@@ -1226,6 +1261,24 @@ function updateJobsUI() {
         </div>
       </div>
     `;
+
+    // Toggle Active / Inactive switch
+    const toggleWrap = card.querySelector(".job-status-toggle-wrap");
+    const toggleInput = card.querySelector(".job-active-toggle-input");
+
+    if (toggleWrap) {
+      toggleWrap.addEventListener("click", (e) => {
+        e.stopPropagation();
+      });
+    }
+
+    if (toggleInput) {
+      toggleInput.addEventListener("change", (e) => {
+        e.stopPropagation();
+        const nextActive = toggleInput.checked;
+        toggleJobActiveStatus(job, nextActive, card);
+      });
+    }
 
     // If Picker & Packer, clicking the card redirects to Play Store
     if (isPP) {
@@ -1288,6 +1341,88 @@ function updateJobsUI() {
   });
 }
 
+/**
+ * Toggles a job vacancy between Active and Inactive in Firebase RTDB.
+ * Updates all consolidated IDs and provides immediate optimistic visual response.
+ */
+function toggleJobActiveStatus(job, nextActive, cardEl) {
+  const idsToUpdate = (job.allIds && job.allIds.length > 0) ? job.allIds : [job.id];
+  const updateData = {
+    isActive: nextActive,
+    status: nextActive ? "active" : "inactive",
+    updatedAt: Date.now()
+  };
+
+  // Immediate optimistic update on card UI
+  if (cardEl) {
+    if (nextActive) {
+      cardEl.classList.remove("is-inactive");
+      cardEl.classList.add("is-active");
+    } else {
+      cardEl.classList.remove("is-active");
+      cardEl.classList.add("is-inactive");
+    }
+
+    const statusTextEl = cardEl.querySelector(".job-status-text");
+    const labelTextEl = cardEl.querySelector(".status-label-text");
+    if (statusTextEl) {
+      statusTextEl.className = `job-status-text ${nextActive ? 'active' : 'inactive'}`;
+    }
+    if (labelTextEl) {
+      labelTextEl.textContent = nextActive ? "Active Vacancy" : "Inactive";
+    }
+
+    const wrapEl = cardEl.querySelector(".job-status-toggle-wrap");
+    if (wrapEl) {
+      wrapEl.title = `Click to make opening ${nextActive ? 'Inactive' : 'Active'}`;
+    }
+  }
+
+  // Update in Firebase Realtime Database
+  const promises = idsToUpdate.map((id) => db.ref("jobs/" + id).update(updateData));
+  Promise.all(promises)
+    .then(() => {
+      // Synchronize in-memory cache
+      allJobs.forEach((j) => {
+        if (idsToUpdate.includes(j.id)) {
+          j.isActive = nextActive;
+          j.status = nextActive ? "active" : "inactive";
+          j.updatedAt = updateData.updatedAt;
+        }
+      });
+      showJobNotification(`"${job.position}" is now ${nextActive ? "Active" : "Inactive"}`);
+      updateJobsUI();
+    })
+    .catch((err) => {
+      console.error("Error toggling job status:", err);
+      alert("Failed to update status: " + err.message);
+      // Revert toggle state on error
+      if (cardEl) {
+        const input = cardEl.querySelector(".job-active-toggle-input");
+        if (input) input.checked = !nextActive;
+      }
+    });
+}
+
+/**
+ * Displays a non-intrusive floating toast notification for job actions.
+ */
+function showJobNotification(message) {
+  let toast = document.getElementById("jobToastNotification");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "jobToastNotification";
+    toast.className = "job-toast-notification";
+    document.body.appendChild(toast);
+  }
+  toast.innerHTML = `<i class="bx bx-check-circle"></i> <span>${escapeHtml(message)}</span>`;
+  toast.classList.add("show");
+  clearTimeout(toast._timeout);
+  toast._timeout = setTimeout(() => {
+    toast.classList.remove("show");
+  }, 2400);
+}
+
 function saveJob() {
   const jobIdVal = document.getElementById("jobId").value;
   const legacyIdsVal = document.getElementById("jobLegacyIds") ? document.getElementById("jobLegacyIds").value : "";
@@ -1345,6 +1480,10 @@ function saveJob() {
     return;
   }
 
+  const statusSelect = document.getElementById("jobStatusSelect");
+  const jobStatus = statusSelect ? statusSelect.value : "active";
+  const isActive = jobStatus === "active";
+
   const saveBtn = document.getElementById("saveJobBtn");
   const originalBtnHTML = saveBtn.innerHTML;
   saveBtn.disabled = true;
@@ -1360,6 +1499,8 @@ function saveJob() {
       redirectUrl: isPickerPacker ? PLAY_STORE_URL : "",
       jobType,
       requirements,
+      isActive,
+      status: jobStatus,
       updatedAt: Date.now()
     };
 
@@ -1405,6 +1546,8 @@ function saveJob() {
         redirectUrl: isPickerPacker ? PLAY_STORE_URL : "",
         jobType,
         requirements: requirements || existingJob.requirements || "",
+        isActive,
+        status: jobStatus,
         updatedAt: Date.now()
       };
 
@@ -1431,6 +1574,8 @@ function saveJob() {
         redirectUrl: isPickerPacker ? PLAY_STORE_URL : "",
         jobType,
         requirements,
+        isActive,
+        status: jobStatus,
         createdAt: Date.now()
       };
 
@@ -1502,6 +1647,11 @@ function editJob(job) {
   }
   document.getElementById("jobRequirements").value = job.requirements || "";
 
+  const statusSelect = document.getElementById("jobStatusSelect");
+  if (statusSelect) {
+    statusSelect.value = (job.isActive === false || job.status === "inactive") ? "inactive" : "active";
+  }
+
   document.getElementById("jobFormTitle").innerText = "Edit Position";
   document.getElementById("saveJobBtn").innerHTML = "<i class='bx bx-check-double'></i> <span>Update Job</span>";
 
@@ -1550,6 +1700,11 @@ function resetJobForm() {
   document.getElementById("jobTypeSelect").value = "";
   document.getElementById("jobRequirements").value = "";
 
+  const statusSelect = document.getElementById("jobStatusSelect");
+  if (statusSelect) {
+    statusSelect.value = "active";
+  }
+
   setSelectedLocations([]);
   customLocationsList = [];
   renderCustomChips();
@@ -1589,11 +1744,19 @@ if (jobLocationFilterEl) {
   });
 }
 
+const jobStatusFilterEl = document.getElementById("jobStatusFilter");
+if (jobStatusFilterEl) {
+  jobStatusFilterEl.addEventListener("change", () => {
+    updateJobsUI();
+  });
+}
+
 const clearJobFiltersBtnEl = document.getElementById("clearJobFiltersBtn");
 if (clearJobFiltersBtnEl) {
   clearJobFiltersBtnEl.addEventListener("click", () => {
     if (jobSearchFilterEl) jobSearchFilterEl.value = "";
     if (jobLocationFilterEl) jobLocationFilterEl.value = "";
+    if (jobStatusFilterEl) jobStatusFilterEl.value = "";
     const navSearch = document.getElementById("searchInput");
     if (navSearch) navSearch.value = "";
     updateJobsUI();
