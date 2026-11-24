@@ -358,6 +358,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     initRecruitment();
   }
 
+  // Update live notification count
+  if (typeof window.updateNotificationList === "function") {
+    window.updateNotificationList();
+  }
+
   // Set up Job Form submit and cancel handlers
   const jobForm = document.getElementById("jobForm");
   if (jobForm) {
@@ -1205,8 +1210,8 @@ function updateJobsUI() {
     const roleIcon = getRoleIconClass(job.position);
     const subCategory = isPP ? "Mobile App Hiring" : "Store Operations";
     const locCount = jobLocations.length;
-    const footerLocText = locCount > 1 
-      ? `${locCount} Locations` 
+    const footerLocText = locCount > 1
+      ? `${locCount} Locations`
       : (locCount === 1 ? jobLocations[0] : "All Stores");
 
     card.innerHTML = `
@@ -1254,10 +1259,10 @@ function updateJobsUI() {
           </span>
         </label>
         <div class="job-footer-meta">
-          ${isPP 
-            ? '<span class="footer-app-tag"><i class="bx bxl-android"></i> App Role</span>' 
-            : `<span class="footer-loc-count"><i class="bx bx-store"></i> ${escapeHtml(footerLocText)}</span>`
-          }
+          ${isPP
+        ? '<span class="footer-app-tag"><i class="bx bxl-android"></i> App Role</span>'
+        : `<span class="footer-loc-count"><i class="bx bx-store"></i> ${escapeHtml(footerLocText)}</span>`
+      }
         </div>
       </div>
     `;
@@ -1968,6 +1973,9 @@ function initRecruitment() {
 
     populateRecruitmentFilterOptions(allRecruiterLeads);
     updateRecruitmentUI();
+    if (typeof window.updateNotificationList === "function") {
+      window.updateNotificationList();
+    }
   }, (error) => {
     console.error("Firebase error reading recruiter_leads:", error);
     const tbody = document.getElementById("recruitmentTableBody");
@@ -2199,19 +2207,19 @@ function getFilteredRecruiterLeads() {
       const status = (lead.status || "").toLowerCase();
 
       const matches = company.includes(query) ||
-                      person.includes(query) ||
-                      phone.includes(query) ||
-                      email.includes(query) ||
-                      title.includes(query) ||
-                      loc.includes(query) ||
-                      address.includes(query) ||
-                      skills.includes(query) ||
-                      profile.includes(query) ||
-                      type.includes(query) ||
-                      urgency.includes(query) ||
-                      info.includes(query) ||
-                      source.includes(query) ||
-                      status.includes(query);
+        person.includes(query) ||
+        phone.includes(query) ||
+        email.includes(query) ||
+        title.includes(query) ||
+        loc.includes(query) ||
+        address.includes(query) ||
+        skills.includes(query) ||
+        profile.includes(query) ||
+        type.includes(query) ||
+        urgency.includes(query) ||
+        info.includes(query) ||
+        source.includes(query) ||
+        status.includes(query);
       if (!matches) return false;
     }
 
@@ -2441,68 +2449,68 @@ function showLeadDetailsModal(lead) {
     const modalBody = document.getElementById("leadModalBody");
     if (!modal || !modalBody) return;
 
-  const company = lead.companyName || "Employer Inquiry";
-  const role = lead.jobTitle ? ` – ${lead.jobTitle}` : "";
-  if (modalTitle) modalTitle.innerText = `${company}${role}`;
+    const company = lead.companyName || "Employer Inquiry";
+    const role = lead.jobTitle ? ` – ${lead.jobTitle}` : "";
+    if (modalTitle) modalTitle.innerText = `${company}${role}`;
 
-  const rawPhone = lead.contactPhone || lead.phoneNumber || lead.phone || "";
-  const cleanPhone = getCleanPhoneNumber(rawPhone);
-  const contactPerson = lead.contactPersonName || "Not Provided";
-  const jobTitle = lead.jobTitle || "Role Not Specified";
+    const rawPhone = lead.contactPhone || lead.phoneNumber || lead.phone || "";
+    const cleanPhone = getCleanPhoneNumber(rawPhone);
+    const contactPerson = lead.contactPersonName || "Not Provided";
+    const jobTitle = lead.jobTitle || "Role Not Specified";
 
-  // Parse skills into array tags
-  let skillsHtml = "";
-  if (lead.skillsRequired) {
-    const skillsList = Array.isArray(lead.skillsRequired)
-      ? lead.skillsRequired
-      : String(lead.skillsRequired).split(/[,|\n]+/).map((s) => s.trim()).filter(Boolean);
+    // Parse skills into array tags
+    let skillsHtml = "";
+    if (lead.skillsRequired) {
+      const skillsList = Array.isArray(lead.skillsRequired)
+        ? lead.skillsRequired
+        : String(lead.skillsRequired).split(/[,|\n]+/).map((s) => s.trim()).filter(Boolean);
 
-    if (skillsList.length > 0) {
-      skillsHtml = `
+      if (skillsList.length > 0) {
+        skillsHtml = `
         <div class="lead-modal-skills-cloud">
           ${skillsList.map((skill) => `<span class="lead-modal-skill-pill">${escapeHtml(skill)}</span>`).join("")}
         </div>
       `;
-    } else {
-      skillsHtml = escapeHtml(String(lead.skillsRequired));
+      } else {
+        skillsHtml = escapeHtml(String(lead.skillsRequired));
+      }
     }
-  }
 
-  // Check which keys are handled
-  const handledKeys = new Set([
-    "id", "key",
-    "companyName", "organizationSize",
-    "contactPersonName", "contactProfile", "contactPhone", "contactEmail", "candidateCallWindow",
-    "jobTitle", "jobType", "numberOfOpenings", "fillUrgency", "hiringFrequency", "jobTimings",
-    "monthlySalaryMin", "monthlySalaryMax", "bonusOffered",
-    "jobLocation", "jobAddress",
-    "candidateExperience", "skillsRequired", "additionalInfo", "source", "status", "timestamp",
-    "statusUpdatedAt", "updatedAt", "createdAt"
-  ]);
+    // Check which keys are handled
+    const handledKeys = new Set([
+      "id", "key",
+      "companyName", "organizationSize",
+      "contactPersonName", "contactProfile", "contactPhone", "contactEmail", "candidateCallWindow",
+      "jobTitle", "jobType", "numberOfOpenings", "fillUrgency", "hiringFrequency", "jobTimings",
+      "monthlySalaryMin", "monthlySalaryMax", "bonusOffered",
+      "jobLocation", "jobAddress",
+      "candidateExperience", "skillsRequired", "additionalInfo", "source", "status", "timestamp",
+      "statusUpdatedAt", "updatedAt", "createdAt"
+    ]);
 
-  // Collect any remaining custom unhandled fields
-  const extraFields = [];
-  Object.keys(lead).forEach((k) => {
-    if (!handledKeys.has(k) && lead[k] !== undefined && lead[k] !== null && String(lead[k]).trim() !== "") {
-      const formattedKey = k.replace(/([A-Z])/g, " $1").replace(/_/g, " ").replace(/^./, (str) => str.toUpperCase());
-      extraFields.push({ label: formattedKey, value: String(lead[k]) });
-    }
-  });
+    // Collect any remaining custom unhandled fields
+    const extraFields = [];
+    Object.keys(lead).forEach((k) => {
+      if (!handledKeys.has(k) && lead[k] !== undefined && lead[k] !== null && String(lead[k]).trim() !== "") {
+        const formattedKey = k.replace(/([A-Z])/g, " $1").replace(/_/g, " ").replace(/^./, (str) => str.toUpperCase());
+        extraFields.push({ label: formattedKey, value: String(lead[k]) });
+      }
+    });
 
-  const salaryDisplay = formatSalaryRange(lead.monthlySalaryMin, lead.monthlySalaryMax);
-  const submissionDate = formatLeadDatePlain(lead);
-  const statusLabel = getLeadStatusLabel(lead.status);
-  const statusClass = getLeadStatusClass(lead.status);
-  const currentStatus = String(lead.status || "new").trim();
+    const salaryDisplay = formatSalaryRange(lead.monthlySalaryMin, lead.monthlySalaryMax);
+    const submissionDate = formatLeadDatePlain(lead);
+    const statusLabel = getLeadStatusLabel(lead.status);
+    const statusClass = getLeadStatusClass(lead.status);
+    const currentStatus = String(lead.status || "new").trim();
 
-  const formatSalaryVal = (val) => {
-    if (val === undefined || val === null || String(val).trim() === "") return "N/A";
-    const cleaned = String(val).replace(/,/g, "").trim();
-    const num = parseInt(cleaned, 10);
-    return !isNaN(num) ? `₹${num.toLocaleString("en-IN")}` : escapeHtml(String(val));
-  };
+    const formatSalaryVal = (val) => {
+      if (val === undefined || val === null || String(val).trim() === "") return "N/A";
+      const cleaned = String(val).replace(/,/g, "").trim();
+      const num = parseInt(cleaned, 10);
+      return !isNaN(num) ? `₹${num.toLocaleString("en-IN")}` : escapeHtml(String(val));
+    };
 
-  modalBody.innerHTML = `
+    modalBody.innerHTML = `
     <div class="lead-modal-sections-grid">
       <!-- Section 1: Company & Contact Person Info -->
       <div class="lead-modal-card">
@@ -2713,15 +2721,15 @@ function showLeadDetailsModal(lead) {
     </div>
   `;
 
-  // Attach status change listener inside modal
-  const modalStatusSelect = modalBody.querySelector("#modalLeadStatusSelect");
-  if (modalStatusSelect) {
-    modalStatusSelect.addEventListener("change", (e) => {
-      const newStatus = e.target.value;
-      modalStatusSelect.className = `recruitment-status-select ${getLeadStatusClass(newStatus)}`;
-      updateLeadStatus(lead.id, newStatus);
-    });
-  }
+    // Attach status change listener inside modal
+    const modalStatusSelect = modalBody.querySelector("#modalLeadStatusSelect");
+    if (modalStatusSelect) {
+      modalStatusSelect.addEventListener("change", (e) => {
+        const newStatus = e.target.value;
+        modalStatusSelect.className = `recruitment-status-select ${getLeadStatusClass(newStatus)}`;
+        updateLeadStatus(lead.id, newStatus);
+      });
+    }
 
     modal.classList.add("active");
     document.body.style.overflow = "hidden";
@@ -2925,3 +2933,457 @@ function exportRecruitmentToExcel() {
   const todayStr = new Date().toISOString().slice(0, 10);
   XLSX.writeFile(workbook, `recruiter_leads_${todayStr}.xlsx`);
 }
+
+
+/* ==========================================================================
+   NOTIFICATION SYSTEM (BELL & REALTIME INQUIRY DROPDOWN)
+   ========================================================================== */
+
+(function initNotificationModule() {
+  const STORAGE_LAST_READ_KEY = "sourceone_notif_last_read_ts";
+  const STORAGE_READ_IDS_KEY = "sourceone_notif_read_ids";
+
+  let activeNotifFilter = "all";
+  let cachedNotifications = [];
+
+  function getStoredReadIds() {
+    try {
+      const data = localStorage.getItem(STORAGE_READ_IDS_KEY);
+      return data ? new Set(JSON.parse(data)) : new Set();
+    } catch (e) {
+      return new Set();
+    }
+  }
+
+  function saveStoredReadIds(readSet) {
+    try {
+      localStorage.setItem(STORAGE_READ_IDS_KEY, JSON.stringify(Array.from(readSet)));
+    } catch (e) {
+      console.warn("Unable to save read notifications to localStorage:", e);
+    }
+  }
+
+  function getLastReadTimestamp() {
+    try {
+      return parseInt(localStorage.getItem(STORAGE_LAST_READ_KEY) || "0", 10);
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  function formatTimeAgo(timestampMs) {
+    if (!timestampMs || isNaN(timestampMs) || timestampMs <= 0) return "Recently";
+    const now = Date.now();
+    const diffMs = now - timestampMs;
+    const diffSec = Math.floor(diffMs / 1000);
+    if (diffSec < 60) return "Just now";
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffHr = Math.floor(diffMin / 60);
+    if (diffHr < 24) return `${diffHr}h ago`;
+    const diffDays = Math.floor(diffHr / 24);
+    if (diffDays === 1) return "Yesterday";
+    if (diffDays < 7) return `${diffDays}d ago`;
+
+    const d = new Date(timestampMs);
+    return d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+  }
+
+  function buildNotificationsList() {
+    const list = [];
+    const readIds = getStoredReadIds();
+    const lastReadTs = getLastReadTimestamp();
+
+    // 1. Recruiter Leads
+    if (Array.isArray(allRecruiterLeads)) {
+      allRecruiterLeads.forEach((lead) => {
+        if (!lead || !lead.id) return;
+        const id = `recruiter_${lead.id}`;
+        const ts = typeof getLeadTimestampMs === "function" ? getLeadTimestampMs(lead) : (lead.timestamp || 0);
+        const statusStr = (lead.status || "new").toLowerCase().trim();
+        const isProcessed = statusStr.includes("contact") || statusStr.includes("discuss") || statusStr.includes("final") || statusStr.includes("fulfill") || statusStr.includes("drop") || statusStr.includes("joined") || statusStr.includes("selected");
+        const isRead = readIds.has(id) || isProcessed;
+
+        const company = lead.companyName || "Unknown Company";
+        const role = lead.jobTitle || "Hiring Requirement";
+        const contact = lead.contactPersonName || "";
+        const location = lead.jobLocation || "";
+
+        list.push({
+          id,
+          type: "recruiter",
+          raw: lead,
+          timestamp: ts,
+          title: `New Recruiter Lead: ${company}`,
+          subtitle: role,
+          desc: [contact, location].filter(Boolean).join(" · ") || "Inbound employer inquiry",
+          isRead,
+          timeAgo: formatTimeAgo(ts),
+          urgency: lead.fillUrgency || "",
+          openings: lead.numberOfOpenings || "",
+          status: typeof getLeadStatusLabel === "function" ? getLeadStatusLabel(lead.status) : (lead.status || "New")
+        });
+      });
+    }
+
+    // 2. Candidate Registrations
+    if (Array.isArray(allUsers)) {
+      allUsers.forEach((user) => {
+        if (!user) return;
+        const userId = user.id || user.registrationId || user.contactNumber;
+        if (!userId) return;
+        const id = `candidate_${userId}`;
+        const ts = typeof getSubmittedAtTimestamp === "function" ? getSubmittedAtTimestamp(user) : 0;
+        const isRead = readIds.has(id);
+
+        const name = user.nameAsPerAadhaar || "New Candidate";
+        const role = user.designation || "Candidate Registration";
+        const location = user.workingLocation || user.district || "";
+        const phone = user.contactNumber || "";
+
+        list.push({
+          id,
+          type: "candidate",
+          raw: user,
+          timestamp: ts,
+          title: `Candidate: ${name}`,
+          subtitle: role,
+          desc: [location, phone].filter(Boolean).join(" · ") || "New job seeker profile",
+          isRead,
+          timeAgo: formatTimeAgo(ts),
+          urgency: "",
+          openings: "",
+          status: "Registered"
+        });
+      });
+    }
+
+    // Sort descending: newest first
+    list.sort((a, b) => b.timestamp - a.timestamp);
+    return list;
+  }
+
+  function renderNotificationsUI() {
+    cachedNotifications = buildNotificationsList();
+
+    const countBadge = document.getElementById("notificationCount");
+    const headerBadge = document.getElementById("notifUnreadBadge");
+    const notifBtn = document.getElementById("notificationBtn");
+    const notifList = document.getElementById("notificationList");
+
+    const unreadCount = cachedNotifications.filter((n) => !n.isRead).length;
+    const recruiterUnread = cachedNotifications.filter((n) => n.type === "recruiter" && !n.isRead).length;
+    const candidateUnread = cachedNotifications.filter((n) => n.type === "candidate" && !n.isRead).length;
+
+    // Update Live Bell Badge
+    if (countBadge) {
+      const prevCount = countBadge.textContent;
+      const newCountStr = unreadCount > 99 ? "99+" : String(unreadCount);
+      countBadge.textContent = newCountStr;
+
+      if (unreadCount > 0) {
+        countBadge.classList.remove("zero");
+        if (prevCount !== newCountStr) {
+          countBadge.classList.add("bump");
+          setTimeout(() => countBadge.classList.remove("bump"), 400);
+        }
+      } else {
+        countBadge.classList.add("zero");
+      }
+    }
+
+    // Toggle Bell Ring Animation
+    if (notifBtn) {
+      if (unreadCount > 0) {
+        notifBtn.classList.add("ringing");
+      } else {
+        notifBtn.classList.remove("ringing");
+      }
+    }
+
+    // Update Tab Counters
+    const tabCountAll = document.getElementById("notifCountAll");
+    if (tabCountAll) tabCountAll.textContent = unreadCount;
+    const tabCountRecruiter = document.getElementById("notifCountRecruiter");
+    if (tabCountRecruiter) tabCountRecruiter.textContent = recruiterUnread;
+    const tabCountCandidate = document.getElementById("notifCountCandidate");
+    if (tabCountCandidate) tabCountCandidate.textContent = candidateUnread;
+
+    // Update Header Badge
+    if (headerBadge) {
+      if (unreadCount > 0) {
+        headerBadge.textContent = `${unreadCount} New`;
+        headerBadge.classList.remove("all-read");
+      } else {
+        headerBadge.textContent = "0 New";
+        headerBadge.classList.add("all-read");
+      }
+    }
+
+    // Render Filtered Items
+    if (!notifList) return;
+
+    let displayItems = cachedNotifications;
+    if (activeNotifFilter === "recruiter") {
+      displayItems = cachedNotifications.filter((n) => n.type === "recruiter");
+    } else if (activeNotifFilter === "candidate") {
+      displayItems = cachedNotifications.filter((n) => n.type === "candidate");
+    }
+
+    // Cap display items at 30 for swift performance
+    displayItems = displayItems.slice(0, 30);
+
+    if (displayItems.length === 0) {
+      notifList.innerHTML = `
+        <div class="notif-empty">
+          <i class="bx bx-bell-off"></i>
+          <p>No notifications ${activeNotifFilter !== "all" ? `in ${activeNotifFilter}` : "yet"}</p>
+        </div>
+      `;
+      return;
+    }
+
+    notifList.innerHTML = "";
+    displayItems.forEach((item) => {
+      const itemEl = document.createElement("div");
+      itemEl.className = `notif-item ${item.isRead ? "" : "unread"}`;
+      itemEl.setAttribute("data-id", item.id);
+      itemEl.setAttribute("data-type", item.type);
+
+      const isRecruiter = item.type === "recruiter";
+      const iconClass = isRecruiter ? "bx bx-briefcase-alt-2" : "bx bx-user-pin";
+
+      let metaTagsHtml = "";
+      if (isRecruiter) {
+        if (item.openings) {
+          metaTagsHtml += `<span class="notif-meta-tag"><i class="bx bx-group"></i> ${escapeHtml(String(item.openings))} Openings</span>`;
+        }
+        if (item.urgency) {
+          const isUrgent = String(item.urgency).toLowerCase().includes("urgent") || String(item.urgency).toLowerCase().includes("immediate");
+          metaTagsHtml += `<span class="notif-meta-tag ${isUrgent ? "urgent" : ""}"><i class="bx bx-zap"></i> ${escapeHtml(String(item.urgency))}</span>`;
+        }
+        if (item.status) {
+          metaTagsHtml += `<span class="notif-meta-tag status-tag"><i class="bx bx-radio-circle-marked"></i> ${escapeHtml(String(item.status))}</span>`;
+        }
+      } else {
+        if (item.subtitle && item.subtitle !== "Candidate Registration") {
+          metaTagsHtml += `<span class="notif-meta-tag"><i class="bx bx-badge-check"></i> ${escapeHtml(String(item.subtitle))}</span>`;
+        }
+      }
+
+      itemEl.innerHTML = `
+        <div class="notif-icon ${item.type}">
+          <i class="${iconClass}"></i>
+        </div>
+        <div class="notif-content">
+          <div class="notif-top-row">
+            <span class="notif-title" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</span>
+            <span class="notif-time">${escapeHtml(item.timeAgo)}</span>
+          </div>
+          <div class="notif-desc">
+            ${item.subtitle ? `<strong>${escapeHtml(item.subtitle)}</strong> — ` : ""}${escapeHtml(item.desc)}
+          </div>
+          ${metaTagsHtml ? `<div class="notif-meta-tags">${metaTagsHtml}</div>` : ""}
+        </div>
+      `;
+
+      itemEl.addEventListener("click", () => {
+        handleNotificationClick(item);
+      });
+
+      notifList.appendChild(itemEl);
+    });
+  }
+
+  function handleNotificationClick(item) {
+    // 1. Mark as read
+    const readIds = getStoredReadIds();
+    readIds.add(item.id);
+    saveStoredReadIds(readIds);
+    item.isRead = true;
+
+    // 2. Close dropdown
+    closeNotificationDropdown();
+
+    // 3. Navigate
+    if (item.type === "recruiter") {
+      const recruitmentTab = document.querySelector('.tab-link[data-target="recruitmentView"]');
+      if (recruitmentTab) {
+        recruitmentTab.click();
+      }
+      if (typeof showLeadDetailsModal === "function" && item.raw) {
+        setTimeout(() => {
+          showLeadDetailsModal(item.raw);
+        }, 120);
+      }
+    } else if (item.type === "candidate") {
+      const dashboardTab = document.querySelector('.tab-link[data-target="dashboardView"]');
+      if (dashboardTab) {
+        dashboardTab.click();
+      }
+      if (item.raw && item.raw.nameAsPerAadhaar) {
+        const searchInput = document.getElementById("searchInput");
+        if (searchInput) {
+          searchInput.value = item.raw.nameAsPerAadhaar;
+          currentPage = 1;
+          updateUI();
+        }
+      }
+    }
+
+    renderNotificationsUI();
+  }
+
+  function markAllNotificationsAsRead() {
+    localStorage.setItem(STORAGE_LAST_READ_KEY, String(Date.now()));
+    const readIds = getStoredReadIds();
+    cachedNotifications.forEach((n) => readIds.add(n.id));
+    saveStoredReadIds(readIds);
+    renderNotificationsUI();
+  }
+
+  function toggleNotificationDropdown() {
+    const dropdown = document.getElementById("notificationDropdown");
+    const notifBtn = document.getElementById("notificationBtn");
+    if (!dropdown) return;
+
+    const isActive = dropdown.classList.contains("active");
+    if (isActive) {
+      closeNotificationDropdown();
+    } else {
+      dropdown.classList.add("active");
+      dropdown.setAttribute("aria-hidden", "false");
+      if (notifBtn) notifBtn.classList.add("active");
+      renderNotificationsUI();
+    }
+  }
+
+  function closeNotificationDropdown() {
+    const dropdown = document.getElementById("notificationDropdown");
+    const notifBtn = document.getElementById("notificationBtn");
+    if (dropdown) {
+      dropdown.classList.remove("active");
+      dropdown.setAttribute("aria-hidden", "true");
+    }
+    if (notifBtn) {
+      notifBtn.classList.remove("active");
+    }
+  }
+
+  function initNotificationListeners() {
+    const notifBtn = document.getElementById("notificationBtn");
+    const dropdown = document.getElementById("notificationDropdown");
+    const markAllReadBtn = document.getElementById("markAllReadBtn");
+    const viewAllLeadsBtn = document.getElementById("notifViewAllLeadsBtn");
+
+    if (notifBtn) {
+      notifBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleNotificationDropdown();
+      });
+    }
+
+    if (markAllReadBtn) {
+      markAllReadBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        markAllNotificationsAsRead();
+      });
+    }
+
+    if (viewAllLeadsBtn) {
+      viewAllLeadsBtn.addEventListener("click", () => {
+        closeNotificationDropdown();
+        const recruitmentTab = document.querySelector('.tab-link[data-target="recruitmentView"]');
+        if (recruitmentTab) {
+          recruitmentTab.click();
+        }
+      });
+    }
+
+    // Filter tabs
+    const filterTabs = document.querySelectorAll(".notif-tab");
+    filterTabs.forEach((tab) => {
+      tab.addEventListener("click", (e) => {
+        e.stopPropagation();
+        filterTabs.forEach((t) => t.classList.remove("active"));
+        tab.classList.add("active");
+        activeNotifFilter = tab.getAttribute("data-filter") || "all";
+        renderNotificationsUI();
+      });
+    });
+
+    // Close on outside click
+    document.addEventListener("click", (e) => {
+      if (dropdown && dropdown.classList.contains("active")) {
+        if (!dropdown.contains(e.target) && !notifBtn.contains(e.target)) {
+          closeNotificationDropdown();
+        }
+      }
+    });
+
+    // Close on Escape key
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && dropdown && dropdown.classList.contains("active")) {
+        closeNotificationDropdown();
+      }
+    });
+  }
+
+  // Expose global updater so other components can trigger refresh
+  window.updateNotificationList = renderNotificationsUI;
+
+  // Realtime subscription listeners for new recruiter leads and users
+  function setupRealtimeNotifications() {
+    try {
+      if (typeof db !== "undefined" && db) {
+        // 1. Live stream recruiter_leads
+        db.ref("recruiter_leads").on("value", (snapshot) => {
+          allRecruiterLeads = [];
+          if (snapshot.exists()) {
+            snapshot.forEach((child) => {
+              allRecruiterLeads.push({ id: child.key, ...child.val() });
+            });
+          }
+          if (typeof getLeadTimestampMs === "function") {
+            allRecruiterLeads.sort((a, b) => getLeadTimestampMs(b) - getLeadTimestampMs(a));
+          }
+          if (typeof populateRecruitmentFilterOptions === "function") {
+            populateRecruitmentFilterOptions(allRecruiterLeads);
+          }
+          if (typeof updateRecruitmentUI === "function") {
+            updateRecruitmentUI();
+          }
+          renderNotificationsUI();
+        });
+
+        // 2. Live stream registrations (candidates)
+        db.ref("registrations").on("value", (snapshot) => {
+          allUsers = [];
+          if (snapshot.exists()) {
+            snapshot.forEach((child) => {
+              allUsers.push({ id: child.key, ...child.val() });
+            });
+          }
+          if (typeof updateUI === "function") {
+            updateUI();
+          }
+          renderNotificationsUI();
+        });
+      }
+    } catch (e) {
+      console.warn("Realtime notification listeners skipped:", e);
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+      initNotificationListeners();
+      setupRealtimeNotifications();
+      renderNotificationsUI();
+    });
+  } else {
+    initNotificationListeners();
+    setupRealtimeNotifications();
+    renderNotificationsUI();
+  }
+})();

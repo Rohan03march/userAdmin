@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="styles/dashboardStyle.css" />
   <link rel="stylesheet" href="styles/jobCards.css" />
   <link rel="stylesheet" href="styles/recruitment.css" />
+  <link rel="stylesheet" href="styles/notifications.css" />
   <title>Admin Dashboard</title>
   <link rel="icon" type="image/png" href="SourceOnebg.png" />
 </head>
@@ -79,6 +80,50 @@
           </button>
         </div>
       </form>
+      <!-- NOTIFICATION BELL & DROPDOWN -->
+      <div class="notification-wrapper">
+        <button type="button" class="notification-btn" id="notificationBtn" aria-label="Notifications"
+          title="Notifications">
+          <i class="bx bxs-bell"></i>
+          <span class="notification-num" id="notificationCount">0</span>
+        </button>
+
+        <div class="notification-dropdown" id="notificationDropdown" aria-hidden="true">
+          <div class="notification-header">
+            <div class="notif-header-title">
+              <h4>Notifications</h4>
+              <span class="notif-live-badge"><span class="live-dot"></span> LIVE</span>
+              <span class="notif-badge" id="notifUnreadBadge">0 New</span>
+            </div>
+            <button type="button" class="notif-mark-read-btn" id="markAllReadBtn" title="Mark all as read">
+              <i class="bx bx-check-double"></i> Mark all read
+            </button>
+          </div>
+
+          <div class="notification-filter-tabs">
+            <button type="button" class="notif-tab active" data-filter="all">
+              All <span class="tab-count" id="notifCountAll">0</span>
+            </button>
+            <button type="button" class="notif-tab" data-filter="recruiter">
+              Recruiter Leads <span class="tab-count" id="notifCountRecruiter">0</span>
+            </button>
+            <button type="button" class="notif-tab" data-filter="candidate">
+              Candidates <span class="tab-count" id="notifCountCandidate">0</span>
+            </button>
+          </div>
+
+          <div class="notification-list" id="notificationList">
+            <!-- Dynamic Items -->
+          </div>
+
+          <div class="notification-footer">
+            <button type="button" class="notif-footer-link" id="notifViewAllLeadsBtn">
+              <span>View All Recruiter Leads</span>
+              <i class="bx bx-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
       <input type="checkbox" id="switch-mode" hidden />
       <label for="switch-mode" class="switch-mode"></label>
     </nav>
@@ -432,7 +477,8 @@
         <div class="table-data" style="margin-top: 24px;">
           <div class="order" style="width: 100%;">
             <!-- Filter Toolbar -->
-            <div class="head" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+            <div class="head"
+              style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
               <div style="display: flex; align-items: center; gap: 10px;">
                 <h3 style="margin: 0;">Recruiter Leads</h3>
                 <span id="recruitmentCountBadge" class="recruitment-count-badge">0 Leads</span>
@@ -442,7 +488,8 @@
                 <!-- Search Input -->
                 <div class="filter-input-box">
                   <i class="bx bx-search"></i>
-                  <input type="text" id="recruitmentSearchFilter" placeholder="Search company, contact, job title, phone..." />
+                  <input type="text" id="recruitmentSearchFilter"
+                    placeholder="Search company, contact, job title, phone..." />
                 </div>
 
                 <!-- Status Filter -->
@@ -485,7 +532,8 @@
                 </div>
 
                 <!-- Reset Button -->
-                <button type="button" id="clearRecruitmentFiltersBtn" class="btn-clear-recruitment-filter" title="Reset Filters">
+                <button type="button" id="clearRecruitmentFiltersBtn" class="btn-clear-recruitment-filter"
+                  title="Reset Filters">
                   <i class="bx bx-refresh"></i> Reset
                 </button>
               </div>
@@ -506,7 +554,8 @@
                 <tbody id="recruitmentTableBody">
                   <tr>
                     <td colspan="5" style="text-align: center; padding: 36px 0; color: var(--dark-grey);">
-                      <i class="bx bx-loader-alt bx-spin" style="font-size: 24px; vertical-align: middle;"></i> Loading recruiter leads...
+                      <i class="bx bx-loader-alt bx-spin" style="font-size: 24px; vertical-align: middle;"></i> Loading
+                      recruiter leads...
                     </td>
                   </tr>
                 </tbody>
